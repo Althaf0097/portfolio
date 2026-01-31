@@ -2,19 +2,19 @@
 // Update these values with your own information
 
 export const siteConfig = {
-  name: 'Alex Chen',
+  name: 'Althaf S',
   initials: 'AC',
   role: 'Full Stack Developer',
   tagline: 'I craft exceptional digital experiences that combine elegant design with robust functionality. Turning complex problems into simple, beautiful solutions.',
-  email: 'hello@alexchen.dev',
-  location: 'San Francisco, CA',
+  email: 'althafs879@gmail.com',
+  location: 'Varkala, Kerala',
   availability: 'Available for opportunities',
 };
 
 export const socialLinks = {
-  github: 'https://github.com/alexchen',
-  linkedin: 'https://linkedin.com/in/alexchen',
-  twitter: 'https://twitter.com/alexchen',
+  github: 'https://github.com/Althaf0097',
+  linkedin: 'https://www.linkedin.com/in/althaf-s-1b086b210',
+  twitter: 'https://x.com/ALTHAF_S12',
 };
 
 export const aboutContent = {
@@ -24,67 +24,67 @@ export const aboutContent = {
     "When I'm not coding, you'll find me exploring new technologies, contributing to open-source projects, or sharing knowledge with the developer community.",
   ],
   stats: {
-    yearsExperience: '5+',
-    projects: '50+',
-    clients: '30+',
+    yearsExperience: '1 Year',
+    projects: '10+',
+    clients: '5+',
   },
 };
 
 export const skills = {
-  frontend: ['React', 'Next.js', 'TypeScript', 'Tailwind CSS', 'Vue.js', 'HTML/CSS'],
-  backend: ['Node.js', 'Python', 'Express', 'Django', 'FastAPI', 'GraphQL'],
-  database: ['PostgreSQL', 'MongoDB', 'Redis', 'MySQL', 'Prisma', 'Firebase'],
-  devops: ['Docker', 'AWS', 'Git', 'CI/CD', 'Linux', 'Vercel'],
-  other: ['REST APIs', 'WebSockets', 'OAuth', 'Testing', 'Agile', 'UI/UX'],
+  frontend: ['React', 'Next.js', 'JavaScript', 'Tailwind CSS', 'HTML/CSS'],
+  backend: ['Node.js', 'Python', 'SpringBoot', 'Django', 'FastAPI'],
+  database: ['PostgreSQL', 'MongoDB', 'MySQL', 'Supabase', 'Firebase'],
+  devops: ['Docker', 'GitHub', 'Git', 'Linux', 'Vercel'],
+  other: ['REST APIs', 'WebSockets', 'OAuth', 'Testing', 'UI/UX'],
 };
 
 export const projects = [
   {
-    title: 'E-Commerce Platform',
-    description: 'A full-featured online store with real-time inventory, secure payments, and an admin dashboard for managing products and orders.',
-    tech: ['Next.js', 'TypeScript', 'Stripe', 'PostgreSQL', 'Prisma'],
-    demo: 'https://demo.example.com',
-    source: 'https://github.com/alexchen/ecommerce',
+    title: 'Sentiment Analysis',
+    description: 'Sentiment Analysis is a web application that can be used to analyze the sentiment of a given text. It uses machine learning to determine whether the text is positive, negative, or neutral.',
+    tech: ['Python', 'Streamlit'],
+    demo: 'https://github.com/Althaf0097/Sentiment-hindi-english',
+    source: 'https://github.com/Althaf0097/Sentiment-hindi-english',
     featured: true,
   },
   {
-    title: 'Task Management App',
-    description: 'Collaborative project management tool with real-time updates, drag-and-drop boards, and team workspaces.',
-    tech: ['React', 'Node.js', 'Socket.io', 'MongoDB'],
-    demo: 'https://demo.example.com',
-    source: 'https://github.com/alexchen/taskapp',
+    title: 'EditzMedia',
+    description: 'EditzMedia is a web application it contains videos and images for editing.',
+    tech: ['React', 'Node.js', 'Socket.io', 'Supabase'],
+    demo: 'https://github.com/Althaf0097/EditzMedia',
+    source: 'https://github.com/Althaf0097/EditzMedia',
     featured: true,
   },
   {
-    title: 'AI Content Generator',
-    description: 'AI-powered writing assistant that helps create blog posts, social media content, and marketing copy.',
-    tech: ['Python', 'FastAPI', 'OpenAI', 'React', 'Redis'],
-    demo: 'https://demo.example.com',
-    source: 'https://github.com/alexchen/aiwriter',
+    title: 'Electricity Prediction',
+    description: 'Electricity Prediction is a web application that can be used to predict the electricity consumption of a given time. It uses machine learning to determine whether the electricity consumption is high or low.',
+    tech: ['Python', 'Streamlit'],
+    demo: 'https://github.com/Althaf0097/Electricity_pred',
+    source: 'https://github.com/Althaf0097/Electricity_pred',
     featured: true,
   },
   {
-    title: 'Real Estate Finder',
-    description: 'Property search platform with advanced filtering, map integration, and saved searches.',
-    tech: ['Vue.js', 'Django', 'PostgreSQL', 'Mapbox'],
-    demo: 'https://demo.example.com',
-    source: 'https://github.com/alexchen/realestate',
+    title: 'Hospital Management',
+    description: 'Hospital Management is a web application that can be used to manage the operations of a hospital. It contains features like patient registration, doctor appointment booking, and billing.',
+    tech: ['Django', 'PostgreSQL'],
+    demo: 'https://github.com/Althaf0097/Hospital',
+    source: 'https://github.com/Althaf0097/Hospital',
     featured: false,
   },
   {
-    title: 'Fitness Tracker',
-    description: 'Mobile-first workout tracking app with progress analytics, custom routines, and social features.',
-    tech: ['React Native', 'Firebase', 'Chart.js'],
-    demo: 'https://demo.example.com',
-    source: 'https://github.com/alexchen/fittrack',
+    title: 'AIMUS',
+    description: 'AIMUS is a web application that can be used to listen to music.',
+    tech: ['React', 'Node.js', 'machine learning'],
+    demo: 'https://github.com/Althaf0097/AIMUS/tree/main/AIMu/client',
+    source: 'https://github.com/Althaf0097/AIMUS/tree/main/AIMu/client',
     featured: false,
   },
   {
     title: 'Developer Portfolio',
     description: 'Modern, responsive portfolio template with dark theme and smooth animations.',
     tech: ['React', 'Tailwind CSS', 'Vite'],
-    demo: 'https://alexchen.dev',
-    source: 'https://github.com/alexchen/portfolio',
+    demo: 'https://portfolio-six-wine-p29zgt8x2n.vercel.app/',
+    source: 'https://github.com/Althaf0097/portfolio',
     featured: false,
   },
 ];

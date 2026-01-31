@@ -40,13 +40,32 @@ const Navbar = () => {
     }`}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
+          {/* Animated Logo */}
           <a 
             href="#" 
             onClick={(e) => handleNavClick(e, '#')}
-            className="text-xl font-bold text-white hover:text-accent-400 transition-all duration-300 hover:scale-105 active:scale-95"
+            className="group relative flex items-center gap-1"
           >
-            {siteConfig.initials}<span className="text-accent-400">.</span>
+            {/* Logo container with glow effect */}
+            <div className="relative">
+              {/* Glow background */}
+              <div className="absolute -inset-2 bg-gradient-to-r from-accent-500 via-cyan-400 to-accent-500 rounded-lg opacity-0 group-hover:opacity-30 blur-lg transition-all duration-500 animate-pulse"></div>
+              
+              {/* Main logo text */}
+              <span className="relative text-2xl font-black tracking-tight bg-gradient-to-r from-white via-accent-300 to-cyan-300 bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient-slow group-hover:animate-gradient-fast transition-all duration-300 group-hover:scale-110 inline-block transform">
+                {siteConfig.initials}
+              </span>
+            </div>
+            
+            {/* Animated dot */}
+            <span className="relative flex items-center justify-center">
+              <span className="absolute w-3 h-3 bg-accent-400/30 rounded-full animate-ping"></span>
+              <span className="relative text-2xl font-black text-accent-400 group-hover:text-cyan-400 transition-colors duration-300 group-hover:animate-bounce">.</span>
+            </span>
+            
+            {/* Code brackets decoration */}
+            <span className="absolute -left-4 top-1/2 -translate-y-1/2 text-accent-400/50 font-mono text-sm opacity-0 group-hover:opacity-100 group-hover:-left-5 transition-all duration-300">&lt;</span>
+            <span className="absolute -right-4 top-1/2 -translate-y-1/2 text-accent-400/50 font-mono text-sm opacity-0 group-hover:opacity-100 group-hover:-right-5 transition-all duration-300">/&gt;</span>
           </a>
 
           {/* Desktop Navigation */}

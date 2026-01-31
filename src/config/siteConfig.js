@@ -3,7 +3,7 @@
 
 export const siteConfig = {
   name: 'Althaf S',
-  initials: 'AC',
+  initials: 'AS',
   role: 'Full Stack Developer',
   tagline: 'I craft exceptional digital experiences that combine elegant design with robust functionality. Turning complex problems into simple, beautiful solutions.',
   email: 'althafs879@gmail.com',

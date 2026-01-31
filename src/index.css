@@ -2,19 +2,19 @@
 
 /* Custom theme configuration */
 @theme {
-  --font-sans: 'Inter', system-ui, sans-serif;
-  
+  --font-sans: "Inter", system-ui, sans-serif;
+
   /* Extended color palette */
   --color-dark-900: #0a0a0f;
   --color-dark-800: #12121a;
   --color-dark-700: #1a1a24;
   --color-dark-600: #24242f;
   --color-dark-500: #2f2f3d;
-  
+
   --color-accent-400: #818cf8;
   --color-accent-500: #6366f1;
   --color-accent-600: #4f46e5;
-  
+
   --color-cyan-400: #22d3ee;
   --color-cyan-500: #06b6d4;
 }
@@ -37,7 +37,8 @@ body {
    ================================================ */
 
 /* Disable text selection globally */
-body, * {
+body,
+* {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -45,7 +46,8 @@ body, * {
 }
 
 /* Allow selection only in form inputs */
-input, textarea {
+input,
+textarea {
   -webkit-user-select: text;
   -moz-user-select: text;
   -ms-user-select: text;
@@ -74,13 +76,19 @@ img {
    ================================================ */
 
 /* Custom cursor for interactive elements */
-a, button, [role="button"], input[type="submit"], .clickable {
+a,
+button,
+[role="button"],
+input[type="submit"],
+.clickable {
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Smooth hover scale for clickable elements */
-a:active, button:active, [role="button"]:active {
+a:active,
+button:active,
+[role="button"]:active {
   transform: scale(0.97);
   transition: transform 0.1s ease;
 }
@@ -126,7 +134,9 @@ a:active, button:active, [role="button"]:active {
 section {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
 }
 
 /* Enhanced button hover effects */
@@ -136,7 +146,7 @@ section {
 }
 
 .btn-primary::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -145,7 +155,9 @@ section {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  transition: width 0.6s ease, height 0.6s ease;
+  transition:
+    width 0.6s ease,
+    height 0.6s ease;
 }
 
 .btn-primary:hover::before {
@@ -155,9 +167,10 @@ section {
 
 /* Smooth card hover */
 .card-hover {
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
-              box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-              border-color 0.3s ease;
+  transition:
+    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s ease;
 }
 
 .card-hover:hover {
@@ -171,13 +184,17 @@ section {
 }
 
 .link-hover::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -2px;
   left: 0;
   width: 0;
   height: 2px;
-  background: linear-gradient(90deg, var(--color-accent-400), var(--color-cyan-400));
+  background: linear-gradient(
+    90deg,
+    var(--color-accent-400),
+    var(--color-cyan-400)
+  );
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -187,7 +204,8 @@ section {
 
 /* Pulse animation for availability badge */
 @keyframes pulse-soft {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -218,15 +236,26 @@ section {
 }
 
 /* Staggered animation delays */
-.delay-100 { animation-delay: 0.1s; }
-.delay-200 { animation-delay: 0.2s; }
-.delay-300 { animation-delay: 0.3s; }
-.delay-400 { animation-delay: 0.4s; }
-.delay-500 { animation-delay: 0.5s; }
+.delay-100 {
+  animation-delay: 0.1s;
+}
+.delay-200 {
+  animation-delay: 0.2s;
+}
+.delay-300 {
+  animation-delay: 0.3s;
+}
+.delay-400 {
+  animation-delay: 0.4s;
+}
+.delay-500 {
+  animation-delay: 0.5s;
+}
 
 /* Smooth gradient text animation */
 @keyframes gradient-shift {
-  0%, 100% {
+  0%,
+  100% {
     background-position: 0% 50%;
   }
   50% {
@@ -239,20 +268,36 @@ section {
   animation: gradient-shift 3s ease infinite;
 }
 
+/* Logo gradient animations */
+.animate-gradient-slow {
+  background-size: 200% auto;
+  animation: gradient-shift 4s ease infinite;
+}
+
+.animate-gradient-fast {
+  background-size: 200% auto;
+  animation: gradient-shift 1s ease infinite;
+}
+
 /* Magnetic button effect */
 .magnetic {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Input focus glow */
-input:focus, textarea:focus {
+input:focus,
+textarea:focus {
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  transition:
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
 }
 
 /* Smooth nav transition */
 nav {
-  transition: background-color 0.3s ease, backdrop-filter 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    backdrop-filter 0.3s ease;
 }
 
 /* Project card image zoom */

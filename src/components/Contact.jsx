@@ -152,7 +152,7 @@ const Contact = () => {
   ];
 
   return (
-    <section id="contact" className="py-24">
+    <section id="contact" className="py-24 bg-dark-900/40 backdrop-blur-sm">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
         <div className="text-center mb-16">

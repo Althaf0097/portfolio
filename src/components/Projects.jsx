@@ -5,7 +5,7 @@ const Projects = () => {
   const { playClick, playHover } = useSound();
 
   return (
-    <section id="projects" className="py-24 bg-dark-800/50">
+    <section id="projects" className="py-24 bg-dark-800/30 backdrop-blur-sm">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
         <div className="text-center mb-16">
@@ -13,22 +13,22 @@ const Projects = () => {
             Featured <span className="text-accent-400">Projects</span>
           </h2>
           <div className="w-20 h-1 bg-gradient-to-r from-accent-400 to-cyan-400 mx-auto rounded-full"></div>
-          <p className="mt-6 text-lg text-slate-400 max-w-2xl mx-auto">
+          <p className="mt-6 text-base sm:text-lg text-slate-400 max-w-2xl mx-auto">
             A selection of projects that showcase my skills and passion for building
           </p>
         </div>
 
-        {/* Projects grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Projects grid - 1 col mobile, 2 col tablet, 3 col desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {projects.map((project, index) => (
             <div
               key={project.title}
-              className="group project-card relative bg-dark-700/50 rounded-2xl border border-dark-600 overflow-hidden card-hover hover:border-accent-500/50"
+              className="group project-card relative glass-card rounded-2xl border border-dark-600 overflow-hidden card-hover hover:border-accent-500/50 transition-all duration-500"
               onMouseEnter={playHover}
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               {/* Project image placeholder */}
-              <div className="relative h-48 bg-gradient-to-br from-dark-600 to-dark-700 overflow-hidden">
+              <div className="relative h-40 sm:h-48 bg-gradient-to-br from-dark-600 to-dark-700 overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center project-image">
                   <div className="text-5xl font-bold text-dark-500 group-hover:text-accent-500/30 transition-all duration-500">
                     {project.title.charAt(0)}
@@ -71,11 +71,11 @@ const Projects = () => {
               </div>
 
               {/* Content */}
-              <div className="p-6">
-                <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-accent-400 transition-all duration-300">
+              <div className="p-4 sm:p-6">
+                <h3 className="text-base sm:text-lg font-semibold text-white mb-2 group-hover:text-accent-400 transition-all duration-300">
                   {project.title}
                 </h3>
-                <p className="text-sm text-slate-400 mb-4 line-clamp-2">
+                <p className="text-xs sm:text-sm text-slate-400 mb-3 sm:mb-4 line-clamp-2">
                   {project.description}
                 </p>
 

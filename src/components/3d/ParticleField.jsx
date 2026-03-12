@@ -2,89 +2,107 @@ import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
+const vertexShader = `
+  uniform float uTime;
+  uniform vec2 uMouse;
+  attribute float aSize;
+  attribute vec3 aRandom;
+  varying vec3 vColor;
+
+  void main() {
+    vColor = color;
+
+    vec3 pos = position;
+
+    // Base floating motion using random offsets per particle
+    float floatX = sin(uTime * 0.3 + aRandom.x * 10.0) * 0.1;
+    float floatY = cos(uTime * 0.2 + aRandom.y * 15.0) * 0.15;
+    float floatZ = sin(uTime * 0.25 + aRandom.z * 12.0) * 0.08;
+
+    pos.x += floatX + uMouse.x * 0.5;
+    pos.y += floatY + uMouse.y * 0.5;
+    pos.z += floatZ;
+
+    vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+    gl_PointSize = aSize * (300.0 / -mvPosition.z);
+    gl_Position = projectionMatrix * mvPosition;
+  }
+`;
+
+const fragmentShader = `
+  varying vec3 vColor;
+
+  void main() {
+    float dist = distance(gl_PointCoord, vec2(0.5));
+    if (dist > 0.5) discard;
+
+    float alpha = 1.0 - smoothstep(0.0, 0.5, dist);
+    gl_FragColor = vec4(vColor, alpha * 0.8);
+  }
+`;
+
+const getRandom = () => Math.random();
+
 /**
  * Animated particle field background
- * Creates a field of glowing particles with subtle mouse-reactive movement
+ * Optimized with GPU shaders for performance
  */
 const ParticleField = ({ count = 800, mousePosition }) => {
   const mesh = useRef();
-  const light = useRef();
+  const materialRef = useRef();
 
-  // Generate random particle positions
   const particles = useMemo(() => {
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
     const sizes = new Float32Array(count);
+    const randoms = new Float32Array(count * 3);
 
-    // Theme colors
-    const accentColor = new THREE.Color('#6366f1'); // accent-500
-    const cyanColor = new THREE.Color('#22d3ee'); // cyan-400
+    const accentColor = new THREE.Color('#6366f1');
+    const cyanColor = new THREE.Color('#22d3ee');
     const whiteColor = new THREE.Color('#ffffff');
 
     for (let i = 0; i < count; i++) {
-      // Spread particles in 3D space
-      positions[i * 3] = (Math.random() - 0.5) * 20; // x
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 20; // y
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 15; // z
+      positions[i * 3] = (getRandom() - 0.5) * 20;
+      positions[i * 3 + 1] = (getRandom() - 0.5) * 20;
+      positions[i * 3 + 2] = (getRandom() - 0.5) * 15;
 
-      // Random colors from palette
-      const colorChoice = Math.random();
-      let color;
-      if (colorChoice < 0.4) {
-        color = accentColor;
-      } else if (colorChoice < 0.7) {
-        color = cyanColor;
-      } else {
-        color = whiteColor;
-      }
+      const colorChoice = getRandom();
+      let color = whiteColor;
+      if (colorChoice < 0.4) color = accentColor;
+      else if (colorChoice < 0.7) color = cyanColor;
 
       colors[i * 3] = color.r;
       colors[i * 3 + 1] = color.g;
       colors[i * 3 + 2] = color.b;
 
-      // Random sizes
-      sizes[i] = Math.random() * 0.08 + 0.02;
+      sizes[i] = getRandom() * 0.08 + 0.02;
+
+      randoms[i * 3] = getRandom();
+      randoms[i * 3 + 1] = getRandom();
+      randoms[i * 3 + 2] = getRandom();
     }
 
-    return { positions, colors, sizes };
+    return { positions, colors, sizes, randoms };
   }, [count]);
 
-  // Initial positions for animation reference
-  const initialPositions = useMemo(
-    () => new Float32Array(particles.positions),
-    [particles.positions]
-  );
+  const uniforms = useMemo(() => ({
+    uTime: { value: 0 },
+    uMouse: { value: new THREE.Vector2(0, 0) }
+  }), []);
 
-  // Animate particles
   useFrame((state) => {
-    if (!mesh.current) return;
-
+    if (!materialRef.current) return;
     const time = state.clock.getElapsedTime();
-    const positions = mesh.current.geometry.attributes.position.array;
+    materialRef.current.uniforms.uTime.value = time;
+    materialRef.current.uniforms.uMouse.value.set(
+      mousePosition.current?.x || 0,
+      mousePosition.current?.y || 0
+    );
 
-    // Mouse influence (subtle parallax)
-    const mouseX = mousePosition?.x || 0;
-    const mouseY = mousePosition?.y || 0;
-
-    for (let i = 0; i < count; i++) {
-      const i3 = i * 3;
-
-      // Base floating motion
-      const floatX = Math.sin(time * 0.3 + i * 0.1) * 0.1;
-      const floatY = Math.cos(time * 0.2 + i * 0.15) * 0.15;
-      const floatZ = Math.sin(time * 0.25 + i * 0.12) * 0.08;
-
-      // Apply motion
-      positions[i3] = initialPositions[i3] + floatX + mouseX * 0.5;
-      positions[i3 + 1] = initialPositions[i3 + 1] + floatY + mouseY * 0.5;
-      positions[i3 + 2] = initialPositions[i3 + 2] + floatZ;
+    if (mesh.current) {
+      mesh.current.rotation.y = time * 0.02;
+      mesh.current.rotation.x = time * 0.01;
     }
-
-    mesh.current.geometry.attributes.position.needsUpdate = true;
-
-    // Rotate entire field slowly
-    mesh.current.rotation.y = time * 0.02;
-    mesh.current.rotation.x = time * 0.01;
   });
 
   return (
@@ -103,18 +121,25 @@ const ParticleField = ({ count = 800, mousePosition }) => {
           itemSize={3}
         />
         <bufferAttribute
-          attach="attributes-size"
+          attach="attributes-aSize"
           count={count}
           array={particles.sizes}
           itemSize={1}
         />
+        <bufferAttribute
+          attach="attributes-aRandom"
+          count={count}
+          array={particles.randoms}
+          itemSize={3}
+        />
       </bufferGeometry>
-      <pointsMaterial
-        size={0.05}
-        vertexColors
+      <shaderMaterial
+        ref={materialRef}
+        vertexShader={vertexShader}
+        fragmentShader={fragmentShader}
+        uniforms={uniforms}
         transparent
-        opacity={0.8}
-        sizeAttenuation
+        vertexColors
         blending={THREE.AdditiveBlending}
         depthWrite={false}
       />

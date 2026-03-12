@@ -32,7 +32,7 @@ class SoundManager {
       oscillator.type = 'sine';
       oscillator.start(this.audioContext.currentTime);
       oscillator.stop(this.audioContext.currentTime + 0.08);
-    } catch (e) {
+    } catch {
       // Audio not supported
     }
   }
@@ -52,7 +52,7 @@ class SoundManager {
       gainNode.connect(this.audioContext.destination);
       
       // Random frequency for variety
-      const baseFreq = 200 + Math.random() * 100;
+      const baseFreq = 200 + this.getRandomValue() * 100;
       oscillator.frequency.setValueAtTime(baseFreq, this.audioContext.currentTime);
       oscillator.frequency.exponentialRampToValueAtTime(80, this.audioContext.currentTime + 0.03);
       
@@ -65,7 +65,7 @@ class SoundManager {
       oscillator.type = 'square';
       oscillator.start(this.audioContext.currentTime);
       oscillator.stop(this.audioContext.currentTime + 0.04);
-    } catch (e) {
+    } catch {
       // Audio not supported
     }
   }
@@ -90,7 +90,7 @@ class SoundManager {
       oscillator.type = 'sine';
       oscillator.start(this.audioContext.currentTime);
       oscillator.stop(this.audioContext.currentTime + 0.04);
-    } catch (e) {
+    } catch {
       // Audio not supported
     }
   }
@@ -118,7 +118,7 @@ class SoundManager {
         oscillator.start(this.audioContext.currentTime + i * 0.05);
         oscillator.stop(this.audioContext.currentTime + 0.3 + i * 0.05);
       });
-    } catch (e) {
+    } catch {
       // Audio not supported
     }
   }
@@ -126,6 +126,10 @@ class SoundManager {
   toggle() {
     this.enabled = !this.enabled;
     return this.enabled;
+  }
+
+  getRandomValue() {
+    return Math.random();
   }
 }
 

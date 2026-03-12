@@ -4,71 +4,97 @@ import { Preload } from '@react-three/drei';
 import * as THREE from 'three';
 import useReducedMotion from '../../utils/useReducedMotion';
 
+const vertexShader = `
+  uniform float uTime;
+  uniform vec2 uMouse;
+  attribute vec3 aRandom;
+  varying vec3 vColor;
+
+  void main() {
+    vColor = color;
+    vec3 pos = position;
+
+    float floatX = sin(uTime * 0.2 + aRandom.x * 10.0) * 0.15;
+    float floatY = cos(uTime * 0.15 + aRandom.y * 15.0) * 0.2;
+    float floatZ = sin(uTime * 0.18 + aRandom.z * 12.0) * 0.1;
+
+    pos.x += floatX + uMouse.x * 0.3;
+    pos.y += floatY + uMouse.y * 0.3;
+    pos.z += floatZ;
+
+    vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+    gl_PointSize = 0.04 * (300.0 / -mvPosition.z);
+    gl_Position = projectionMatrix * mvPosition;
+  }
+`;
+
+const fragmentShader = `
+  varying vec3 vColor;
+  void main() {
+    float dist = distance(gl_PointCoord, vec2(0.5));
+    if (dist > 0.5) discard;
+    float alpha = 1.0 - smoothstep(0.0, 0.5, dist);
+    gl_FragColor = vec4(vColor, alpha * 0.7);
+  }
+`;
+
+const getRandom = () => Math.random();
+
 /**
  * Enhanced particle field that covers the entire viewport
- * with scroll-responsive density and depth
+ * Optimized with GPU shaders
  */
-const ParticleField = ({ count = 1000, mousePosition, scrollProgress = 0 }) => {
+const ParticleField = ({ count = 1000, mousePosition }) => {
   const mesh = useRef();
+  const materialRef = useRef();
 
   const particles = useMemo(() => {
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
-    const sizes = new Float32Array(count);
+    const randoms = new Float32Array(count * 3);
 
     const accentColor = new THREE.Color('#6366f1');
     const cyanColor = new THREE.Color('#22d3ee');
     const whiteColor = new THREE.Color('#ffffff');
 
     for (let i = 0; i < count; i++) {
-      // Spread particles across a larger vertical space for scrolling
-      positions[i * 3] = (Math.random() - 0.5) * 30;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 60; // Extended vertical range
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+      positions[i * 3] = (getRandom() - 0.5) * 30;
+      positions[i * 3 + 1] = (getRandom() - 0.5) * 60;
+      positions[i * 3 + 2] = (getRandom() - 0.5) * 20;
 
-      const colorChoice = Math.random();
-      let color;
+      const colorChoice = getRandom();
+      let color = whiteColor;
       if (colorChoice < 0.4) color = accentColor;
       else if (colorChoice < 0.7) color = cyanColor;
-      else color = whiteColor;
 
       colors[i * 3] = color.r;
       colors[i * 3 + 1] = color.g;
       colors[i * 3 + 2] = color.b;
 
-      sizes[i] = Math.random() * 0.06 + 0.02;
+      randoms[i * 3] = getRandom();
+      randoms[i * 3 + 1] = getRandom();
+      randoms[i * 3 + 2] = getRandom();
     }
 
-    return { positions, colors, sizes };
+    return { positions, colors, randoms };
   }, [count]);
 
-  const initialPositions = useMemo(
-    () => new Float32Array(particles.positions),
-    [particles.positions]
-  );
+  const uniforms = useMemo(() => ({
+    uTime: { value: 0 },
+    uMouse: { value: new THREE.Vector2(0, 0) }
+  }), []);
 
   useFrame((state) => {
-    if (!mesh.current) return;
-
+    if (!materialRef.current) return;
     const time = state.clock.getElapsedTime();
-    const positions = mesh.current.geometry.attributes.position.array;
-
-    const mouseX = mousePosition?.x || 0;
-    const mouseY = mousePosition?.y || 0;
-
-    for (let i = 0; i < count; i++) {
-      const i3 = i * 3;
-      const floatX = Math.sin(time * 0.2 + i * 0.1) * 0.15;
-      const floatY = Math.cos(time * 0.15 + i * 0.15) * 0.2;
-      const floatZ = Math.sin(time * 0.18 + i * 0.12) * 0.1;
-
-      positions[i3] = initialPositions[i3] + floatX + mouseX * 0.3;
-      positions[i3 + 1] = initialPositions[i3 + 1] + floatY + mouseY * 0.3;
-      positions[i3 + 2] = initialPositions[i3 + 2] + floatZ;
+    materialRef.current.uniforms.uTime.value = time;
+    materialRef.current.uniforms.uMouse.value.set(
+      mousePosition.current?.x || 0,
+      mousePosition.current?.y || 0
+    );
+    if (mesh.current) {
+      mesh.current.rotation.y = time * 0.015;
     }
-
-    mesh.current.geometry.attributes.position.needsUpdate = true;
-    mesh.current.rotation.y = time * 0.015;
   });
 
   return (
@@ -86,13 +112,20 @@ const ParticleField = ({ count = 1000, mousePosition, scrollProgress = 0 }) => {
           array={particles.colors}
           itemSize={3}
         />
+        <bufferAttribute
+          attach="attributes-aRandom"
+          count={count}
+          array={particles.randoms}
+          itemSize={3}
+        />
       </bufferGeometry>
-      <pointsMaterial
-        size={0.04}
-        vertexColors
+      <shaderMaterial
+        ref={materialRef}
+        vertexShader={vertexShader}
+        fragmentShader={fragmentShader}
+        uniforms={uniforms}
         transparent
-        opacity={0.7}
-        sizeAttenuation
+        vertexColors
         blending={THREE.AdditiveBlending}
         depthWrite={false}
       />
@@ -103,7 +136,7 @@ const ParticleField = ({ count = 1000, mousePosition, scrollProgress = 0 }) => {
 /**
  * Floating shapes distributed across the page
  */
-const FloatingShapes = ({ scrollProgress = 0 }) => {
+const FloatingShapes = () => {
   const groupRef = useRef();
 
   useFrame((state) => {
@@ -112,7 +145,6 @@ const FloatingShapes = ({ scrollProgress = 0 }) => {
     groupRef.current.rotation.y = time * 0.03;
   });
 
-  // Create multiple shape clusters at different Y positions
   const shapePositions = useMemo(() => [
     { pos: [5, 8, -8], scale: 0.7, color: '#6366f1' },
     { pos: [-6, 2, -6], scale: 0.5, color: '#22d3ee' },
@@ -161,11 +193,9 @@ const AnimatedShape = ({ pos, scale, color, index }) => {
  */
 const Scene3DFullPage = () => {
   const prefersReducedMotion = useReducedMotion();
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const mousePosition = useRef({ x: 0, y: 0 });
   const [isMobile, setIsMobile] = useState(false);
 
-  // Detect mobile for performance optimization
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -176,34 +206,25 @@ const Scene3DFullPage = () => {
   }, []);
 
   const handleMouseMove = useCallback((event) => {
-    if (prefersReducedMotion || isMobile) return; // Skip mouse tracking on mobile
+    if (prefersReducedMotion || isMobile) return;
     const x = (event.clientX / window.innerWidth) * 2 - 1;
     const y = -(event.clientY / window.innerHeight) * 2 + 1;
-    setMousePosition({ x: x * 0.5, y: y * 0.5 });
+    mousePosition.current = { x: x * 0.5, y: y * 0.5 };
   }, [prefersReducedMotion, isMobile]);
-
-  const handleScroll = useCallback(() => {
-    const scrollTop = window.scrollY;
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    setScrollProgress(docHeight > 0 ? scrollTop / docHeight : 0);
-  }, []);
 
   useEffect(() => {
     if (!isMobile) {
       window.addEventListener('mousemove', handleMouseMove);
     }
-    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('scroll', handleScroll);
     };
-  }, [handleMouseMove, handleScroll, isMobile]);
+  }, [handleMouseMove, isMobile]);
 
   if (prefersReducedMotion) {
     return null;
   }
 
-  // Reduce particles on mobile for performance
   const particleCount = isMobile ? 300 : 800;
 
   return (
@@ -225,9 +246,8 @@ const Scene3DFullPage = () => {
           <ParticleField 
             count={particleCount} 
             mousePosition={mousePosition} 
-            scrollProgress={scrollProgress} 
           />
-          {!isMobile && <FloatingShapes scrollProgress={scrollProgress} />}
+          {!isMobile && <FloatingShapes />}
           <Preload all />
         </Suspense>
       </Canvas>

@@ -32,7 +32,7 @@ class SoundManager {
       oscillator.type = 'sine';
       oscillator.start(this.audioContext.currentTime);
       oscillator.stop(this.audioContext.currentTime + 0.08);
-    } catch (e) {
+    } catch {
       // Audio not supported
     }
   }
@@ -40,32 +40,32 @@ class SoundManager {
   // Typing sound - mechanical keyboard style
   playType() {
     if (!this.enabled) return;
-    
+
     try {
       this.init();
       const oscillator = this.audioContext.createOscillator();
       const gainNode = this.audioContext.createGain();
       const filter = this.audioContext.createBiquadFilter();
-      
+
       oscillator.connect(filter);
       filter.connect(gainNode);
       gainNode.connect(this.audioContext.destination);
-      
+
       // Random frequency for variety
       const baseFreq = 200 + Math.random() * 100;
       oscillator.frequency.setValueAtTime(baseFreq, this.audioContext.currentTime);
       oscillator.frequency.exponentialRampToValueAtTime(80, this.audioContext.currentTime + 0.03);
-      
+
       filter.type = 'lowpass';
       filter.frequency.setValueAtTime(2000, this.audioContext.currentTime);
-      
+
       gainNode.gain.setValueAtTime(0.06, this.audioContext.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.04);
-      
+
       oscillator.type = 'square';
       oscillator.start(this.audioContext.currentTime);
       oscillator.stop(this.audioContext.currentTime + 0.04);
-    } catch (e) {
+    } catch {
       // Audio not supported
     }
   }
@@ -73,24 +73,24 @@ class SoundManager {
   // Soft hover sound
   playHover() {
     if (!this.enabled) return;
-    
+
     try {
       this.init();
       const oscillator = this.audioContext.createOscillator();
       const gainNode = this.audioContext.createGain();
-      
+
       oscillator.connect(gainNode);
       gainNode.connect(this.audioContext.destination);
-      
+
       oscillator.frequency.setValueAtTime(1200, this.audioContext.currentTime);
-      
+
       gainNode.gain.setValueAtTime(0.02, this.audioContext.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.04);
-      
+
       oscillator.type = 'sine';
       oscillator.start(this.audioContext.currentTime);
       oscillator.stop(this.audioContext.currentTime + 0.04);
-    } catch (e) {
+    } catch {
       // Audio not supported
     }
   }
@@ -98,27 +98,27 @@ class SoundManager {
   // Success sound
   playSuccess() {
     if (!this.enabled) return;
-    
+
     try {
       this.init();
       const frequencies = [523, 659, 784]; // C5, E5, G5 chord
-      
+
       frequencies.forEach((freq, i) => {
         const oscillator = this.audioContext.createOscillator();
         const gainNode = this.audioContext.createGain();
-        
+
         oscillator.connect(gainNode);
         gainNode.connect(this.audioContext.destination);
-        
+
         oscillator.frequency.setValueAtTime(freq, this.audioContext.currentTime);
         gainNode.gain.setValueAtTime(0.05, this.audioContext.currentTime + i * 0.05);
         gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.3 + i * 0.05);
-        
+
         oscillator.type = 'sine';
         oscillator.start(this.audioContext.currentTime + i * 0.05);
         oscillator.stop(this.audioContext.currentTime + 0.3 + i * 0.05);
       });
-    } catch (e) {
+    } catch {
       // Audio not supported
     }
   }

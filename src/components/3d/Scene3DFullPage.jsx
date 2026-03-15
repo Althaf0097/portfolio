@@ -16,8 +16,8 @@ const ParticleField = ({ count = 1000, mousePosition, scrollProgress = 0 }) => {
     const colors = new Float32Array(count * 3);
     const sizes = new Float32Array(count);
 
-    const accentColor = new THREE.Color('#6366f1');
-    const cyanColor = new THREE.Color('#22d3ee');
+    const accentColor = new THREE.Color('#ef4444');
+    const cyanColor = new THREE.Color('#f97316');
     const whiteColor = new THREE.Color('#ffffff');
 
     for (let i = 0; i < count; i++) {
@@ -114,12 +114,12 @@ const FloatingShapes = ({ scrollProgress = 0 }) => {
 
   // Create multiple shape clusters at different Y positions
   const shapePositions = useMemo(() => [
-    { pos: [5, 8, -8], scale: 0.7, color: '#6366f1' },
-    { pos: [-6, 2, -6], scale: 0.5, color: '#22d3ee' },
-    { pos: [4, -5, -7], scale: 0.6, color: '#818cf8' },
-    { pos: [-5, -12, -5], scale: 0.4, color: '#6366f1' },
-    { pos: [6, -18, -8], scale: 0.5, color: '#22d3ee' },
-    { pos: [-4, -25, -6], scale: 0.6, color: '#818cf8' },
+    { pos: [5, 8, -8], scale: 0.7, color: '#ef4444' },
+    { pos: [-6, 2, -6], scale: 0.5, color: '#f97316' },
+    { pos: [4, -5, -7], scale: 0.6, color: '#f87171' },
+    { pos: [-5, -12, -5], scale: 0.4, color: '#ef4444' },
+    { pos: [6, -18, -8], scale: 0.5, color: '#f97316' },
+    { pos: [-4, -25, -6], scale: 0.6, color: '#f87171' },
   ], []);
 
   return (
@@ -218,8 +218,8 @@ const Scene3DFullPage = () => {
         }}
       >
         <ambientLight intensity={0.2} />
-        <pointLight position={[10, 10, 10]} intensity={0.4} color="#6366f1" />
-        <pointLight position={[-10, -10, -10]} intensity={0.2} color="#22d3ee" />
+        <pointLight position={[10, 10, 10]} intensity={0.4} color="#ef4444" />
+        <pointLight position={[-10, -10, -10]} intensity={0.2} color="#f97316" />
 
         <Suspense fallback={null}>
           <ParticleField 

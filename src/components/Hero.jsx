@@ -1,8 +1,25 @@
+import { useState, useEffect } from 'react';
 import { siteConfig } from '../config/siteConfig';
 import { useSound } from '../utils/sound';
+import profileImg from '../assets/images/profile photo.png';
 
 const Hero = () => {
-  const { playClick } = useSound();
+  const { playClick, playHover } = useSound();
+  const [roleIndex, setRoleIndex] = useState(0);
+  const [isFlashing, setIsFlashing] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsFlashing(true);
+      
+      // Delay to complete the split animation
+      setTimeout(() => {
+        setRoleIndex((prev) => (prev + 1) % siteConfig.roles.length);
+        setIsFlashing(false);
+      }, 700);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleScrollTo = (e, href) => {
     e.preventDefault();
@@ -14,77 +31,168 @@ const Hero = () => {
     }
   };
 
-  return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
-      {/* Background gradient overlay - semi-transparent to show 3D from App */}
-      <div className="absolute inset-0 bg-gradient-to-br from-dark-900/60 via-dark-800/40 to-dark-900/60">
-        <div className="absolute top-1/4 left-1/4 w-48 sm:w-72 md:w-96 h-48 sm:h-72 md:h-96 bg-accent-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-48 sm:w-72 md:w-96 h-48 sm:h-72 md:h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-      </div>
+  const nextRoleIndex = (roleIndex + 1) % siteConfig.roles.length;
 
-      {/* Grid overlay */}
-      <div 
-        className="absolute inset-0 opacity-[0.02] z-[2]"
+  return (
+    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20 bg-dark-950">
+      {/* Background Mesh Gradients */}
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-accent-400/20 rounded-full blur-[120px] mix-blend-screen animate-pulse pointer-events-none"></div>
+      <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-cyan-400/10 rounded-full blur-[120px] mix-blend-screen animate-pulse pointer-events-none" style={{ animationDelay: '2s' }}></div>
+
+      {/* Modern Grid Overlay */}
+      <div
+        className="absolute inset-0 opacity-[0.05] z-[2]"
         style={{
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-                           linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-          backgroundSize: '50px 50px'
+          backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                           linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)`,
+          backgroundSize: 'clamp(20px, 5vw, 40px) clamp(20px, 5vw, 40px)',
+          maskImage: 'radial-gradient(circle at center, black, transparent 80%)'
         }}
       ></div>
 
-      <div className="relative z-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        {/* Status badge */}
-        <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 mb-6 sm:mb-8 text-xs sm:text-sm font-medium text-accent-400 bg-accent-500/10 rounded-full border border-accent-500/20 backdrop-blur-sm animate-fade-in-up opacity-0" style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
-          <span className="w-2 h-2 bg-green-400 rounded-full pulse-soft"></span>
-          {siteConfig.availability}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center flex flex-col items-center">
+        {/* Modern Label */}
+        <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8 backdrop-blur-md animate-fade-in">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-accent-400"></span>
+          </span>
+          <span className="text-[10px] font-mono font-black tracking-[0.3em] text-slate-400 uppercase">SYSTEM_INIT_COMPLETE</span>
         </div>
 
-        {/* Main heading */}
-        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-4 sm:mb-6 tracking-tight animate-fade-in-up opacity-0" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
-          Hi, I'm{' '}
-          <span className="bg-gradient-to-r from-accent-400 via-cyan-400 to-accent-400 bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
-            {siteConfig.name}
-          </span>
-        </h1>
+        {/* Mobile/Tablet Profile Image - Hidden on lg screens */}
+        <div className="lg:hidden relative mb-8 animate-fade-in animate-delay-200">
+          <div className="absolute inset-0 bg-accent-400/20 blur-2xl rounded-full animate-pulse"></div>
+          <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-2 border-accent-400/50 shadow-[0_0_30px_rgba(239,68,68,0.3)] mx-auto">
+            <img 
+              src={profileImg} 
+              alt="Althaf" 
+              className="w-full h-full object-cover"
+              onError={(e) => { e.target.src = "https://ui-avatars.com/api/?name=Althaf+S&background=09090b&color=ef4444&size=512&bold=true"; }}
+            />
+          </div>
+        </div>
 
-        {/* Role */}
-        <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-medium text-slate-400 mb-4 sm:mb-6 animate-fade-in-up opacity-0" style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}>
-          {siteConfig.role}
-        </p>
+        {/* Main Display Area */}
+        <div className="relative mb-8 mt-4 flex justify-center w-full">
+          
+          <h1 className="relative text-6xl sm:text-7xl md:text-[6rem] font-black tracking-tight leading-none font-heading cursor-default group/name text-center">
+            {/* Emerging Photo from Left on Hover */}
+            <div className="absolute top-1/2 -translate-y-1/2 right-[105%] mr-8 hidden lg:block w-48 h-52 rounded-3xl overflow-hidden border-2 border-accent-400/50 opacity-0 -translate-x-10 group-hover/name:opacity-100 group-hover/name:translate-x-0 transition-all duration-700 ease-out shadow-[0_0_50px_rgba(239,68,68,0.4)] z-50 pointer-events-none rotate-[-6deg] group-hover/name:rotate-0">
+              <div className="absolute inset-0 bg-accent-400/10 mix-blend-overlay z-10"></div>
+              <img 
+                src={profileImg} 
+                alt="Hover Preview" 
+                className="w-full h-full object-cover scale-125 group-hover/name:scale-100 transition-all duration-1000"
+                onError={(e) => { e.target.src = "https://ui-avatars.com/api/?name=Althaf+S&background=09090b&color=ef4444&size=512&bold=true"; }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-dark-950/80 via-transparent to-transparent"></div>
+              {/* Decorative scanlines on the hover photo */}
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.2)_50%)] bg-[length:100%_4px] opacity-20 z-20"></div>
+            </div>
 
-        {/* Value statement */}
-        <p className="text-base sm:text-lg md:text-xl text-slate-500 mb-8 sm:mb-10 max-w-2xl mx-auto leading-relaxed animate-fade-in-up opacity-0 px-2" style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}>
-          {siteConfig.tagline}
-        </p>
+            {/* Premium intense glow behind text on hover */}
+            <div className="absolute inset-0 bg-accent-400/0 group-hover/name:bg-accent-400/40 blur-[80px] rounded-full transition-all duration-1000 ease-out -z-10 pointer-events-none scale-50 group-hover/name:scale-150"></div>
+            
+            <span className="relative z-10 inline-block text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-300 uppercase transition-all duration-[800ms] cubic-bezier(0.16, 1, 0.3, 1) group-hover/name:scale-[1.08] group-hover/name:-translate-y-2 group-hover/name:tracking-[0.15em] drop-shadow-2xl">
+              {siteConfig.name}
+            </span>
+            
+            {/* Tech line that expands underneath */}
+            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-0 h-px bg-gradient-to-r from-transparent via-accent-400 to-transparent group-hover/name:w-[120%] transition-all duration-1000 ease-in-out opacity-0 group-hover/name:opacity-100 pointer-events-none"></div>
+            {/* Glowing core of the tech line */}
+            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-0 h-[3px] bg-accent-400 blur-sm group-hover/name:w-[40%] transition-all duration-700 delay-100 ease-out opacity-0 group-hover/name:opacity-100 pointer-events-none"></div>
+          </h1>
+          
+          {/* Decorative side accent */}
+          <div className="hidden lg:block absolute -left-12 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-accent-400/50 to-transparent"></div>
+        </div>
 
-        {/* CTA Buttons - stack on mobile */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 animate-fade-in-up opacity-0" style={{ animationDelay: '0.5s', animationFillMode: 'forwards' }}>
+        {/* Value Proposition */}
+        <div className="max-w-4xl mx-auto mb-16 text-center select-none">
+          <div className="relative h-20 md:h-28 flex items-center justify-center">
+            {/* Laser Beam */}
+            {isFlashing && (
+              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 z-50 pointer-events-none">
+                <div className="w-full animate-laser-ignite" />
+              </div>
+            )}
+
+            {/* Roles Container */}
+            <div className="relative w-full h-full flex items-center justify-center">
+              {/* The Static State (Visible when NOT flashing) */}
+              <div className={`transition-opacity duration-200 ${isFlashing ? 'opacity-0' : 'opacity-100'}`}>
+                <p className="text-3xl md:text-4xl text-white font-black uppercase tracking-[0.25em]">
+                  {siteConfig.roles[roleIndex]}
+                </p>
+              </div>
+
+              {/* The "Power-Down" Split Layers (Visible ONLY when flashing) */}
+              {isFlashing && (
+                <>
+                  {/* Top Half Moving Up */}
+                  <div 
+                    className="absolute inset-0 flex items-center justify-center animate-split-top pointer-events-none"
+                    style={{ clipPath: 'inset(0 0 49% 0)' }}
+                  >
+                    <p className="text-3xl md:text-4xl text-white font-black uppercase tracking-[0.25em]">
+                      {siteConfig.roles[roleIndex]}
+                    </p>
+                  </div>
+
+                  {/* Bottom Half Moving Down */}
+                  <div 
+                    className="absolute inset-0 flex items-center justify-center animate-split-bottom pointer-events-none"
+                    style={{ clipPath: 'inset(49% 0 0 0)' }}
+                  >
+                    <p className="text-3xl md:text-4xl text-white font-black uppercase tracking-[0.25em]">
+                      {siteConfig.roles[roleIndex]}
+                    </p>
+                  </div>
+
+                  {/* The Incoming Role (Reveals from behind) */}
+                  <div className="absolute inset-0 flex items-center justify-center animate-fade-in opacity-0 animate-delay-500">
+                    <p className="text-3xl md:text-4xl text-white font-black uppercase tracking-[0.25em] text-glow filter drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]">
+                      {siteConfig.roles[nextRoleIndex]}
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex justify-center mt-4 mb-8">
+            <div className="h-px w-24 bg-gradient-to-r from-transparent via-accent-400/50 to-transparent"></div>
+          </div>
+          <p className="text-sm md:text-base font-sans text-slate-300 tracking-wide font-light leading-relaxed max-w-2xl mx-auto">
+            {siteConfig.tagline}
+          </p>
+        </div>
+
+        {/* Modern CTA Cluster */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
           <a
             href="#projects"
             onClick={(e) => handleScrollTo(e, '#projects')}
-            className="group relative overflow-hidden w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold text-white bg-gradient-to-r from-accent-500 to-accent-600 rounded-xl transition-all duration-500 hover:shadow-xl hover:shadow-accent-500/25 hover:-translate-y-1 hover:scale-105 active:scale-95 glow-accent"
+            className="w-full sm:w-auto px-10 py-4 btn-premium-accent rounded-xl text-xs font-bold uppercase tracking-[0.2em] font-sans"
           >
-            <span className="relative z-10 flex items-center justify-center">
-              View My Work
-              <span className="inline-block ml-2 transition-transform duration-300 group-hover:translate-x-2">→</span>
-            </span>
-            <div className="absolute inset-0 bg-gradient-to-r from-accent-600 to-accent-700 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            View Projects
           </a>
+
           <a
             href="#contact"
             onClick={(e) => handleScrollTo(e, '#contact')}
-            className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold text-slate-300 border border-dark-500 rounded-xl hover:border-accent-500 hover:text-accent-400 transition-all duration-500 hover:-translate-y-1 hover:scale-105 active:scale-95 hover:shadow-lg hover:shadow-accent-500/10 backdrop-blur-sm text-center"
+            className="w-full sm:w-auto px-10 py-4 btn-premium rounded-xl text-xs font-bold uppercase tracking-[0.2em] font-sans"
           >
-            Get In Touch
+            Contact Me
           </a>
         </div>
+      </div>
 
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <svg className="w-6 h-6 text-slate-500 transition-colors hover:text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-          </svg>
-        </div>
+      {/* Scroll Hint */}
+      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 opacity-30 hover:opacity-100 transition-opacity duration-500 cursor-pointer" onClick={(e) => handleScrollTo(e, '#about')}>
+        <span className="text-[10px] font-mono tracking-[0.4em] uppercase -rotate-90 origin-center mb-8">SCROLL</span>
+        <div className="w-px h-16 bg-gradient-to-b from-accent-400 to-transparent"></div>
       </div>
     </section>
   );

@@ -5,6 +5,7 @@ export const siteConfig = {
   name: 'Althaf S',
   initials: 'AS',
   role: 'Full Stack Developer',
+  roles: ['Full Stack Developer', 'Data Analyst', 'Python Developer', 'Content Creator', 'AI Builder'],
   tagline: 'I craft exceptional digital experiences that combine elegant design with robust functionality. Turning complex problems into simple, beautiful solutions.',
   email: 'althafs879@gmail.com',
   location: 'Varkala, Kerala',
@@ -92,9 +93,9 @@ export const projects = [
 // EmailJS Configuration
 // Sign up at https://www.emailjs.com/ and get your credentials
 export const emailConfig = {
-  serviceId: 'YOUR_SERVICE_ID', // Replace with your EmailJS service ID
-  templateId: 'YOUR_TEMPLATE_ID', // Replace with your EmailJS template ID
-  publicKey: 'YOUR_PUBLIC_KEY', // Replace with your EmailJS public key
+  serviceId: import.meta.env.VITE_EMAILJS_SERVICE_ID || 'YOUR_SERVICE_ID',
+  templateId: import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'YOUR_TEMPLATE_ID',
+  publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'YOUR_PUBLIC_KEY',
 };
 
 // Navigation links

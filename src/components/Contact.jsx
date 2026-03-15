@@ -2,12 +2,12 @@ import { useState, useRef } from 'react';
 import emailjs from '@emailjs/browser';
 import { siteConfig, socialLinks, emailConfig } from '../config/siteConfig';
 import { useSound } from '../utils/sound';
-import { 
-  validateFormData, 
-  checkRateLimit, 
-  isBot, 
+import {
+  validateFormData,
+  checkRateLimit,
+  isBot,
   sanitizeInput,
-  logSecurityEvent 
+  logSecurityEvent
 } from '../utils/security';
 
 const Contact = () => {
@@ -50,7 +50,6 @@ const Contact = () => {
     // Bot detection (honeypot)
     if (isBot(honeypot)) {
       logSecurityEvent('Bot detected via honeypot');
-      // Fake success to fool bots
       setStatus({ type: 'success', message: 'Thanks for your message!' });
       return;
     }
@@ -73,14 +72,12 @@ const Contact = () => {
 
     setIsSubmitting(true);
 
-    // Sanitize inputs before sending
     const sanitizedData = {
       name: sanitizeInput(formData.name),
       email: sanitizeInput(formData.email),
       message: sanitizeInput(formData.message),
     };
 
-    // Check if EmailJS is configured
     if (emailConfig.serviceId === 'YOUR_SERVICE_ID') {
       console.log('Form submission (EmailJS not configured):', sanitizedData);
       playSuccess();
@@ -121,7 +118,7 @@ const Contact = () => {
     }
   };
 
-  const socialIcons = [
+  const socialIconsList = [
     {
       name: 'GitHub',
       href: socialLinks.github,
@@ -140,219 +137,183 @@ const Contact = () => {
         </svg>
       ),
     },
-    {
-      name: 'Twitter',
-      href: socialLinks.twitter,
-      icon: (
-        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-        </svg>
-      ),
-    },
   ];
 
   return (
-    <section id="contact" className="py-24 bg-dark-900/40 backdrop-blur-sm">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section header */}
-        <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            Get In <span className="text-accent-400">Touch</span>
-          </h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-accent-400 to-cyan-400 mx-auto rounded-full"></div>
-          <p className="mt-6 text-lg text-slate-400 max-w-2xl mx-auto">
-            Have a project in mind or just want to chat? Feel free to reach out!
-          </p>
-        </div>
+    <section id="contact" className="relative py-16 md:py-20 bg-dark-950 overflow-hidden">
+      {/* Background glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent-400/5 rounded-full blur-[180px] pointer-events-none"></div>
 
-        <div className="grid lg:grid-cols-2 gap-12">
-          {/* Contact form */}
-          <div className="bg-dark-800/50 rounded-2xl border border-dark-600 p-8 transition-all duration-500 hover:border-dark-500">
-            <h3 className="text-xl font-semibold text-white mb-6">Send a Message</h3>
-            
-            {/* Form errors */}
-            {formErrors.length > 0 && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-6">
-                <ul className="text-red-400 text-sm space-y-1">
-                  {formErrors.map((error, index) => (
-                    <li key={index}>• {error}</li>
-                  ))}
-                </ul>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          {/* Detailed Contact Info */}
+          <div>
+            <div className="mb-12">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-400/10 border border-accent-400/20 mb-6 animate-fade-in-up">
+                <span className="w-1.5 h-1.5 rounded-full bg-accent-400"></span>
+                <span className="text-[10px] font-mono font-bold tracking-[0.2em] text-accent-400 uppercase">Get in touch</span>
               </div>
-            )}
+              <h2 className="text-4xl sm:text-6xl font-black text-white uppercase tracking-tighter mb-8 font-sans">
+                Let's <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-400 to-cyan-400">Connect</span>
+              </h2>
+              <p className="text-xl text-slate-400 font-sans font-light leading-relaxed max-w-md">
+                Looking for new challenges or just a technical chat? My inbox is always active.
+              </p>
+            </div>
 
-            {status.message && (
-              <div className={`flex items-center gap-3 p-4 mb-6 rounded-xl animate-fade-in-up ${
-                status.type === 'success' 
-                  ? 'bg-green-500/10 border border-green-500/20 text-green-400'
-                  : 'bg-red-500/10 border border-red-500/20 text-red-400'
-              }`}>
-                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  {status.type === 'success' ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  )}
-                </svg>
-                {status.message}
-              </div>
-            )}
-
-            <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
-              {/* Honeypot field - hidden from users, visible to bots */}
-              <div style={{ position: 'absolute', left: '-9999px', opacity: 0 }} aria-hidden="true">
-                <input
-                  type="text"
-                  name="website"
-                  tabIndex={-1}
-                  autoComplete="off"
-                  value={honeypot}
-                  onChange={(e) => setHoneypot(e.target.value)}
-                />
-              </div>
-
-              <div className="group">
-                <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-2 transition-colors group-focus-within:text-accent-400">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  onKeyDown={handleKeyDown}
-                  required
-                  maxLength={100}
-                  autoComplete="name"
-                  className="w-full px-4 py-3 bg-dark-700 border border-dark-500 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-accent-500 transition-all duration-300"
-                  placeholder="Your name"
-                />
-              </div>
-
-              <div className="group">
-                <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2 transition-colors group-focus-within:text-accent-400">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  onKeyDown={handleKeyDown}
-                  required
-                  maxLength={254}
-                  autoComplete="email"
-                  className="w-full px-4 py-3 bg-dark-700 border border-dark-500 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-accent-500 transition-all duration-300"
-                  placeholder="your@email.com"
-                />
-              </div>
-
-              <div className="group">
-                <label htmlFor="message" className="block text-sm font-medium text-slate-300 mb-2 transition-colors group-focus-within:text-accent-400">
-                  Message
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  onKeyDown={handleKeyDown}
-                  required
-                  rows={5}
-                  maxLength={5000}
-                  autoComplete="off"
-                  className="w-full px-4 py-3 bg-dark-700 border border-dark-500 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-accent-500 transition-all duration-300 resize-none"
-                  placeholder="Your message..."
-                />
-                <p className="text-xs text-slate-500 mt-1 text-right">
-                  {formData.message.length}/5000
-                </p>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full px-6 py-4 text-lg font-semibold text-white bg-gradient-to-r from-accent-500 to-accent-600 rounded-xl transition-all duration-500 hover:shadow-lg hover:shadow-accent-500/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98]"
+            <div className="space-y-8 group/focus">
+              <a
+                href={`mailto:${siteConfig.email}`}
+                className="group flex items-center gap-6 p-6 bg-dark-900 border border-white/5 rounded-3xl transition-all duration-500 group-hover/focus:blur-[1px] group-hover/focus:opacity-60 hover:!blur-none hover:!opacity-100 hover:scale-[1.03] hover:border-accent-400/30 card-hover overflow-hidden relative"
               >
-                {isSubmitting ? (
-                  <>
-                    <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Sending...
-                  </>
-                ) : (
-                  'Send Message'
-                )}
-              </button>
-            </form>
-          </div>
+                {/* Subtle shine on hover */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out pointer-events-none"></div>
 
-          {/* Contact info */}
-          <div className="flex flex-col justify-center">
-            <div className="space-y-8">
-              <div>
-                <h3 className="text-xl font-semibold text-white mb-4">Let's Connect</h3>
-                <p className="text-slate-400 leading-relaxed">
-                  I'm always open to discussing new projects, creative ideas, or opportunities 
-                  to be part of something amazing. Whether you have a question or just want to 
-                  say hi, I'll try my best to get back to you!
-                </p>
-              </div>
+                <div className="w-14 h-14 flex items-center justify-center bg-accent-400/10 text-accent-400 group-hover:bg-accent-400 group-hover:text-dark-950 transition-all duration-500 rounded-2xl shadow-lg shadow-accent-400/10 group-hover:scale-110">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase font-black text-slate-500 tracking-widest font-mono mb-1">EMAIL</div>
+                  <div className="text-lg text-white group-hover:text-accent-400 font-bold transition-colors font-sans">{siteConfig.email}</div>
+                </div>
+              </a>
 
-              <div className="space-y-4">
-                <a 
-                  href={`mailto:${siteConfig.email}`}
-                  onClick={playClick}
-                  className="flex items-center gap-4 text-slate-300 hover:text-accent-400 transition-all duration-300 group"
-                >
-                  <div className="w-12 h-12 flex items-center justify-center bg-dark-700 rounded-xl border border-dark-600 group-hover:border-accent-500/50 group-hover:scale-110 transition-all duration-300">
-                    <svg className="w-5 h-5 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">Email</p>
-                    <p>{siteConfig.email}</p>
-                  </div>
-                </a>
+              <div className="group flex items-center justify-between p-6 bg-dark-900/50 border border-white/5 rounded-3xl transition-all duration-500 group-hover/focus:blur-[1px] group-hover/focus:opacity-60 hover:!blur-none hover:!opacity-100 hover:scale-[1.03] card-hover overflow-hidden relative">
+                {/* Subtle shine on hover */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out pointer-events-none"></div>
 
-                <div className="flex items-center gap-4 text-slate-300">
-                  <div className="w-12 h-12 flex items-center justify-center bg-dark-700 rounded-xl border border-dark-600">
-                    <svg className="w-5 h-5 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center gap-6">
+                  <div className="w-14 h-14 flex items-center justify-center bg-cyan-400/10 text-cyan-400 rounded-2xl transition-all duration-500 group-hover:bg-cyan-400 group-hover:text-dark-950 group-hover:scale-110 shadow-lg group-hover:shadow-cyan-400/20">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500">Location</p>
-                    <p>{siteConfig.location}</p>
+                    <div className="text-[10px] uppercase font-black text-slate-500 tracking-widest font-mono mb-1">LOCATION</div>
+                    <div className="text-lg text-white font-bold font-sans">{siteConfig.location}</div>
                   </div>
                 </div>
               </div>
 
-              {/* Social links */}
-              <div>
-                <p className="text-sm text-slate-500 mb-4">Follow me on</p>
-                <div className="flex gap-4">
-                  {socialIcons.map((link) => (
-                    <a
-                      key={link.name}
-                      href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={playClick}
-                      className="w-12 h-12 flex items-center justify-center bg-dark-700 rounded-xl border border-dark-600 text-slate-400 hover:text-accent-400 hover:border-accent-500/50 transition-all duration-300 hover:scale-110 active:scale-95"
-                      aria-label={link.name}
-                    >
-                      {link.icon}
-                    </a>
-                  ))}
-                </div>
+              {/* Enhanced Socials */}
+              <div className="flex gap-4 pt-4 group/focus-socials">
+                {socialIconsList.map((link) => (
+                  <a
+                    key={link.name}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-12 h-12 flex items-center justify-center bg-dark-900 border border-white/10 text-slate-400 transition-all duration-500 group-hover/focus-socials:blur-[1px] group-hover/focus-socials:opacity-50 hover:!blur-none hover:!opacity-100 hover:text-accent-400 hover:border-accent-400 hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] rounded-xl hover:-translate-y-2 hover:scale-110"
+                  >
+                    {link.icon}
+                  </a>
+                ))}
               </div>
+            </div>
+          </div>
+
+          {/* Premium Form Card */}
+          <div className="relative group">
+            {/* Glow effect */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-accent-400/30 to-cyan-400/30 rounded-[3rem] blur-3xl opacity-20 group-hover:opacity-40 transition duration-1000"></div>
+
+            <div className="relative bg-dark-900 border border-white/5 p-10 rounded-[3rem] backdrop-blur-2xl shadow-2xl">
+              {/* Modern Terminal Window Bar */}
+              <div className="flex items-center justify-between mb-12">
+                <div className="flex gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-400/20"></div>
+                  <div className="w-3 h-3 rounded-full bg-yellow-400/20"></div>
+                  <div className="w-3 h-3 rounded-full bg-green-400/20"></div>
+                </div>
+                <div className="text-[10px] font-mono font-black text-slate-500 uppercase tracking-[0.4em]">Contact</div>
+              </div>
+
+              <form ref={formRef} onSubmit={handleSubmit} className="space-y-8">
+                {/* Form errors */}
+                {formErrors.length > 0 && (
+                  <div className="bg-red-500/5 border border-red-500/20 px-6 py-4 rounded-2xl mb-6">
+                    <ul className="text-red-400 text-[10px] space-y-1 font-mono font-bold">
+                      {formErrors.map((error, index) => (
+                        <li key={index}>! ERR_VAL: {error.toUpperCase()}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-mono font-black text-accent-400/60 uppercase tracking-widest ml-1">Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    onKeyDown={handleKeyDown}
+                    required
+                    placeholder="Enter your name"
+                    className="w-full px-6 py-4 bg-white/[0.03] border border-white/5 rounded-2xl text-white placeholder-slate-700 focus:border-accent-400/50 outline-none transition-all font-mono"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-mono font-black text-accent-400/60 uppercase tracking-widest ml-1">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    onKeyDown={handleKeyDown}
+                    required
+                    placeholder="Enter your email"
+                    className="w-full px-6 py-4 bg-white/[0.03] border border-white/5 rounded-2xl text-white placeholder-slate-700 focus:border-accent-400/50 outline-none transition-all font-mono"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-mono font-black text-accent-400/60 uppercase tracking-widest ml-1">Message</label>
+                  <textarea
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    onKeyDown={handleKeyDown}
+                    required
+                    rows={4}
+                    placeholder="Write your message..."
+                    className="w-full px-6 py-4 bg-white/[0.03] border border-white/5 rounded-2xl text-white placeholder-slate-700 focus:border-accent-400/50 outline-none transition-all font-mono resize-none"
+                  ></textarea>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="relative w-full py-5 btn-premium-accent rounded-2xl overflow-hidden group/btn disabled:opacity-50"
+                >
+                  {/* Premium Shine Hover Effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover/btn:translate-x-[150%] transition-transform duration-1000 ease-in-out"></div>
+
+                  <span className="relative z-10 text-white font-black text-sm uppercase tracking-[0.3em] flex items-center justify-center gap-3 drop-shadow-md">
+                    {isSubmitting ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        Sending...
+                      </>
+                    ) : (
+                      'Send Message'
+                    )}
+                  </span>
+                </button>
+
+                {status.message && (
+                  <div className={`text-center font-mono text-[10px] font-bold animate-fade-in ${status.type === 'success' ? 'text-accent-400' : 'text-red-500'}`}>
+                    &gt; {status.message.toUpperCase()}
+                  </div>
+                )}
+              </form>
             </div>
           </div>
         </div>

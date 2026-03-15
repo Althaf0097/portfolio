@@ -19,12 +19,12 @@ const Navbar = () => {
     e.preventDefault();
     playClick();
     setIsOpen(false);
-    
+
     if (href === '#') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
-    
+
     const element = document.querySelector(href);
     if (element) {
       const offsetTop = element.offsetTop - 64;
@@ -33,107 +33,113 @@ const Navbar = () => {
   };
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+    <nav className={`fixed top-0 left-1/2 -translate-x-1/2 z-50 transition-all duration-700 w-[calc(100%-2rem)] ${
       scrolled 
-        ? 'bg-dark-900/95 backdrop-blur-lg border-b border-dark-600/50 shadow-lg shadow-dark-900/50' 
-        : 'bg-dark-900/80 backdrop-blur-md border-b border-dark-600/30'
+        ? 'max-w-4xl translate-y-4 bg-dark-900/90 backdrop-blur-2xl border border-white/10 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] rounded-full py-2 px-4' 
+        : 'max-w-5xl translate-y-6 bg-transparent py-4 px-2'
     }`}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Animated Logo */}
-          <a 
-            href="#" 
+      <div className="px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-12">
+          {/* Modern Animated Logo */}
+          <a
+            href="#"
             onClick={(e) => handleNavClick(e, '#')}
-            className="group relative flex items-center gap-1"
+            className="group flex items-center gap-1.5"
           >
-            {/* Logo container with glow effect */}
-            <div className="relative">
-              {/* Glow background */}
-              <div className="absolute -inset-2 bg-gradient-to-r from-accent-500 via-cyan-400 to-accent-500 rounded-lg opacity-0 group-hover:opacity-30 blur-lg transition-all duration-500 animate-pulse"></div>
-              
-              {/* Main logo text */}
-              <span className="relative text-2xl font-black tracking-tight bg-gradient-to-r from-white via-accent-300 to-cyan-300 bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient-slow group-hover:animate-gradient-fast transition-all duration-300 group-hover:scale-110 inline-block transform">
+            <div className="relative flex items-center">
+              <span className="text-xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-300 group-hover:from-accent-400 group-hover:to-cyan-400 transition-all duration-500 font-mono drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] group-hover:drop-shadow-[0_0_20px_rgba(239,68,68,0.8)]">
                 {siteConfig.initials}
               </span>
+              <span className="text-xl font-black text-accent-400 ml-0.5 animate-pulse drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]">_</span>
             </div>
             
-            {/* Animated dot */}
-            <span className="relative flex items-center justify-center">
-              <span className="absolute w-3 h-3 bg-accent-400/30 rounded-full animate-ping"></span>
-              <span className="relative text-2xl font-black text-accent-400 group-hover:text-cyan-400 transition-colors duration-300 group-hover:animate-bounce">.</span>
-            </span>
-            
-            {/* Code brackets decoration */}
-            <span className="absolute -left-4 top-1/2 -translate-y-1/2 text-accent-400/50 font-mono text-sm opacity-0 group-hover:opacity-100 group-hover:-left-5 transition-all duration-300">&lt;</span>
-            <span className="absolute -right-4 top-1/2 -translate-y-1/2 text-accent-400/50 font-mono text-sm opacity-0 group-hover:opacity-100 group-hover:-right-5 transition-all duration-300">/&gt;</span>
+            {/* Subtle floating label for desktop */}
+            <div className="hidden sm:block overflow-hidden transition-all duration-500 max-w-0 group-hover:max-w-[100px]">
+              <span className="text-[10px] font-bold text-accent-400/50 uppercase tracking-widest pl-2 border-l border-white/10 ml-2">
+                DEVELOPER
+              </span>
+            </div>
           </a>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          {/* Desktop Navigation - Premium Pill Style */}
+          <div className="hidden md:flex items-center gap-1 bg-dark-900/50 rounded-full p-1.5 border border-white/10 shadow-inner shadow-black/50 backdrop-blur-md">
             {navLinks.map((link, index) => (
               <a
                 key={link.name}
                 href={link.href}
                 onClick={(e) => handleNavClick(e, link.href)}
-                className="relative text-sm font-medium text-slate-300 hover:text-accent-400 transition-all duration-300 link-hover"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                className="relative px-5 py-2 text-xs font-bold text-slate-400 hover:text-white transition-all duration-500 rounded-full group/nav overflow-hidden"
               >
-                {link.name}
+                {/* Background glow pill that slides in on hover */}
+                <div className="absolute inset-0 bg-accent-400/20 rounded-full blur-md opacity-0 group-hover/nav:opacity-100 transition-opacity duration-500"></div>
+                
+                {/* Border subtle glow */}
+                <div className="absolute inset-0 border border-accent-400/0 group-hover/nav:border-accent-400/40 rounded-full transition-colors duration-500"></div>
+
+                <span className="relative z-10 transition-transform duration-300 group-hover/nav:-translate-y-0.5 inline-block">{link.name}</span>
+                
+                {/* Premium active indicator line */}
+                <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-accent-400 group-hover/nav:w-6 transition-all duration-500 ease-out shadow-[0_0_10px_rgba(239,68,68,0.9)] rounded-full"></div>
               </a>
             ))}
-            <a
-              href="#contact"
-              onClick={(e) => handleNavClick(e, '#contact')}
-              className="px-4 py-2 text-sm font-medium text-white bg-accent-500 rounded-lg hover:bg-accent-600 transition-all duration-300 hover:shadow-lg hover:shadow-accent-500/25 hover:scale-105 active:scale-95"
-            >
-              Get In Touch
-            </a>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => {
-              playClick();
-              setIsOpen(!isOpen);
-            }}
-            className="md:hidden p-2 text-slate-300 hover:text-white transition-all duration-300 hover:scale-110 active:scale-95"
-            aria-label="Toggle menu"
-            aria-expanded={isOpen}
-          >
-            <svg className="w-6 h-6 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {isOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </button>
+          <div className="flex items-center gap-4">
+            <a
+              href="#contact"
+              onClick={(e) => handleNavClick(e, '#contact')}
+              className="hidden sm:flex flex-row items-center gap-2 px-6 py-2.5 btn-premium-accent text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all duration-300 rounded-xl group/btn overflow-hidden relative"
+            >
+              {/* Shine effect */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent -translate-x-[150%] group-hover/btn:translate-x-[150%] transition-transform duration-[1000ms] ease-in-out"></div>
+              
+              <svg className="w-3 h-3 relative z-10 group-hover/btn:rotate-45 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+              <span className="relative z-10 drop-shadow-md">CONNECT</span>
+            </a>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => {
+                playClick();
+                setIsOpen(!isOpen);
+              }}
+              className="md:hidden p-2 text-slate-400 hover:text-white transition-all"
+              aria-label="Toggle menu"
+            >
+              <div className="w-6 h-5 relative flex flex-col justify-between items-end">
+                <span className={`h-0.5 bg-current transition-all duration-300 ${isOpen ? 'w-6 translate-y-2 -rotate-45' : 'w-6'}`}></span>
+                <span className={`h-0.5 bg-current transition-all duration-300 ${isOpen ? 'opacity-0' : 'w-4'}`}></span>
+                <span className={`h-0.5 bg-current transition-all duration-300 ${isOpen ? 'w-6 -translate-y-2 rotate-45' : 'w-5'}`}></span>
+              </div>
+            </button>
+          </div>
         </div>
 
-        {/* Mobile Navigation */}
-        <div className={`md:hidden overflow-hidden transition-all duration-500 ease-out ${isOpen ? 'max-h-80 pb-4 opacity-100' : 'max-h-0 opacity-0'}`}>
-          <div className="flex flex-col gap-2 pt-2">
+        {/* Mobile Navigation Dropdown */}
+        <div className={`md:hidden overflow-hidden transition-all duration-700 cubic-bezier(0.16, 1, 0.3, 1) ${isOpen ? 'max-h-[500px] py-4 opacity-100 translate-y-0' : 'max-h-0 opacity-0 -translate-y-4'}`}>
+          <div className="flex flex-col gap-2 border-t border-white/10 pt-4 mt-2 bg-dark-900/50 backdrop-blur-xl rounded-b-3xl -mx-4 px-4 pb-6 shadow-2xl">
             {navLinks.map((link, index) => (
               <a
                 key={link.name}
                 href={link.href}
                 onClick={(e) => handleNavClick(e, link.href)}
-                className="px-4 py-3 text-sm font-medium text-slate-300 hover:text-accent-400 hover:bg-dark-700/50 rounded-lg transition-all duration-300 hover:translate-x-2"
-                style={{ 
-                  transitionDelay: isOpen ? `${index * 50}ms` : '0ms',
-                  opacity: isOpen ? 1 : 0,
-                  transform: isOpen ? 'translateX(0)' : 'translateX(-10px)'
-                }}
+                className="relative px-6 py-4 text-lg font-bold text-slate-400 hover:text-white transition-all duration-300 flex items-center justify-between group rounded-2xl overflow-hidden"
               >
-                {link.name}
+                <div className="absolute inset-0 bg-accent-400/0 group-hover:bg-accent-400/10 transition-colors duration-300"></div>
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 bg-accent-400 group-hover:h-full transition-all duration-300 shadow-[0_0_10px_rgba(239,68,68,0.8)]"></div>
+                <span className="relative z-10 group-hover:translate-x-2 transition-transform duration-300">{link.name}</span>
+                <span className="text-xs font-mono opacity-20 group-hover:opacity-100 group-hover:text-accent-400 transition-all duration-300">0{index + 1}</span>
               </a>
             ))}
             <a
               href="#contact"
               onClick={(e) => handleNavClick(e, '#contact')}
-              className="mx-4 mt-2 px-4 py-3 text-sm font-medium text-center text-white bg-accent-500 rounded-lg hover:bg-accent-600 transition-all duration-300 active:scale-95"
+              className="relative mt-4 mx-2 py-4 px-6 btn-premium-accent text-center font-black uppercase tracking-[0.2em] text-xs rounded-2xl transition-all shadow-xl hover:scale-[1.02] overflow-hidden group/mobibtn"
             >
-              Get In Touch
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent -translate-x-[150%] group-hover/mobibtn:translate-x-[150%] transition-transform duration-[1000ms] ease-in-out"></div>
+              <span className="relative z-10 drop-shadow-md">Contact Me</span>
             </a>
           </div>
         </div>

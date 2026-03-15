@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import { Preload } from '@react-three/drei';
 import ParticleField from './ParticleField';
 import FloatingShapes from './FloatingShapes';
+import FloatingIcons from './FloatingIcons';
 import useReducedMotion from '../../utils/useReducedMotion';
 
 /**
@@ -51,10 +52,10 @@ const Scene3D = () => {
         pointerEvents: 'none', // Allow clicks to pass through
       }}
     >
-      {/* Ambient lighting */}
-      <ambientLight intensity={0.3} />
-      <pointLight position={[10, 10, 10]} intensity={0.5} color="#6366f1" />
-      <pointLight position={[-10, -10, -10]} intensity={0.3} color="#22d3ee" />
+      {/* Ambient lighting - Classic Hacker Aura */}
+      <ambientLight intensity={0.4} />
+      <pointLight position={[10, 10, 10]} intensity={2} color="#00ff41" />
+      <pointLight position={[-10, -10, -10]} intensity={1.5} color="#00f2ff" />
 
       <Suspense fallback={null}>
         {/* Particle system */}
@@ -62,6 +63,9 @@ const Scene3D = () => {
 
         {/* Floating geometric shapes */}
         <FloatingShapes />
+        
+        {/* Floating Tech Icons */}
+        <FloatingIcons />
 
         {/* Preload all assets */}
         <Preload all />

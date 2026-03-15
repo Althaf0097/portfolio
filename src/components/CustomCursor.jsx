@@ -3,91 +3,113 @@ import { gsap } from 'gsap';
 
 const CustomCursor = () => {
   const cursorRef = useRef(null);
-  const followerRef = useRef(null);
+  const plusRef = useRef(null);
+  const lineRefs = useRef([]);
+  const mouse = useRef({ x: 0, y: 0 });
+  const pos = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
-    // Disable custom cursor on touch devices for better UX
     if (window.matchMedia("(pointer: coarse)").matches) return;
-
-    // Hide native cursor only when custom cursor is active
     document.body.classList.add('custom-cursor-active');
 
     const cursor = cursorRef.current;
-    const follower = followerRef.current;
+    const plusContainer = plusRef.current;
+
+    gsap.set([cursor, plusContainer], { xPercent: -50, yPercent: -50 });
 
     const onMouseMove = (e) => {
-      const { clientX, clientY } = e;
-      
-      // Core dot follows immediately
+      mouse.current = { x: e.clientX, y: e.clientY };
+
+      // Core dot tracking (instant)
       gsap.to(cursor, {
-        x: clientX,
-        y: clientY,
+        x: mouse.current.x,
+        y: mouse.current.y,
         duration: 0.1,
         ease: 'power2.out',
       });
+    };
 
-      // Tail/Glow ring follows with smooth inertia
-      gsap.to(follower, {
-        x: clientX,
-        y: clientY,
-        duration: 0.5,
-        ease: 'power3.out',
+    const tick = () => {
+      // Elastic smoothing for the tactical plus
+      const dt = 1.0 - Math.pow(1.0 - 0.15, gsap.ticker.deltaRatio());
+      pos.current.x += (mouse.current.x - pos.current.x) * dt;
+      pos.current.y += (mouse.current.y - pos.current.y) * dt;
+
+      const vx = mouse.current.x - pos.current.x;
+      const vy = mouse.current.y - pos.current.y;
+      const velocity = Math.sqrt(vx * vx + vy * vy);
+
+      // Rotate the plus sign based on speed
+      const baseRotation = velocity * 0.5;
+
+      gsap.set(plusContainer, {
+        x: pos.current.x,
+        y: pos.current.y,
+        rotation: `+=${0.5 + baseRotation * 0.05}`, // Constant slow spin + speed spin
       });
     };
 
+    gsap.ticker.add(tick);
+
     const onMouseDown = () => {
-      gsap.to([cursor, follower], { scale: 0.7, duration: 0.2 });
+      gsap.to(lineRefs.current, { 
+        padding: '2px', 
+        duration: 0.2, 
+        backgroundColor: '#2831d4' 
+      });
     };
 
     const onMouseUp = () => {
-      gsap.to([cursor, follower], { scale: 1, duration: 0.2 });
+      gsap.to(lineRefs.current, { 
+        padding: '0px', 
+        duration: 0.3, 
+        backgroundColor: '#1e40af' 
+      });
     };
 
-    // Global listener for interactive elements
     const handleLinkHover = () => {
-      const interactiveElements = document.querySelectorAll('a, button, .group, .card-hover');
+      const targets = document.querySelectorAll('a, button, .group, [role="button"]');
       
-      const onMouseEnter = () => {
-        gsap.to(follower, {
-          scale: 3.5,
-          backgroundColor: 'rgba(255, 0, 0, 0.15)',
-          borderColor: 'rgba(255, 0, 0, 0.6)',
-          duration: 0.4,
-          ease: 'back.out(1.7)'
-        });
+      const onEnter = () => {
+        // Expand lines outwards
+        gsap.to(lineRefs.current[0], { y: -12, height: 12, duration: 0.4, ease: 'back.out(2)' });
+        gsap.to(lineRefs.current[1], { y: 12, height: 12, duration: 0.4, ease: 'back.out(2)' });
+        gsap.to(lineRefs.current[2], { x: -12, width: 12, duration: 0.4, ease: 'back.out(2)' });
+        gsap.to(lineRefs.current[3], { x: 12, width: 12, duration: 0.4, ease: 'back.out(2)' });
+        
         gsap.to(cursor, { 
-          scale: 0.6, 
-          backgroundColor: '#ff3333',
-          boxShadow: '0 0 20px #ff0000',
+          scale: 0.5, 
+          backgroundColor: '#ffffff', 
+          boxShadow: '0 0 15px #2563eb',
           duration: 0.3 
         });
+        gsap.to(lineRefs.current, { backgroundColor: '#3b82f6', duration: 0.3 });
       };
 
-      const onMouseLeave = () => {
-        gsap.to(follower, {
-          scale: 1,
-          backgroundColor: 'transparent',
-          borderColor: 'rgba(255, 0, 0, 0.4)',
-          duration: 0.4,
-          ease: 'power2.out'
-        });
+      const onLeave = () => {
+        // Reset to compact plus
+        gsap.to(lineRefs.current, { x: 0, y: 0, width: 8, height: 8, duration: 0.4, ease: 'power2.out' });
+        // Restore specific dimensions
+        gsap.to([lineRefs.current[0], lineRefs.current[1]], { width: 1.5, height: 8, backgroundColor: '#1e40af' });
+        gsap.to([lineRefs.current[2], lineRefs.current[3]], { width: 8, height: 1.5, backgroundColor: '#1e40af' });
+        
         gsap.to(cursor, { 
           scale: 1, 
-          backgroundColor: '#ff0000',
-          boxShadow: '0 0 15px #ff0000',
+          backgroundColor: '#2831d4', 
+          boxShadow: '0 0 10px #2831d4, 0 0 15px rgba(40, 49, 212, 0.4)',
           duration: 0.3 
         });
       };
 
-      interactiveElements.forEach(el => {
-        el.addEventListener('mouseenter', onMouseEnter);
-        el.addEventListener('mouseleave', onMouseLeave);
+      targets.forEach(el => {
+        el.addEventListener('mouseenter', onEnter);
+        el.addEventListener('mouseleave', onLeave);
       });
 
       return () => {
-        interactiveElements.forEach(el => {
-          el.removeEventListener('mouseenter', onMouseEnter);
-          el.removeEventListener('mouseleave', onMouseLeave);
+        targets.forEach(el => {
+          el.removeEventListener('mouseenter', onEnter);
+          el.removeEventListener('mouseleave', onLeave);
         });
       };
     };
@@ -95,11 +117,11 @@ const CustomCursor = () => {
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mousedown', onMouseDown);
     window.addEventListener('mouseup', onMouseUp);
-    
     const cleanupHovers = handleLinkHover();
 
     return () => {
       document.body.classList.remove('custom-cursor-active');
+      gsap.ticker.remove(tick);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mouseup', onMouseUp);
@@ -109,22 +131,47 @@ const CustomCursor = () => {
 
   return (
     <>
+      {/* Tactical Core Dot */}
       <div 
         ref={cursorRef} 
-        className="fixed top-0 left-0 w-2.5 h-2.5 bg-red-500 rounded-full pointer-events-none z-[9999] -translate-x-1/2 -translate-y-1/2"
+        className="fixed top-0 left-0 w-1.5 h-1.5 bg-blue-700 rounded-full pointer-events-none z-[9999]"
         style={{ 
-          transition: 'background-color 0.3s ease',
-          boxShadow: '0 0 10px #ff0000, 0 0 20px #ff0000, 0 0 30px #ff0000'
+          backgroundColor: '#2831d4',
+          boxShadow: '0 0 10px #2831d4, 0 0 15px rgba(40, 49, 212, 0.4)',
+          willChange: 'transform'
         }}
       />
+      
+      {/* Tactical Plus Sign Container */}
       <div 
-        ref={followerRef} 
-        className="fixed top-0 left-0 w-10 h-10 border-2 border-red-500/50 rounded-full pointer-events-none z-[9998] -translate-x-1/2 -translate-y-1/2"
-        style={{ 
-          boxShadow: '0 0 20px rgba(255, 0, 0, 0.4), 0 0 40px rgba(255, 0, 0, 0.2)',
-          backdropFilter: 'blur(4px)'
-        }}
-      />
+        ref={plusRef} 
+        className="fixed top-0 left-0 w-8 h-8 pointer-events-none z-[9998] flex items-center justify-center"
+      >
+        {/* Top Line */}
+        <div 
+          ref={el => lineRefs.current[0] = el}
+          className="absolute w-[1.5px] h-2 bg-blue-600/80 -translate-y-2 origin-bottom brightness-125"
+          style={{ backgroundColor: '#1e40af', boxShadow: '0 0 8px rgba(40, 49, 212, 0.6)' }}
+        />
+        {/* Bottom Line */}
+        <div 
+          ref={el => lineRefs.current[1] = el}
+          className="absolute w-[1.5px] h-2 bg-blue-600/80 translate-y-2 origin-top brightness-125"
+          style={{ backgroundColor: '#1e40af', boxShadow: '0 0 8px rgba(40, 49, 212, 0.6)' }}
+        />
+        {/* Left Line */}
+        <div 
+          ref={el => lineRefs.current[2] = el}
+          className="absolute w-2 h-[1.5px] bg-blue-600/80 -translate-x-2 origin-right brightness-125"
+          style={{ backgroundColor: '#1e40af', boxShadow: '0 0 8px rgba(40, 49, 212, 0.6)' }}
+        />
+        {/* Right Line */}
+        <div 
+          ref={el => lineRefs.current[3] = el}
+          className="absolute w-2 h-[1.5px] bg-blue-600/80 translate-x-2 origin-left brightness-125"
+          style={{ backgroundColor: '#1e40af', boxShadow: '0 0 8px rgba(40, 49, 212, 0.6)' }}
+        />
+      </div>
     </>
   );
 };

@@ -172,8 +172,8 @@ const Contact = () => {
                 href={`mailto:${siteConfig.email}`}
                 className="group relative flex items-center gap-6 p-6 glass-premium rounded-[2rem] transition-all duration-700 group-hover/focus:opacity-40 hover:!opacity-100 hover:scale-[1.03] border border-white/5 hover:border-accent-400/40 overflow-hidden"
               >
-                {/* Subtle shine on hover */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out pointer-events-none"></div>
+                {/* Premium Shine Effect */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-[1200ms] ease-in-out pointer-events-none"></div>
 
                 <div className="w-14 h-14 flex items-center justify-center bg-accent-400/10 text-accent-400 group-hover:bg-accent-400 group-hover:text-dark-950 transition-all duration-500 rounded-2xl shadow-xl group-hover:shadow-accent-400/20 group-hover:scale-110">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -187,6 +187,8 @@ const Contact = () => {
               </a>
 
               <div className="group relative flex items-center justify-between p-6 glass-premium rounded-[2rem] transition-all duration-700 group-hover/focus:opacity-40 hover:!opacity-100 hover:scale-[1.03] border border-white/5 overflow-hidden">
+                {/* Premium Shine Effect */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-[1200ms] ease-in-out pointer-events-none"></div>
                 <div className="flex items-center gap-6">
                   <div className="w-14 h-14 flex items-center justify-center bg-blue-400/10 text-blue-400 rounded-2xl transition-all duration-500 group-hover:bg-blue-400 group-hover:text-dark-950 group-hover:scale-110 shadow-xl group-hover:shadow-blue-400/20">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -224,6 +226,8 @@ const Contact = () => {
             <div className="absolute -inset-4 bg-gradient-to-r from-accent-400/10 to-blue-400/10 rounded-[4rem] blur-3xl opacity-0 group-hover:opacity-100 transition duration-1000"></div>
 
             <div className="relative glass-premium border border-white/10 p-10 rounded-[2.5rem] shadow-2xl backdrop-blur-3xl overflow-hidden">
+              {/* Premium Shine Effect */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-[1500ms] ease-in-out pointer-events-none z-10"></div>
               {/* Window Controls Decor */}
               <div className="flex items-center justify-between mb-8">
                 <div className="flex gap-2">

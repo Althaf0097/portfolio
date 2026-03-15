@@ -56,10 +56,10 @@ const Navbar = () => {
             className="group flex items-center gap-1.5"
           >
             <div className="relative flex items-center">
-              <span className="text-xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-200 group-hover:from-accent-400 group-hover:to-accent-600 transition-all duration-500 font-mono drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+              <span className="text-2xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-200 group-hover:from-accent-400 group-hover:to-accent-600 transition-all duration-500 font-mono drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
                 {siteConfig.initials}
               </span>
-              <span className="text-xl font-black text-accent-400 ml-0.5 animate-pulse">_</span>
+              <span className="text-2xl font-black text-accent-400 ml-0.5 animate-pulse">_</span>
             </div>
           </a>
 
@@ -70,7 +70,7 @@ const Navbar = () => {
                 key={link.name}
                 href={link.href}
                 onClick={(e) => handleNavClick(e, link.href)}
-                className="relative px-5 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-all duration-500 rounded-full group/nav overflow-hidden"
+                className="relative px-5 py-2 text-xs font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-all duration-500 rounded-full group/nav overflow-hidden"
               >
                 {/* Background glow pill that slides in on hover */}
                 <div className="absolute inset-0 bg-accent-400/10 rounded-full blur-md opacity-0 group-hover/nav:opacity-100 transition-opacity duration-500"></div>
@@ -87,7 +87,7 @@ const Navbar = () => {
             <a
               href="#contact"
               onClick={(e) => handleNavClick(e, '#contact')}
-              className="hidden sm:flex flex-row items-center gap-2 px-6 py-2.5 glass-premium-accent text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all duration-300 rounded-xl group/btn overflow-hidden relative shadow-lg shadow-accent-400/5 hover:shadow-accent-400/20"
+              className="hidden sm:flex flex-row items-center gap-2 px-6 py-2.5 glass-premium-accent text-xs font-black uppercase tracking-widest hover:scale-105 transition-all duration-300 rounded-xl group/btn overflow-hidden relative shadow-lg shadow-accent-400/5 hover:shadow-accent-400/20"
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover/btn:translate-x-[150%] transition-transform duration-[1000ms] ease-in-out"></div>
               <span className="relative z-10">CONNECT</span>
@@ -119,7 +119,7 @@ const Navbar = () => {
                 key={link.name}
                 href={link.href}
                 onClick={(e) => handleNavClick(e, link.href)}
-                className="relative px-6 py-4 text-sm font-black text-slate-400 hover:text-white transition-all duration-300 flex items-center justify-between group rounded-2xl overflow-hidden uppercase tracking-widest"
+                className="relative px-6 py-4 text-base font-black text-slate-400 hover:text-white transition-all duration-300 flex items-center justify-between group rounded-2xl overflow-hidden uppercase tracking-widest"
               >
                 <div className="absolute inset-0 bg-accent-400/0 group-hover:bg-accent-400/5 transition-colors duration-300"></div>
                 <span className="relative z-10 group-hover:translate-x-2 transition-transform duration-300">{link.name}</span>

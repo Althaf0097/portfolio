@@ -32,14 +32,16 @@ const About = () => {
             <div className="relative group">
               {/* Outer Glow */}
               <div className="absolute -inset-2 bg-gradient-to-r from-accent-400/20 to-blue-400/20 rounded-[2rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+              <div className="relative glass-premium border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl backdrop-blur-3xl bg-dark-900/60">
+                {/* Premium Shine Effect */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-[1200ms] ease-in-out z-20 pointer-events-none"></div>
 
-              <div className="relative bg-dark-900/60 border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden backdrop-blur-3xl glass-premium">
                 {/* Modern Window Controls */}
                 <div className="bg-white/5 px-6 py-4 flex items-center justify-between border-b border-white/5">
                   <div className="flex gap-2">
-                    <div className="w-3.5 h-3.5 rounded-full bg-[#ff5f56]/20"></div>
-                    <div className="w-3.5 h-3.5 rounded-full bg-[#ffbd2e]/20"></div>
-                    <div className="w-3.5 h-3.5 rounded-full bg-[#27c93f]/20"></div>
+                    <div className="w-3.5 h-3.5 rounded-full bg-[#ff5f56]/20 group-hover:bg-[#ff5f56]/40 transition-colors"></div>
+                    <div className="w-3.5 h-3.5 rounded-full bg-[#ffbd2e]/20 group-hover:bg-[#ffbd2e]/40 transition-colors"></div>
+                    <div className="w-3.5 h-3.5 rounded-full bg-[#27c93f]/20 group-hover:bg-[#27c93f]/40 transition-colors"></div>
                   </div>
                   <span className="text-[10px] font-mono text-slate-500 font-black uppercase tracking-[0.4em]">INIT://DATA</span>
                 </div>
@@ -93,8 +95,8 @@ const About = () => {
                 { label: 'Nodes', val: aboutContent.stats.clients, icon: '🌐' }
               ].map((stat, i) => (
                 <div key={i} className="group relative p-6 glass-premium rounded-3xl transition-all duration-700 group-hover/focus:opacity-40 hover:!opacity-100 hover:scale-[1.05] text-center overflow-hidden border border-white/5 hover:border-accent-400/40">
-                  {/* Subtle shine on hover */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out"></div>
+                  {/* Premium Shine Effect */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-1000 ease-in-out pointer-events-none"></div>
                   <span className="block text-2xl mb-3 opacity-30 group-hover:opacity-100 group-hover:scale-125 transition-all duration-500">{stat.icon}</span>
                   <div className="text-2xl sm:text-3xl font-black text-white mb-2 group-hover:text-accent-400 transition-colors duration-500 font-sans">{stat.val}</div>
                   <div className="text-[10px] uppercase font-mono font-black text-slate-500 tracking-[0.3em]">{stat.label}</div>

@@ -39,8 +39,8 @@ const Projects = () => {
               <div className="absolute -inset-1 bg-gradient-to-r from-accent-400/10 to-blue-400/10 rounded-[2.5rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
 
               <div className="relative flex flex-col h-full glass-premium border border-white/5 rounded-[2rem] p-6 backdrop-blur-3xl hover:border-accent-400/30 transition-all duration-500 overflow-hidden">
-                {/* Sleek shine effect */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-[1500ms] ease-out pointer-events-none"></div>
+                  {/* Premium Shine Effect */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-[1200ms] ease-in-out pointer-events-none z-20"></div>
 
                 {/* Modern Project Status Bar */}
                 <div className="flex justify-between items-center mb-6">
@@ -53,11 +53,11 @@ const Projects = () => {
                 </div>
 
                 <div className="mb-6">
-                  <h3 className="text-xl font-black text-white mb-2 tracking-tight group-hover:text-accent-400 transition-colors duration-500 font-sans uppercase">
+                  <h3 className="text-2xl font-black text-white mb-3 tracking-tight group-hover:text-accent-400 transition-colors duration-500 font-sans uppercase">
                     {project.title}
                   </h3>
                   <div className="h-0.5 w-10 bg-accent-400/20 mb-4 group-hover:w-full transition-all duration-1000"></div>
-                  <p className="text-sm text-slate-400 leading-relaxed font-sans font-light tracking-tight">
+                  <p className="text-base text-slate-400 leading-relaxed font-sans font-light tracking-tight">
                     {project.description}
                   </p>
                 </div>
@@ -67,7 +67,7 @@ const Projects = () => {
                   {project.tech.map((tech) => (
                     <span
                       key={tech}
-                      className="px-3.5 py-1.5 text-[9px] font-black text-slate-400 border border-white/10 rounded-xl group-hover:border-blue-400/40 group-hover:text-blue-400 group-hover:bg-blue-400/5 transition-all duration-300 font-mono uppercase tracking-[0.15em]"
+                      className="px-3.5 py-1.5 text-[10px] font-black text-slate-400 border border-white/10 rounded-xl group-hover:border-blue-400/40 group-hover:text-blue-400 group-hover:bg-blue-400/5 transition-all duration-300 font-mono uppercase tracking-[0.15em]"
                     >
                       {tech}
                     </span>

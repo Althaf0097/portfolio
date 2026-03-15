@@ -1,31 +1,33 @@
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech&family=Bebas+Neue&family=Roboto:wght@300;400;500;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Share+Tech&family=Bebas+Neue&family=Roboto:wght@300;400;500;700;900&display=swap');
 @import "tailwindcss";
 
 /* Modern Minimal Theme Configuration */
+/* @theme is a Tailwind v4 feature, ignoring lint warning for modern CSS */
 @theme {
   --font-sans: "Share Tech", "Bebas Neue", system-ui, sans-serif;
   --font-heading: "Roboto", sans-serif;
+  --font-archivo: "Archivo Black", sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", monospace;
 
-  --color-dark-950: #0d0202;
+  --color-dark-950: #0a0b1e;
   /* Deep Burgundy Black */
-  --color-dark-900: #1a0505;
+  --color-dark-900: #0f172a;
   /* Deep Maroon */
-  --color-dark-800: #2c0b0f;
+  --color-dark-800: #1e293b;
   /* Reddish Charcoal */
-  --color-dark-700: #3a1519;
+  --color-dark-700: #334155;
   /* Component bg */
-  --color-dark-600: #4a1d22;
+  --color-dark-600: #475569;
   /* Subtle borders */
 
-  --color-accent-400: #ef4444;
+  --color-accent-400: #3b82f6;
   /* Indigo 500 */
-  --color-accent-500: #dc2626;
+  --color-accent-500: #2563eb;
   /* Indigo 600 */
-  --color-cyan-400: #f97316;
+  --color-blue-400: #06b6d4;
   /* Sky 400 */
-  --color-accent-glow: rgba(239, 68, 68, 0.15);
-  --color-cyan-glow: rgba(249, 115, 22, 0.15);
+  --color-accent-glow: rgba(59, 130, 246, 0.15);
+  --color-cyan-glow: rgba(6, 182, 212, 0.15);
 }
 
 /* Base styles */
@@ -36,10 +38,10 @@ html {
 body {
   font-family: var(--font-sans);
   background:
-    radial-gradient(circle at 15% 50%, rgba(239, 68, 68, 0.12) 0%, transparent 45%),
-    radial-gradient(circle at 85% 30%, rgba(249, 115, 22, 0.1) 0%, transparent 45%),
+    radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 85% 30%, rgba(6, 182, 212, 0.1) 0%, transparent 45%),
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E"),
-    linear-gradient(135deg, #0d0202 0%, #1a0505 50%, #2c0b0f 100%);
+    linear-gradient(135deg, #0a0b1e 0%, #0f172a 50%, #1e293b 100%);
   color: #e2e8f0;
   line-height: 1.6;
   cursor: crosshair;
@@ -78,8 +80,8 @@ body {
 
 .hover-lift:hover {
   transform: translateY(-8px) scale(1.015);
-  box-shadow: 0 20px 40px -10px rgba(239, 68, 68, 0.25), 0 0 20px -5px rgba(249, 115, 22, 0.15);
-  border-color: rgba(239, 68, 68, 0.3);
+  box-shadow: 0 20px 40px -10px rgba(59, 130, 246, 0.25), 0 0 20px -5px rgba(6, 182, 212, 0.15);
+  border-color: rgba(59, 130, 246, 0.3);
 }
 
 .text-glow-hover {
@@ -95,14 +97,14 @@ body {
 .btn-premium-accent {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 100%), var(--color-accent-500);
   border: 1px solid var(--color-accent-400);
-  box-shadow: 0 4px 20px -5px rgba(239, 68, 68, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 20px -5px rgba(59, 130, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   color: #ffffff;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-premium-accent:hover {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 100%), var(--color-accent-400);
-  box-shadow: 0 8px 30px -5px rgba(239, 68, 68, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 30px -5px rgba(59, 130, 246, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
   border-color: #ffffff;
 }
@@ -117,10 +119,59 @@ body {
 
 .btn-premium:hover {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.02) 100%), var(--color-dark-700);
-  border-color: rgba(239, 68, 68, 0.5);
-  box-shadow: 0 8px 25px -5px rgba(239, 68, 68, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 8px 25px -5px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
   color: #ffffff;
+}
+
+/* Advanced Glassmorphism */
+.glass-premium {
+  background: rgba(13, 2, 2, 0.6);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    0 8px 32px 0 rgba(0, 0, 0, 0.37),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.glass-premium-accent {
+  background: rgba(59, 130, 246, 0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(59, 130, 246, 0.1);
+}
+
+/* Volumetric Lighting Pools */
+.glow-pool-emerald {
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+  filter: blur(40px);
+}
+
+.glow-pool-violet {
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.12) 0%, transparent 70%);
+  filter: blur(40px);
+}
+
+/* HUD Decorative Elements */
+.hud-line-h {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
+}
+
+.hud-line-v {
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(59, 130, 246, 0.3), transparent);
+}
+
+.hud-dot {
+  width: 3px;
+  height: 3px;
+  background: var(--color-accent-400);
+  box-shadow: 0 0 8px var(--color-accent-400);
+  border-radius: 50%;
 }
 
 .animate-smooth-reveal {
@@ -169,10 +220,6 @@ textarea {
 /* Disable image dragging */
 img {
   -webkit-user-drag: none;
-  -khtml-user-drag: none;
-  -moz-user-drag: none;
-  -o-user-drag: none;
-  user-drag: none;
   pointer-events: none;
 }
 
@@ -288,8 +335,8 @@ section {
 
 .card-hover:hover {
   transform: translateY(-8px);
-  box-shadow: 0 20px 40px -10px rgba(239, 68, 68, 0.2), 0 0 15px -3px rgba(249, 115, 22, 0.1);
-  border-color: rgba(239, 68, 68, 0.25);
+  box-shadow: 0 20px 40px -10px rgba(59, 130, 246, 0.2), 0 0 15px -3px rgba(6, 182, 212, 0.1);
+  border-color: rgba(59, 130, 246, 0.25);
   background-color: var(--color-dark-800);
 }
 
@@ -307,7 +354,7 @@ section {
   height: 2px;
   background: linear-gradient(90deg,
       var(--color-accent-400),
-      var(--color-cyan-400));
+      var(--color-blue-400));
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -409,7 +456,7 @@ section {
 /* Input focus glow */
 input:focus,
 textarea:focus {
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
   transition:
     box-shadow 0.3s ease,
     border-color 0.3s ease;
@@ -651,11 +698,11 @@ nav {
 
 /* Soft subtle shadows */
 .glow-accent {
-  box-shadow: 0 10px 30px -10px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.3);
 }
 
-.glow-cyan {
-  box-shadow: 0 10px 30px -10px rgba(249, 115, 22, 0.3);
+.glow-emerald {
+  box-shadow: 0 10px 30px -10px rgba(6, 182, 212, 0.3);
 }
 
 /* Better focus for accessibility on mobile */
@@ -689,7 +736,7 @@ body {
 
   a,
   button {
-    -webkit-tap-highlight-color: rgba(239, 68, 68, 0.2);
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2);
   }
 }
 
@@ -740,7 +787,7 @@ body {
   width: 100%;
   height: 100px;
   z-index: 30;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(239, 68, 68, 0.02) 50%, rgba(0, 0, 0, 0) 100%);
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(59, 130, 246, 0.02) 50%, rgba(0, 0, 0, 0) 100%);
   opacity: 0.1;
   position: absolute;
   bottom: 100%;
@@ -783,7 +830,7 @@ body {
 
   30% {
     transform: translate(0, 0) scale(1.5) rotate(0deg);
-    text-shadow: 0 0 20px rgba(239, 68, 68, 0.8);
+    text-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
   }
 
   100% {
@@ -816,12 +863,12 @@ body {
     transform: scaleX(1);
     height: 2px;
     background: white;
-    box-shadow: 0 0 8px #fff, 0 0 15px #ef4444;
+    box-shadow: 0 0 8px #fff, 0 0 15px #3b82f6;
   }
 
   50% {
     height: 4px;
-    box-shadow: 0 0 12px #fff, 0 0 25px #ef4444;
+    box-shadow: 0 0 12px #fff, 0 0 25px #3b82f6;
   }
 
   80% {
@@ -891,5 +938,5 @@ body {
 }
 
 .text-glow {
-  text-shadow: 0 0 10px rgba(239, 68, 68, 0.5), 0 0 20px rgba(239, 68, 68, 0.2);
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.2);
 }

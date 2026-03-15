@@ -17,8 +17,8 @@ const ParticleField = ({ count = 800, mousePosition }) => {
     const sizes = new Float32Array(count);
 
     // Theme colors
-    const accentColor = new THREE.Color('#6366f1'); // accent-500
-    const cyanColor = new THREE.Color('#22d3ee'); // cyan-400
+    const accentColor = new THREE.Color('#2563eb'); // blue-600
+    const blueColor = new THREE.Color('#06b6d4'); // cyan-400
     const whiteColor = new THREE.Color('#ffffff');
 
     for (let i = 0; i < count; i++) {
@@ -33,7 +33,7 @@ const ParticleField = ({ count = 800, mousePosition }) => {
       if (colorChoice < 0.4) {
         color = accentColor;
       } else if (colorChoice < 0.7) {
-        color = cyanColor;
+        color = blueColor;
       } else {
         color = whiteColor;
       }

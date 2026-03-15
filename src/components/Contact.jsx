@@ -140,60 +140,63 @@ const Contact = () => {
   ];
 
   return (
-    <section id="contact" className="relative py-16 md:py-20 bg-dark-950 overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent-400/5 rounded-full blur-[180px] pointer-events-none"></div>
+    <section id="contact" className="relative py-24 md:py-32 bg-dark-950 overflow-hidden">
+      {/* Volumetric background lighting */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] glow-pool-blue opacity-10 pointer-events-none"></div>
+
+      {/* Modern HUD Elements */}
+      <div className="absolute inset-0 z-[1] pointer-events-none opacity-20">
+        <div className="absolute top-1/2 left-10 h-64 hud-line-v"></div>
+        <div className="absolute top-1/2 left-10 hud-dot"></div>
+      </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 items-center">
           {/* Detailed Contact Info */}
-          <div>
-            <div className="mb-12">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-400/10 border border-accent-400/20 mb-6 animate-fade-in-up">
-                <span className="w-1.5 h-1.5 rounded-full bg-accent-400"></span>
-                <span className="text-[10px] font-mono font-bold tracking-[0.2em] text-accent-400 uppercase">Get in touch</span>
+          <div className="space-y-12">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-400/10 border border-accent-400/20 mb-6">
+                <span className="w-1.5 h-1.5 rounded-full bg-accent-400 animate-pulse"></span>
+                <span className="text-[10px] font-mono font-bold tracking-[0.2em] text-accent-400 uppercase">Communication</span>
               </div>
-              <h2 className="text-4xl sm:text-6xl font-black text-white uppercase tracking-tighter mb-8 font-sans">
-                Let's <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-400 to-cyan-400">Connect</span>
+              <h2 className="text-5xl sm:text-6xl font-black text-white uppercase tracking-tighter mb-8 font-sans">
+                Let's <span className="text-blue-400">Connect</span>
               </h2>
               <p className="text-xl text-slate-400 font-sans font-light leading-relaxed max-w-md">
-                Looking for new challenges or just a technical chat? My inbox is always active.
+                Looking for new challenges or just a technical chat? My inbox is always active for meaningful collaborations.
               </p>
             </div>
 
-            <div className="space-y-8 group/focus">
+            <div className="space-y-4 group/focus">
               <a
                 href={`mailto:${siteConfig.email}`}
-                className="group flex items-center gap-6 p-6 bg-dark-900 border border-white/5 rounded-3xl transition-all duration-500 group-hover/focus:blur-[1px] group-hover/focus:opacity-60 hover:!blur-none hover:!opacity-100 hover:scale-[1.03] hover:border-accent-400/30 card-hover overflow-hidden relative"
+                className="group relative flex items-center gap-6 p-6 glass-premium rounded-[2rem] transition-all duration-700 group-hover/focus:opacity-40 hover:!opacity-100 hover:scale-[1.03] border border-white/5 hover:border-accent-400/40 overflow-hidden"
               >
                 {/* Subtle shine on hover */}
                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out pointer-events-none"></div>
 
-                <div className="w-14 h-14 flex items-center justify-center bg-accent-400/10 text-accent-400 group-hover:bg-accent-400 group-hover:text-dark-950 transition-all duration-500 rounded-2xl shadow-lg shadow-accent-400/10 group-hover:scale-110">
+                <div className="w-14 h-14 flex items-center justify-center bg-accent-400/10 text-accent-400 group-hover:bg-accent-400 group-hover:text-dark-950 transition-all duration-500 rounded-2xl shadow-xl group-hover:shadow-accent-400/20 group-hover:scale-110">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 </div>
                 <div>
-                  <div className="text-[10px] uppercase font-black text-slate-500 tracking-widest font-mono mb-1">EMAIL</div>
+                  <div className="text-[9px] uppercase font-black text-slate-500 tracking-[0.3em] font-mono mb-1">Primary Node</div>
                   <div className="text-lg text-white group-hover:text-accent-400 font-bold transition-colors font-sans">{siteConfig.email}</div>
                 </div>
               </a>
 
-              <div className="group flex items-center justify-between p-6 bg-dark-900/50 border border-white/5 rounded-3xl transition-all duration-500 group-hover/focus:blur-[1px] group-hover/focus:opacity-60 hover:!blur-none hover:!opacity-100 hover:scale-[1.03] card-hover overflow-hidden relative">
-                {/* Subtle shine on hover */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out pointer-events-none"></div>
-
+              <div className="group relative flex items-center justify-between p-6 glass-premium rounded-[2rem] transition-all duration-700 group-hover/focus:opacity-40 hover:!opacity-100 hover:scale-[1.03] border border-white/5 overflow-hidden">
                 <div className="flex items-center gap-6">
-                  <div className="w-14 h-14 flex items-center justify-center bg-cyan-400/10 text-cyan-400 rounded-2xl transition-all duration-500 group-hover:bg-cyan-400 group-hover:text-dark-950 group-hover:scale-110 shadow-lg group-hover:shadow-cyan-400/20">
+                  <div className="w-14 h-14 flex items-center justify-center bg-blue-400/10 text-blue-400 rounded-2xl transition-all duration-500 group-hover:bg-blue-400 group-hover:text-dark-950 group-hover:scale-110 shadow-xl group-hover:shadow-blue-400/20">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                   </div>
                   <div>
-                    <div className="text-[10px] uppercase font-black text-slate-500 tracking-widest font-mono mb-1">LOCATION</div>
-                    <div className="text-lg text-white font-bold font-sans">{siteConfig.location}</div>
+                    <div className="text-[9px] uppercase font-black text-slate-500 tracking-[0.3em] font-mono mb-1">Deployment Base</div>
+                    <div className="text-lg text-white font-bold font-sans tracking-tight">{siteConfig.location}</div>
                   </div>
                 </div>
               </div>
@@ -206,7 +209,7 @@ const Contact = () => {
                     href={link.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-12 h-12 flex items-center justify-center bg-dark-900 border border-white/10 text-slate-400 transition-all duration-500 group-hover/focus-socials:blur-[1px] group-hover/focus-socials:opacity-50 hover:!blur-none hover:!opacity-100 hover:text-accent-400 hover:border-accent-400 hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] rounded-xl hover:-translate-y-2 hover:scale-110"
+                    className="w-12 h-12 flex items-center justify-center glass-premium border border-white/10 text-slate-400 transition-all duration-500 group-hover/focus-socials:opacity-50 hover:!opacity-100 hover:text-accent-400 hover:border-accent-400 hover:shadow-[0_0_30px_rgba(239,68,68,0.2)] rounded-xl hover:-translate-y-2 hover:scale-110"
                   >
                     {link.icon}
                   </a>
@@ -217,34 +220,36 @@ const Contact = () => {
 
           {/* Premium Form Card */}
           <div className="relative group">
-            {/* Glow effect */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-accent-400/30 to-cyan-400/30 rounded-[3rem] blur-3xl opacity-20 group-hover:opacity-40 transition duration-1000"></div>
+            {/* Outer Background Glow */}
+            <div className="absolute -inset-4 bg-gradient-to-r from-accent-400/10 to-blue-400/10 rounded-[4rem] blur-3xl opacity-0 group-hover:opacity-100 transition duration-1000"></div>
 
-            <div className="relative bg-dark-900 border border-white/5 p-10 rounded-[3rem] backdrop-blur-2xl shadow-2xl">
-              {/* Modern Terminal Window Bar */}
-              <div className="flex items-center justify-between mb-12">
+            <div className="relative glass-premium border border-white/10 p-10 rounded-[2.5rem] shadow-2xl backdrop-blur-3xl overflow-hidden">
+              {/* Window Controls Decor */}
+              <div className="flex items-center justify-between mb-8">
                 <div className="flex gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-400/20"></div>
-                  <div className="w-3 h-3 rounded-full bg-yellow-400/20"></div>
-                  <div className="w-3 h-3 rounded-full bg-green-400/20"></div>
+                  <div className="w-3 h-3 rounded-full bg-[#ff5f56]/20 group-hover:bg-[#ff5f56]/40 transition-colors"></div>
+                  <div className="w-3 h-3 rounded-full bg-[#ffbd2e]/20 group-hover:bg-[#ffbd2e]/40 transition-colors"></div>
+                  <div className="w-3 h-3 rounded-full bg-[#27c93f]/20 group-hover:bg-[#27c93f]/40 transition-colors"></div>
                 </div>
-                <div className="text-[10px] font-mono font-black text-slate-500 uppercase tracking-[0.4em]">Contact</div>
+                <div className="text-[9px] font-mono font-black text-slate-500 uppercase tracking-[0.5em]">Transmission::Ready</div>
               </div>
 
               <form ref={formRef} onSubmit={handleSubmit} className="space-y-8">
                 {/* Form errors */}
                 {formErrors.length > 0 && (
-                  <div className="bg-red-500/5 border border-red-500/20 px-6 py-4 rounded-2xl mb-6">
-                    <ul className="text-red-400 text-[10px] space-y-1 font-mono font-bold">
+                  <div className="bg-red-500/5 border border-red-500/20 px-6 py-5 rounded-2xl mb-8">
+                    <ul className="text-red-400 text-[10px] space-y-2 font-mono font-bold">
                       {formErrors.map((error, index) => (
-                        <li key={index}>! ERR_VAL: {error.toUpperCase()}</li>
+                        <li key={index} className="flex gap-2">
+                          <span className="opacity-50">!</span> ERR_VAL: {error.toUpperCase()}
+                        </li>
                       ))}
                     </ul>
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-mono font-black text-accent-400/60 uppercase tracking-widest ml-1">Name</label>
+                <div className="space-y-3">
+                  <label className="text-[10px] font-mono font-black text-accent-400/60 uppercase tracking-[0.2em] ml-2">Identify//Name</label>
                   <input
                     type="text"
                     name="name"
@@ -252,13 +257,13 @@ const Contact = () => {
                     onChange={handleChange}
                     onKeyDown={handleKeyDown}
                     required
-                    placeholder="Enter your name"
-                    className="w-full px-6 py-4 bg-white/[0.03] border border-white/5 rounded-2xl text-white placeholder-slate-700 focus:border-accent-400/50 outline-none transition-all font-mono"
+                    placeholder="Subject Name"
+                    className="w-full px-8 py-5 bg-white/[0.02] border border-white/5 rounded-2xl text-white placeholder-slate-700 focus:border-accent-400/40 focus:bg-accent-400/[0.02] outline-none transition-all font-mono text-sm"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-mono font-black text-accent-400/60 uppercase tracking-widest ml-1">Email</label>
+                <div className="space-y-3">
+                  <label className="text-[10px] font-mono font-black text-accent-400/60 uppercase tracking-[0.2em] ml-2">Response//Email</label>
                   <input
                     type="email"
                     name="email"
@@ -266,13 +271,13 @@ const Contact = () => {
                     onChange={handleChange}
                     onKeyDown={handleKeyDown}
                     required
-                    placeholder="Enter your email"
-                    className="w-full px-6 py-4 bg-white/[0.03] border border-white/5 rounded-2xl text-white placeholder-slate-700 focus:border-accent-400/50 outline-none transition-all font-mono"
+                    placeholder="domain@uplink.com"
+                    className="w-full px-8 py-5 bg-white/[0.02] border border-white/5 rounded-2xl text-white placeholder-slate-700 focus:border-accent-400/40 focus:bg-accent-400/[0.02] outline-none transition-all font-mono text-sm"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-mono font-black text-accent-400/60 uppercase tracking-widest ml-1">Message</label>
+                <div className="space-y-3">
+                  <label className="text-[10px] font-mono font-black text-accent-400/60 uppercase tracking-[0.2em] ml-2">Manifest//Message</label>
                   <textarea
                     name="message"
                     value={formData.message}
@@ -280,36 +285,36 @@ const Contact = () => {
                     onKeyDown={handleKeyDown}
                     required
                     rows={4}
-                    placeholder="Write your message..."
-                    className="w-full px-6 py-4 bg-white/[0.03] border border-white/5 rounded-2xl text-white placeholder-slate-700 focus:border-accent-400/50 outline-none transition-all font-mono resize-none"
+                    placeholder="Describe your objective..."
+                    className="w-full px-8 py-5 bg-white/[0.02] border border-white/5 rounded-2xl text-white placeholder-slate-700 focus:border-accent-400/40 focus:bg-accent-400/[0.02] outline-none transition-all font-mono text-sm resize-none"
                   ></textarea>
                 </div>
 
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="relative w-full py-5 btn-premium-accent rounded-2xl overflow-hidden group/btn disabled:opacity-50"
+                  className="relative w-full py-6 bg-accent-400 text-dark-950 font-black text-xs uppercase tracking-[0.5em] rounded-2xl overflow-hidden group/btn disabled:opacity-50 transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(239,68,68,0.3)] active:scale-[0.98]"
                 >
                   {/* Premium Shine Hover Effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover/btn:translate-x-[150%] transition-transform duration-1000 ease-in-out"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-[150%] group-hover/btn:translate-x-[150%] transition-transform duration-1000 ease-in-out"></div>
 
-                  <span className="relative z-10 text-white font-black text-sm uppercase tracking-[0.3em] flex items-center justify-center gap-3 drop-shadow-md">
+                  <span className="relative z-10 flex items-center justify-center gap-4">
                     {isSubmitting ? (
                       <>
                         <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                         </svg>
-                        Sending...
+                        TRANSMITTING...
                       </>
                     ) : (
-                      'Send Message'
+                      'EXECUTE SEND'
                     )}
                   </span>
                 </button>
 
                 {status.message && (
-                  <div className={`text-center font-mono text-[10px] font-bold animate-fade-in ${status.type === 'success' ? 'text-accent-400' : 'text-red-500'}`}>
+                  <div className={`text-center font-mono text-[10px] font-black animate-fade-in pt-4 ${status.type === 'success' ? 'text-accent-400' : 'text-red-500'}`}>
                     &gt; {status.message.toUpperCase()}
                   </div>
                 )}

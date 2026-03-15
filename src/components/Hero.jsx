@@ -7,6 +7,17 @@ const Hero = () => {
   const { playClick, playHover } = useSound();
   const [roleIndex, setRoleIndex] = useState(0);
   const [isFlashing, setIsFlashing] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      const x = (e.clientX / window.innerWidth) * 100;
+      const y = (e.clientY / window.innerHeight) * 100;
+      setMousePos({ x, y });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -35,9 +46,26 @@ const Hero = () => {
 
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20 bg-dark-950">
+      {/* Volumetric Mouse Follow Glow */}
+      <div 
+        className="absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000"
+        style={{
+          background: `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, rgba(59, 130, 246, 0.08) 0%, transparent 40%)`
+        }}
+      ></div>
+
       {/* Background Mesh Gradients */}
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-accent-400/20 rounded-full blur-[120px] mix-blend-screen animate-pulse pointer-events-none"></div>
-      <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-cyan-400/10 rounded-full blur-[120px] mix-blend-screen animate-pulse pointer-events-none" style={{ animationDelay: '2s' }}></div>
+      <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-blue-400/15 rounded-full blur-[120px] mix-blend-screen animate-pulse pointer-events-none" style={{ animationDelay: '2s' }}></div>
+
+      {/* Modern HUD Elements */}
+      <div className="absolute inset-0 z-[1] pointer-events-none opacity-20">
+        <div className="absolute top-1/4 left-0 w-24 hud-line-h"></div>
+        <div className="absolute top-1/4 left-24 hud-dot"></div>
+        <div className="absolute top-0 right-1/4 h-32 hud-line-v"></div>
+        <div className="absolute bottom-1/4 right-0 w-32 hud-line-h"></div>
+        <div className="absolute bottom-1/4 right-32 hud-dot"></div>
+      </div>
 
       {/* Modern Grid Overlay */}
       <div
@@ -52,7 +80,8 @@ const Hero = () => {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center flex flex-col items-center">
         {/* Modern Label */}
-        <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8 backdrop-blur-md animate-fade-in">
+        <div className="group inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8 backdrop-blur-md animate-fade-in relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-accent-400"></span>
@@ -68,7 +97,7 @@ const Hero = () => {
               src={profileImg} 
               alt="Althaf" 
               className="w-full h-full object-cover"
-              onError={(e) => { e.target.src = "https://ui-avatars.com/api/?name=Althaf+S&background=09090b&color=ef4444&size=512&bold=true"; }}
+              onError={(e) => { e.target.src = "https://ui-avatars.com/api/?name=Althaf+S&background=09090b&color=3b82f6&size=512&bold=true"; }}
             />
           </div>
         </div>
@@ -76,7 +105,7 @@ const Hero = () => {
         {/* Main Display Area */}
         <div className="relative mb-8 mt-4 flex justify-center w-full">
           
-          <h1 className="relative text-6xl sm:text-7xl md:text-[6rem] font-black tracking-tight leading-none font-heading cursor-default group/name text-center">
+          <h1 className="relative text-6xl sm:text-7xl md:text-[6rem] font-black tracking-tight leading-none font-archivo cursor-default group/name text-center">
             {/* Emerging Photo from Left on Hover */}
             <div className="absolute top-1/2 -translate-y-1/2 right-[105%] mr-8 hidden lg:block w-48 h-52 rounded-3xl overflow-hidden border-2 border-accent-400/50 opacity-0 -translate-x-10 group-hover/name:opacity-100 group-hover/name:translate-x-0 transition-all duration-700 ease-out shadow-[0_0_50px_rgba(239,68,68,0.4)] z-50 pointer-events-none rotate-[-6deg] group-hover/name:rotate-0">
               <div className="absolute inset-0 bg-accent-400/10 mix-blend-overlay z-10"></div>
@@ -84,7 +113,7 @@ const Hero = () => {
                 src={profileImg} 
                 alt="Hover Preview" 
                 className="w-full h-full object-cover scale-125 group-hover/name:scale-100 transition-all duration-1000"
-                onError={(e) => { e.target.src = "https://ui-avatars.com/api/?name=Althaf+S&background=09090b&color=ef4444&size=512&bold=true"; }}
+                onError={(e) => { e.target.src = "https://ui-avatars.com/api/?name=Althaf+S&background=09090b&color=3b82f6&size=512&bold=true"; }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-dark-950/80 via-transparent to-transparent"></div>
               {/* Decorative scanlines on the hover photo */}

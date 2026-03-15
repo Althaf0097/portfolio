@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import Navbar from './components/Navbar';
+import CustomCursor from './components/CustomCursor';
 import Hero from './components/Hero';
 import About from './components/About';
 import Skills from './components/Skills';
@@ -21,6 +22,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-dark-900 relative">
+      <CustomCursor />
       {/* Full-page 3D Background */}
       <Scene3DFullPage />
       

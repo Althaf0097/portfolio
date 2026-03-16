@@ -1,0 +1,3 @@
+## 2025-05-15 - GPU-Accelerated Particles & Interaction Optimization
+**Learning:** Migrating CPU-bound particle animations from `useFrame` loops to GPU-accelerated vertex shaders using `ShaderMaterial` reduces O(n) overhead and eliminates the need for expensive `needsUpdate = true` buffer uploads every frame. Additionally, using `useState` for high-frequency events (mouse/scroll) in React Three Fiber causes the entire Canvas to re-render, which is extremely expensive.
+**Action:** Use `ShaderMaterial` for animating thousands of particles. Track high-frequency state with `useRef` and access it within the `useFrame` loop to maintain 60fps without React reconciliation overhead.

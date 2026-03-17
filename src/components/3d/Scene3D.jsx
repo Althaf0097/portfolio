@@ -1,4 +1,4 @@
-import { Suspense, useState, useCallback, useEffect } from 'react';
+import { Suspense, useCallback, useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Preload } from '@react-three/drei';
 import ParticleField from './ParticleField';
@@ -12,7 +12,8 @@ import useReducedMotion from '../../utils/useReducedMotion';
  */
 const Scene3D = () => {
   const prefersReducedMotion = useReducedMotion();
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  // Using ref instead of state to prevent re-renders on every mouse move
+  const mousePosition = useRef({ x: 0, y: 0 });
 
   // Track mouse position for parallax effect
   const handleMouseMove = useCallback((event) => {
@@ -21,7 +22,7 @@ const Scene3D = () => {
     const x = (event.clientX / window.innerWidth) * 2 - 1;
     const y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-    setMousePosition({ x: x * 0.5, y: y * 0.5 });
+    mousePosition.current = { x: x * 0.5, y: y * 0.5 };
   }, [prefersReducedMotion]);
 
   useEffect(() => {

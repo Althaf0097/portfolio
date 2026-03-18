@@ -4,75 +4,110 @@ import { Preload } from '@react-three/drei';
 import * as THREE from 'three';
 import useReducedMotion from '../../utils/useReducedMotion';
 
+const createParticles = (count) => {
+  const positions = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  const offsets = new Float32Array(count);
+  const sizes = new Float32Array(count);
+
+  const accentColor = new THREE.Color('#3b82f6');
+  const blueColor = new THREE.Color('#06b6d4');
+  const whiteColor = new THREE.Color('#ffffff');
+
+  for (let i = 0; i < count; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 30;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 60;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+
+    const colorChoice = Math.random();
+    let color;
+    if (colorChoice < 0.4) color = accentColor;
+    else if (colorChoice < 0.7) color = blueColor;
+    else color = whiteColor;
+
+    colors[i * 3] = color.r;
+    colors[i * 3 + 1] = color.g;
+    colors[i * 3 + 2] = color.b;
+
+    offsets[i] = Math.random() * Math.PI * 2;
+    sizes[i] = Math.random() * 0.6 + 0.4; // Multiplier for size
+  }
+
+  return { positions, colors, offsets, sizes };
+};
+
 /**
  * Enhanced particle field that covers the entire viewport
  * with scroll-responsive density and depth
  */
-const ParticleField = ({ count = 1000, mousePosition, scrollProgress = 0 }) => {
-  const mesh = useRef();
+const ParticleField = ({ count = 1000, mousePosition }) => {
+  const materialRef = useRef();
+  const meshRef = useRef();
 
-  const particles = useMemo(() => {
-    const positions = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
-    const sizes = new Float32Array(count);
+  const particles = useMemo(() => createParticles(count), [count]);
 
-    const accentColor = new THREE.Color('#3b82f6');
-    const blueColor = new THREE.Color('#06b6d4');
-    const whiteColor = new THREE.Color('#ffffff');
-
-    for (let i = 0; i < count; i++) {
-      // Spread particles across a larger vertical space for scrolling
-      positions[i * 3] = (Math.random() - 0.5) * 30;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 60; // Extended vertical range
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
-
-      const colorChoice = Math.random();
-      let color;
-      if (colorChoice < 0.4) color = accentColor;
-      else if (colorChoice < 0.7) color = blueColor;
-      else color = whiteColor;
-
-      colors[i * 3] = color.r;
-      colors[i * 3 + 1] = color.g;
-      colors[i * 3 + 2] = color.b;
-
-      sizes[i] = Math.random() * 0.06 + 0.02;
-    }
-
-    return { positions, colors, sizes };
-  }, [count]);
-
-  const initialPositions = useMemo(
-    () => new Float32Array(particles.positions),
-    [particles.positions]
-  );
+  const uniforms = useMemo(() => ({
+    uTime: { value: 0 },
+    uMouse: { value: new THREE.Vector2(0, 0) },
+  }), []);
 
   useFrame((state) => {
-    if (!mesh.current) return;
-
+    if (!materialRef.current) return;
     const time = state.clock.getElapsedTime();
-    const positions = mesh.current.geometry.attributes.position.array;
+    materialRef.current.uniforms.uTime.value = time;
 
-    const mouseX = mousePosition?.x || 0;
-    const mouseY = mousePosition?.y || 0;
+    // Smoothly interpolate mouse for visual stability
+    const targetX = mousePosition?.current?.x || 0;
+    const targetY = mousePosition?.current?.y || 0;
+    materialRef.current.uniforms.uMouse.value.x += (targetX - materialRef.current.uniforms.uMouse.value.x) * 0.1;
+    materialRef.current.uniforms.uMouse.value.y += (targetY - materialRef.current.uniforms.uMouse.value.y) * 0.1;
 
-    for (let i = 0; i < count; i++) {
-      const i3 = i * 3;
-      const floatX = Math.sin(time * 0.2 + i * 0.1) * 0.15;
-      const floatY = Math.cos(time * 0.15 + i * 0.15) * 0.2;
-      const floatZ = Math.sin(time * 0.18 + i * 0.12) * 0.1;
-
-      positions[i3] = initialPositions[i3] + floatX + mouseX * 0.3;
-      positions[i3 + 1] = initialPositions[i3 + 1] + floatY + mouseY * 0.3;
-      positions[i3 + 2] = initialPositions[i3 + 2] + floatZ;
+    if (meshRef.current) {
+      meshRef.current.rotation.y = time * 0.015;
     }
-
-    mesh.current.geometry.attributes.position.needsUpdate = true;
-    mesh.current.rotation.y = time * 0.015;
   });
 
+  const vertexShader = `
+    uniform float uTime;
+    uniform vec2 uMouse;
+    attribute float aOffset;
+    attribute float aSize;
+    varying vec3 vColor;
+
+    void main() {
+      vColor = color;
+      vec3 pos = position;
+
+      // Base floating motion
+      float floatX = sin(uTime * 0.2 + aOffset) * 0.15;
+      float floatY = cos(uTime * 0.15 + aOffset * 1.5) * 0.2;
+      float floatZ = sin(uTime * 0.18 + aOffset * 1.2) * 0.1;
+
+      pos.x += floatX + uMouse.x * 0.3;
+      pos.y += floatY + uMouse.y * 0.3;
+      pos.z += floatZ;
+
+      vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+      gl_PointSize = 40.0 * aSize * (1.0 / -mvPosition.z);
+      gl_Position = projectionMatrix * mvPosition;
+    }
+  `;
+
+  const fragmentShader = `
+    varying vec3 vColor;
+
+    void main() {
+      // Create soft circular particles
+      float dist = distance(gl_PointCoord, vec2(0.5));
+      if (dist > 0.5) discard;
+
+      float alpha = smoothstep(0.5, 0.2, dist) * 0.7;
+      gl_FragColor = vec4(vColor, alpha);
+    }
+  `;
+
   return (
-    <points ref={mesh}>
+    <points ref={meshRef}>
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
@@ -86,13 +121,26 @@ const ParticleField = ({ count = 1000, mousePosition, scrollProgress = 0 }) => {
           array={particles.colors}
           itemSize={3}
         />
+        <bufferAttribute
+          attach="attributes-aOffset"
+          count={count}
+          array={particles.offsets}
+          itemSize={1}
+        />
+        <bufferAttribute
+          attach="attributes-aSize"
+          count={count}
+          array={particles.sizes}
+          itemSize={1}
+        />
       </bufferGeometry>
-      <pointsMaterial
-        size={0.04}
-        vertexColors
+      <shaderMaterial
+        ref={materialRef}
+        uniforms={uniforms}
+        vertexShader={vertexShader}
+        fragmentShader={fragmentShader}
         transparent
-        opacity={0.7}
-        sizeAttenuation
+        vertexColors
         blending={THREE.AdditiveBlending}
         depthWrite={false}
       />
@@ -103,7 +151,7 @@ const ParticleField = ({ count = 1000, mousePosition, scrollProgress = 0 }) => {
 /**
  * Floating shapes distributed across the page
  */
-const FloatingShapes = ({ scrollProgress = 0 }) => {
+const FloatingShapes = () => {
   const groupRef = useRef();
 
   useFrame((state) => {
@@ -161,8 +209,8 @@ const AnimatedShape = ({ pos, scale, color, index }) => {
  */
 const Scene3DFullPage = () => {
   const prefersReducedMotion = useReducedMotion();
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const mousePosition = useRef({ x: 0, y: 0 });
+  const scrollProgress = useRef(0);
   const [isMobile, setIsMobile] = useState(false);
 
   // Detect mobile for performance optimization
@@ -179,13 +227,13 @@ const Scene3DFullPage = () => {
     if (prefersReducedMotion || isMobile) return; // Skip mouse tracking on mobile
     const x = (event.clientX / window.innerWidth) * 2 - 1;
     const y = -(event.clientY / window.innerHeight) * 2 + 1;
-    setMousePosition({ x: x * 0.5, y: y * 0.5 });
+    mousePosition.current = { x: x * 0.5, y: y * 0.5 };
   }, [prefersReducedMotion, isMobile]);
 
   const handleScroll = useCallback(() => {
     const scrollTop = window.scrollY;
     const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    setScrollProgress(docHeight > 0 ? scrollTop / docHeight : 0);
+    scrollProgress.current = docHeight > 0 ? scrollTop / docHeight : 0;
   }, []);
 
   useEffect(() => {
@@ -225,9 +273,8 @@ const Scene3DFullPage = () => {
           <ParticleField 
             count={particleCount} 
             mousePosition={mousePosition} 
-            scrollProgress={scrollProgress} 
           />
-          {!isMobile && <FloatingShapes scrollProgress={scrollProgress} />}
+          {!isMobile && <FloatingShapes />}
           <Preload all />
         </Suspense>
       </Canvas>

@@ -1,0 +1,3 @@
+## 2025-05-15 - React 19 Purity and R3F Performance
+**Learning:** React 19 linting (via `react-hooks/purity`) flags `Math.random()` as an impure function when called inside `useMemo` or the component body. This prevents standard particle initialization patterns. Additionally, high-frequency state updates for mouse/scroll in a root component like `Scene3DFullPage.jsx` can cause hundreds of unnecessary React re-renders per second.
+**Action:** Move data generation logic using `Math.random()` to helper functions outside the component scope. Use `useRef` to track high-frequency interaction data (mouse, scroll) and consume it directly within `useFrame` loops to bypass the React reconciliation cycle entirely.

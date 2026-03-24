@@ -3,51 +3,55 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 /**
+ * Generate random particle data outside of component for React 19 purity
+ */
+const generateParticles = (count) => {
+  const positions = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  const sizes = new Float32Array(count);
+
+  // Theme colors
+  const accentColor = new THREE.Color('#2563eb'); // blue-600
+  const blueColor = new THREE.Color('#06b6d4'); // cyan-400
+  const whiteColor = new THREE.Color('#ffffff');
+
+  for (let i = 0; i < count; i++) {
+    // Spread particles in 3D space
+    positions[i * 3] = (Math.random() - 0.5) * 20; // x
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 20; // y
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 15; // z
+
+    // Random colors from palette
+    const colorChoice = Math.random();
+    let color;
+    if (colorChoice < 0.4) {
+      color = accentColor;
+    } else if (colorChoice < 0.7) {
+      color = blueColor;
+    } else {
+      color = whiteColor;
+    }
+
+    colors[i * 3] = color.r;
+    colors[i * 3 + 1] = color.g;
+    colors[i * 3 + 2] = color.b;
+
+    // Random sizes
+    sizes[i] = Math.random() * 0.08 + 0.02;
+  }
+
+  return { positions, colors, sizes };
+};
+
+/**
  * Animated particle field background
  * Creates a field of glowing particles with subtle mouse-reactive movement
  */
 const ParticleField = ({ count = 800, mousePosition }) => {
   const mesh = useRef();
-  const light = useRef();
 
   // Generate random particle positions
-  const particles = useMemo(() => {
-    const positions = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
-    const sizes = new Float32Array(count);
-
-    // Theme colors
-    const accentColor = new THREE.Color('#2563eb'); // blue-600
-    const blueColor = new THREE.Color('#06b6d4'); // cyan-400
-    const whiteColor = new THREE.Color('#ffffff');
-
-    for (let i = 0; i < count; i++) {
-      // Spread particles in 3D space
-      positions[i * 3] = (Math.random() - 0.5) * 20; // x
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 20; // y
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 15; // z
-
-      // Random colors from palette
-      const colorChoice = Math.random();
-      let color;
-      if (colorChoice < 0.4) {
-        color = accentColor;
-      } else if (colorChoice < 0.7) {
-        color = blueColor;
-      } else {
-        color = whiteColor;
-      }
-
-      colors[i * 3] = color.r;
-      colors[i * 3 + 1] = color.g;
-      colors[i * 3 + 2] = color.b;
-
-      // Random sizes
-      sizes[i] = Math.random() * 0.08 + 0.02;
-    }
-
-    return { positions, colors, sizes };
-  }, [count]);
+  const particles = useMemo(() => generateParticles(count), [count]);
 
   // Initial positions for animation reference
   const initialPositions = useMemo(

@@ -4,7 +4,7 @@ import { useSound } from '../utils/sound';
 import profileImg from '../assets/images/profile photo.png';
 
 const Hero = () => {
-  const { playClick, playHover } = useSound();
+  const { playClick, playHover: _playHover } = useSound();
   const [roleIndex, setRoleIndex] = useState(0);
   const [isFlashing, setIsFlashing] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });

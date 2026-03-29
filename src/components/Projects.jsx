@@ -29,7 +29,7 @@ const Projects = () => {
 
         {/* Modern high-fidelity Projects grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 group/focus">
-          {projects.map((project, index) => (
+          {projects.map((project) => (
             <div
               key={project.title}
               className="group relative flex flex-col h-full transition-all duration-700 group-hover/focus:opacity-40 hover:!opacity-100 hover:scale-[1.03]"

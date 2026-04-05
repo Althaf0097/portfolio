@@ -29,7 +29,7 @@ const Projects = () => {
 
         {/* Modern high-fidelity Projects grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 group/focus">
-          {projects.map((project, index) => (
+          {projects.map((project) => (
             <div
               key={project.title}
               className="group relative flex flex-col h-full transition-all duration-700 group-hover/focus:opacity-40 hover:!opacity-100 hover:scale-[1.03]"
@@ -111,7 +111,7 @@ const Projects = () => {
             className="group relative inline-flex items-center gap-6 px-12 py-6 glass-premium rounded-2xl text-white font-black uppercase text-xs tracking-[0.4em] overflow-hidden transition-all duration-500 hover:border-accent-400/50 hover:scale-[1.05] hover:shadow-[0_0_40px_rgba(239,68,68,0.2)]"
           >
             <span className="relative z-10 font-mono">Synchronize Catalog</span>
-            <div className="absolute inset-0 bg-accent-400/10 -translate-x-full group-hover:translate-x-0 transition-transform duration-700 ease-out"></div>
+            <div className="absolute inset-0 bg-accent-400/10 -translate-x-full group-hover:translate-0 transition-transform duration-700 ease-out"></div>
           </a>
         </div>
       </div>

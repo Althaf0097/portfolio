@@ -8,7 +8,7 @@ import useReducedMotion from '../../utils/useReducedMotion';
  * Enhanced particle field that covers the entire viewport
  * with scroll-responsive density and depth
  */
-const ParticleField = ({ count = 1000, mousePosition, scrollProgress = 0 }) => {
+const ParticleField = ({ count = 1000, mousePositionRef, scrollProgressRef }) => {
   const mesh = useRef();
 
   const particles = useMemo(() => {
@@ -53,8 +53,9 @@ const ParticleField = ({ count = 1000, mousePosition, scrollProgress = 0 }) => {
     const time = state.clock.getElapsedTime();
     const positions = mesh.current.geometry.attributes.position.array;
 
-    const mouseX = mousePosition?.x || 0;
-    const mouseY = mousePosition?.y || 0;
+    const mouseX = mousePositionRef?.current?.x || 0;
+    const mouseY = mousePositionRef?.current?.y || 0;
+    const scroll = scrollProgressRef?.current || 0;
 
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
@@ -62,8 +63,9 @@ const ParticleField = ({ count = 1000, mousePosition, scrollProgress = 0 }) => {
       const floatY = Math.cos(time * 0.15 + i * 0.15) * 0.2;
       const floatZ = Math.sin(time * 0.18 + i * 0.12) * 0.1;
 
+      // Add scroll-based vertical offset for parallax depth
       positions[i3] = initialPositions[i3] + floatX + mouseX * 0.3;
-      positions[i3 + 1] = initialPositions[i3 + 1] + floatY + mouseY * 0.3;
+      positions[i3 + 1] = initialPositions[i3 + 1] + floatY + mouseY * 0.3 + scroll * 10;
       positions[i3 + 2] = initialPositions[i3 + 2] + floatZ;
     }
 
@@ -103,13 +105,17 @@ const ParticleField = ({ count = 1000, mousePosition, scrollProgress = 0 }) => {
 /**
  * Floating shapes distributed across the page
  */
-const FloatingShapes = ({ scrollProgress = 0 }) => {
+const FloatingShapes = ({ scrollProgressRef }) => {
   const groupRef = useRef();
 
   useFrame((state) => {
     if (!groupRef.current) return;
     const time = state.clock.getElapsedTime();
     groupRef.current.rotation.y = time * 0.03;
+
+    // Use scroll progress for subtle group movement
+    const scroll = scrollProgressRef?.current || 0;
+    groupRef.current.position.y = scroll * 5;
   });
 
   // Create multiple shape clusters at different Y positions
@@ -125,21 +131,24 @@ const FloatingShapes = ({ scrollProgress = 0 }) => {
   return (
     <group ref={groupRef}>
       {shapePositions.map((shape, idx) => (
-        <AnimatedShape key={idx} {...shape} index={idx} />
+        <AnimatedShape key={idx} {...shape} index={idx} scrollProgressRef={scrollProgressRef} />
       ))}
     </group>
   );
 };
 
-const AnimatedShape = ({ pos, scale, color, index }) => {
+const AnimatedShape = ({ pos, scale, color, index, scrollProgressRef }) => {
   const meshRef = useRef();
 
   useFrame((state) => {
     if (!meshRef.current) return;
     const time = state.clock.getElapsedTime();
+    const scroll = scrollProgressRef?.current || 0;
+
     meshRef.current.rotation.x = time * (0.2 + index * 0.05);
     meshRef.current.rotation.z = time * (0.15 + index * 0.03);
-    meshRef.current.position.y = pos[1] + Math.sin(time * 0.5 + index) * 0.3;
+    // Combine base position with floating animation and parallax scroll
+    meshRef.current.position.y = pos[1] + Math.sin(time * 0.5 + index) * 0.3 + scroll * 2;
   });
 
   return (
@@ -161,8 +170,8 @@ const AnimatedShape = ({ pos, scale, color, index }) => {
  */
 const Scene3DFullPage = () => {
   const prefersReducedMotion = useReducedMotion();
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const mousePositionRef = useRef({ x: 0, y: 0 });
+  const scrollProgressRef = useRef(0);
   const [isMobile, setIsMobile] = useState(false);
 
   // Detect mobile for performance optimization
@@ -179,13 +188,13 @@ const Scene3DFullPage = () => {
     if (prefersReducedMotion || isMobile) return; // Skip mouse tracking on mobile
     const x = (event.clientX / window.innerWidth) * 2 - 1;
     const y = -(event.clientY / window.innerHeight) * 2 + 1;
-    setMousePosition({ x: x * 0.5, y: y * 0.5 });
+    mousePositionRef.current = { x: x * 0.5, y: y * 0.5 };
   }, [prefersReducedMotion, isMobile]);
 
   const handleScroll = useCallback(() => {
     const scrollTop = window.scrollY;
     const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    setScrollProgress(docHeight > 0 ? scrollTop / docHeight : 0);
+    scrollProgressRef.current = docHeight > 0 ? scrollTop / docHeight : 0;
   }, []);
 
   useEffect(() => {
@@ -224,10 +233,10 @@ const Scene3DFullPage = () => {
         <Suspense fallback={null}>
           <ParticleField 
             count={particleCount} 
-            mousePosition={mousePosition} 
-            scrollProgress={scrollProgress} 
+            mousePositionRef={mousePositionRef}
+            scrollProgressRef={scrollProgressRef}
           />
-          {!isMobile && <FloatingShapes scrollProgress={scrollProgress} />}
+          {!isMobile && <FloatingShapes scrollProgressRef={scrollProgressRef} />}
           <Preload all />
         </Suspense>
       </Canvas>

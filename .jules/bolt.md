@@ -1,0 +1,3 @@
+## 2025-05-14 - GPU-accelerated Particles & Ref-based Tracking
+**Learning:** High-frequency event tracking (mouse/scroll) using React state in a 3D scene causes massive reconciliation overhead. Transitioning to `useRef` and direct shader uniform updates reduced re-renders from ~80 to 2 during typical interaction. Additionally, offloading particle animations from the CPU (manually updating geometry attributes) to a GPU vertex shader significantly improves frame stability and reduces O(n) overhead.
+**Action:** Always prefer `useRef` for tracking high-frequency input in Three.js scenes and utilize `ShaderMaterial` to move animation logic to the GPU whenever possible.

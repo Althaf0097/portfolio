@@ -18,7 +18,7 @@ const Contact = () => {
     email: '',
     message: '',
   });
-  const [honeypot, setHoneypot] = useState(''); // Bot trap
+  const [honeypot] = useState(''); // Bot trap
   const [status, setStatus] = useState({ type: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState([]);

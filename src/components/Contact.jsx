@@ -18,7 +18,6 @@ const Contact = () => {
     email: '',
     message: '',
   });
-  const [honeypot, setHoneypot] = useState(''); // Bot trap
   const [status, setStatus] = useState({ type: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState([]);
@@ -48,6 +47,7 @@ const Contact = () => {
     setStatus({ type: '', message: '' });
 
     // Bot detection (honeypot)
+    const honeypot = e.target.user_bot_field?.value || '';
     if (isBot(honeypot)) {
       logSecurityEvent('Bot detected via honeypot');
       setStatus({ type: 'success', message: 'Thanks for your message!' });
@@ -292,6 +292,16 @@ const Contact = () => {
                     placeholder="Describe your objective..."
                     className="w-full px-8 py-5 bg-white/[0.02] border border-white/5 rounded-2xl text-white placeholder-slate-700 focus:border-accent-400/40 focus:bg-accent-400/[0.02] outline-none transition-all font-mono text-sm resize-none"
                   ></textarea>
+                </div>
+
+                {/* Honeypot field for spam protection */}
+                <div className="hidden" aria-hidden="true">
+                  <input
+                    type="text"
+                    name="user_bot_field"
+                    tabIndex="-1"
+                    autoComplete="off"
+                  />
                 </div>
 
                 <button

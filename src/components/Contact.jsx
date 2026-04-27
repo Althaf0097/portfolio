@@ -18,7 +18,6 @@ const Contact = () => {
     email: '',
     message: '',
   });
-  const [honeypot, setHoneypot] = useState(''); // Bot trap
   const [status, setStatus] = useState({ type: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState([]);
@@ -48,7 +47,7 @@ const Contact = () => {
     setStatus({ type: '', message: '' });
 
     // Bot detection (honeypot)
-    if (isBot(honeypot)) {
+    if (isBot(e.target.user_bot_field?.value)) {
       logSecurityEvent('Bot detected via honeypot');
       setStatus({ type: 'success', message: 'Thanks for your message!' });
       return;
@@ -322,6 +321,16 @@ const Contact = () => {
                     &gt; {status.message.toUpperCase()}
                   </div>
                 )}
+
+                {/* Honeypot field */}
+                <div className="hidden">
+                  <input
+                    type="text"
+                    name="user_bot_field"
+                    tabIndex="-1"
+                    autoComplete="off"
+                  />
+                </div>
               </form>
             </div>
           </div>

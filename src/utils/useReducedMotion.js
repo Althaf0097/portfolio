@@ -5,11 +5,18 @@ import { useEffect, useState } from 'react';
  * Returns true if user prefers reduced motion
  */
 export const useReducedMotion = () => {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  // Initialize state directly to avoid double render on mount
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() =>
+    typeof window !== 'undefined'
+      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      : false
+  );
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setPrefersReducedMotion(mediaQuery.matches);
+
+    // We already initialized the state with the current value in the lazy initializer.
+    // However, we MUST attach the listener to handle system preference changes.
 
     const handleChange = (event) => {
       setPrefersReducedMotion(event.matches);

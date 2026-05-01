@@ -1,0 +1,3 @@
+## 2025-05-15 - Decoupling high-frequency interaction from React render cycle
+**Learning:** High-frequency state updates (mouse movement, scrolling) in Three.js scenes trigger excessive React reconciliation overhead, consuming significant main-thread CPU time. React 19 also enforces strict component purity; calling non-deterministic functions like `Math.random()` during render or inside `useMemo` now triggers a lint error (`react-hooks/purity`).
+**Action:** Use `useRef` for continuous interaction data in React Three Fiber and access values directly within `useFrame` to bypass React's render cycle. Move data generation logic using `Math.random()` to helper functions defined outside the component scope to satisfy purity rules.

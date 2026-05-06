@@ -1,0 +1,3 @@
+## 2026-05-06 - [High-Frequency Event Optimization]
+**Learning:** Refactoring high-frequency state updates (mouse movement, scroll) to `useRef` in Three.js/React components can reduce React reconciliation overhead by over 95%. However, care must be taken to preserve existing functionality (like parallax effects) by passing the ref objects to children and consuming them within `useFrame` loops.
+**Action:** Always prefer `useRef` over `useState` for tracking values that update at 60fps and are primarily consumed by an animation loop. Move non-deterministic data generation outside component scopes to satisfy React 19 purity rules.

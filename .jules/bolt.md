@@ -1,0 +1,3 @@
+## 2026-05-09 - [Optimized 3D Interaction Performance]
+**Learning:** High-frequency React state updates (60fps) during mouse movement or scrolling in Three.js scenes cause massive reconciliation overhead, even if the values are only used inside the Three.js loop. React 19's stricter purity rules also flag common Three.js patterns like Math.random() inside useMemo as impure.
+**Action:** Use useRef for tracking high-frequency interaction data and access .current directly within the useFrame loop. Move non-deterministic data generation outside the component scope to ensure purity and avoid re-renders.

@@ -1,0 +1,165 @@
+
+> portfolio@0.0.0 lint /app
+> eslint .
+
+
+/app/src/components/3d/ParticleField.jsx
+  11:9   error  'light' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          no-unused-vars
+  26:27  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+  24 |     for (let i = 0; i < count; i++) {
+  25 |       // Spread particles in 3D space
+> 26 |       positions[i * 3] = (Math.random() - 0.5) * 20; // x
+     |                           ^^^^^^^^^^^^^ Cannot call impure function
+  27 |       positions[i * 3 + 1] = (Math.random() - 0.5) * 20; // y
+  28 |       positions[i * 3 + 2] = (Math.random() - 0.5) * 15; // z
+  29 |       react-hooks/purity
+  27:31  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+  25 |       // Spread particles in 3D space
+  26 |       positions[i * 3] = (Math.random() - 0.5) * 20; // x
+> 27 |       positions[i * 3 + 1] = (Math.random() - 0.5) * 20; // y
+     |                               ^^^^^^^^^^^^^ Cannot call impure function
+  28 |       positions[i * 3 + 2] = (Math.random() - 0.5) * 15; // z
+  29 |
+  30 |       // Random colors from palette     react-hooks/purity
+  28:31  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+  26 |       positions[i * 3] = (Math.random() - 0.5) * 20; // x
+  27 |       positions[i * 3 + 1] = (Math.random() - 0.5) * 20; // y
+> 28 |       positions[i * 3 + 2] = (Math.random() - 0.5) * 15; // z
+     |                               ^^^^^^^^^^^^^ Cannot call impure function
+  29 |
+  30 |       // Random colors from palette
+  31 |       const colorChoice = Math.random();  react-hooks/purity
+  31:27  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+  29 |
+  30 |       // Random colors from palette
+> 31 |       const colorChoice = Math.random();
+     |                           ^^^^^^^^^^^^^ Cannot call impure function
+  32 |       let color;
+  33 |       if (colorChoice < 0.4) {
+  34 |         color = accentColor;                                                                                                               react-hooks/purity
+  46:18  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+  44 |
+  45 |       // Random sizes
+> 46 |       sizes[i] = Math.random() * 0.08 + 0.02;
+     |                  ^^^^^^^^^^^^^ Cannot call impure function
+  47 |     }
+  48 |
+  49 |     return { positions, colors, sizes };                                                                                                                                                               react-hooks/purity
+
+/app/src/components/3d/Scene3DFullPage.jsx
+   11:55  error  'scrollProgress' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           no-unused-vars
+   25:27  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+  23 |     for (let i = 0; i < count; i++) {
+  24 |       // Spread particles across a larger vertical space for scrolling
+> 25 |       positions[i * 3] = (Math.random() - 0.5) * 30;
+     |                           ^^^^^^^^^^^^^ Cannot call impure function
+  26 |       positions[i * 3 + 1] = (Math.random() - 0.5) * 60; // Extended vertical range
+  27 |       positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+  28 |         react-hooks/purity
+   26:31  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+  24 |       // Spread particles across a larger vertical space for scrolling
+  25 |       positions[i * 3] = (Math.random() - 0.5) * 30;
+> 26 |       positions[i * 3 + 1] = (Math.random() - 0.5) * 60; // Extended vertical range
+     |                               ^^^^^^^^^^^^^ Cannot call impure function
+  27 |       positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+  28 |
+  29 |       const colorChoice = Math.random();  react-hooks/purity
+   27:31  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+  25 |       positions[i * 3] = (Math.random() - 0.5) * 30;
+  26 |       positions[i * 3 + 1] = (Math.random() - 0.5) * 60; // Extended vertical range
+> 27 |       positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+     |                               ^^^^^^^^^^^^^ Cannot call impure function
+  28 |
+  29 |       const colorChoice = Math.random();
+  30 |       let color;                                                        react-hooks/purity
+   29:27  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+  27 |       positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+  28 |
+> 29 |       const colorChoice = Math.random();
+     |                           ^^^^^^^^^^^^^ Cannot call impure function
+  30 |       let color;
+  31 |       if (colorChoice < 0.4) color = accentColor;
+  32 |       else if (colorChoice < 0.7) color = blueColor;                                                                                              react-hooks/purity
+   39:18  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+  37 |       colors[i * 3 + 2] = color.b;
+  38 |
+> 39 |       sizes[i] = Math.random() * 0.06 + 0.02;
+     |                  ^^^^^^^^^^^^^ Cannot call impure function
+  40 |     }
+  41 |
+  42 |     return { positions, colors, sizes };                                                                                                                                                                                                 react-hooks/purity
+  106:27  error  'scrollProgress' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           no-unused-vars
+
+/app/src/components/3d/TechIcon.jsx
+  1:18  error  'useMemo' is defined but never used. Allowed unused vars must match /^[A-Z_]/u    no-unused-vars
+  2:20  error  'useLoader' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+/app/src/components/Contact.jsx
+  21:20  error  'setHoneypot' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+/app/src/components/Hero.jsx
+  7:22  error  'playHover' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+/app/src/components/Projects.jsx
+  32:35  error  'index' is defined but never used  no-unused-vars
+
+/app/src/utils/security.js
+  167:12  error  'e' is defined but never used                                                                            no-unused-vars
+  172:7   error  'suspiciousActivityCount' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+/app/src/utils/sound.js
+   35:14  error  'e' is defined but never used  no-unused-vars
+   68:14  error  'e' is defined but never used  no-unused-vars
+   93:14  error  'e' is defined but never used  no-unused-vars
+  121:14  error  'e' is defined but never used  no-unused-vars
+
+/app/src/utils/useReducedMotion.js
+  12:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  10 |   useEffect(() => {
+  11 |     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+> 12 |     setPrefersReducedMotion(mediaQuery.matches);
+     |     ^^^^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  13 |
+  14 |     const handleChange = (event) => {
+  15 |       setPrefersReducedMotion(event.matches);  react-hooks/set-state-in-effect
+
+✖ 25 problems (25 errors, 0 warnings)
+
+ ELIFECYCLE  Command failed with exit code 1.

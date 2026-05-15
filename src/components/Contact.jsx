@@ -18,7 +18,6 @@ const Contact = () => {
     email: '',
     message: '',
   });
-  const [honeypot, setHoneypot] = useState(''); // Bot trap
   const [status, setStatus] = useState({ type: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState([]);
@@ -48,7 +47,9 @@ const Contact = () => {
     setStatus({ type: '', message: '' });
 
     // Bot detection (honeypot)
-    if (isBot(honeypot)) {
+    // Access honeypot directly from the form instead of React state for better performance
+    const honeypotValue = e.target.user_bot_field?.value || '';
+    if (isBot(honeypotValue)) {
       logSecurityEvent('Bot detected via honeypot');
       setStatus({ type: 'success', message: 'Thanks for your message!' });
       return;

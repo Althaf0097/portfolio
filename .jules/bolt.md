@@ -1,0 +1,3 @@
+## 2025-05-15 - Rendering Optimization via Refs and Direct DOM Manipulation
+**Learning:** Transitioning high-frequency event tracking (mouse, scroll) from `useState` to `useRef` and using direct DOM manipulation for visual effects (like radial gradients) drastically reduces React re-renders, improving FPS in graphics-intensive applications. React 19 additionally enforces stricter purity rules, requiring `Math.random()` to be moved outside components and ref access to be limited to effects or event handlers.
+**Action:** Always prefer `useRef` and `useFrame` (in R3F) for real-time interactions, and ensure initial ref-dependent styles are set in `useEffect` to avoid React 19 purity warnings.

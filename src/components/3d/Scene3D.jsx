@@ -1,4 +1,4 @@
-import { Suspense, useState, useCallback, useEffect } from 'react';
+import { Suspense, useCallback, useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Preload } from '@react-three/drei';
 import ParticleField from './ParticleField';
@@ -12,16 +12,17 @@ import useReducedMotion from '../../utils/useReducedMotion';
  */
 const Scene3D = () => {
   const prefersReducedMotion = useReducedMotion();
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  // Ref-based mouse tracking bypasses React's render loop for 60fps performance
+  const mousePositionRef = useRef({ x: 0, y: 0 });
 
   // Track mouse position for parallax effect
   const handleMouseMove = useCallback((event) => {
     if (prefersReducedMotion) return;
 
-    const x = (event.clientX / window.innerWidth) * 2 - 1;
-    const y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-    setMousePosition({ x: x * 0.5, y: y * 0.5 });
+    // Update ref directly - no re-render triggered
+    mousePositionRef.current.x = ((event.clientX / window.innerWidth) * 2 - 1) * 0.5;
+    mousePositionRef.current.y = (-(event.clientY / window.innerHeight) * 2 + 1) * 0.5;
   }, [prefersReducedMotion]);
 
   useEffect(() => {
@@ -59,7 +60,7 @@ const Scene3D = () => {
 
       <Suspense fallback={null}>
         {/* Particle system */}
-        <ParticleField count={600} mousePosition={mousePosition} />
+        <ParticleField count={600} mousePositionRef={mousePositionRef} />
 
         {/* Floating geometric shapes */}
         <FloatingShapes />

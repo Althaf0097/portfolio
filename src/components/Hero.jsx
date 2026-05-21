@@ -1,19 +1,28 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { siteConfig } from '../config/siteConfig';
 import { useSound } from '../utils/sound';
 import profileImg from '../assets/images/profile photo.png';
 
 const Hero = () => {
-  const { playClick, playHover } = useSound();
+  const { playClick } = useSound();
   const [roleIndex, setRoleIndex] = useState(0);
   const [isFlashing, setIsFlashing] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+  const glowRef = useRef(null);
 
   useEffect(() => {
+    // Initialize glow position
+    if (glowRef.current) {
+      glowRef.current.style.transform = 'translate3d(-50%, -50%, 0)';
+      glowRef.current.style.left = '50%';
+      glowRef.current.style.top = '50%';
+      glowRef.current.style.willChange = 'transform';
+    }
+
     const handleMouseMove = (e) => {
-      const x = (e.clientX / window.innerWidth) * 100;
-      const y = (e.clientY / window.innerHeight) * 100;
-      setMousePos({ x, y });
+      // Direct DOM manipulation with transform for GPU acceleration
+      if (glowRef.current) {
+        glowRef.current.style.transform = `translate3d(calc(${e.clientX}px - 50%), calc(${e.clientY}px - 50%), 0)`;
+      }
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
@@ -48,9 +57,12 @@ const Hero = () => {
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20 bg-dark-950">
       {/* Volumetric Mouse Follow Glow */}
       <div 
-        className="absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000"
+        ref={glowRef}
+        className="absolute w-[80vmax] h-[80vmax] z-0 pointer-events-none transition-opacity duration-1000"
         style={{
-          background: `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, rgba(59, 130, 246, 0.08) 0%, transparent 40%)`
+          background: 'radial-gradient(circle at center, rgba(59, 130, 246, 0.08) 0%, transparent 40%)',
+          left: '-100%',
+          top: '-100%'
         }}
       ></div>
 

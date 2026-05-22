@@ -1,19 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { siteConfig } from '../config/siteConfig';
 import { useSound } from '../utils/sound';
 import profileImg from '../assets/images/profile photo.png';
 
 const Hero = () => {
-  const { playClick, playHover } = useSound();
+  const { playClick } = useSound();
   const [roleIndex, setRoleIndex] = useState(0);
   const [isFlashing, setIsFlashing] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+  const glowRef = useRef(null);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
+      if (!glowRef.current) return;
       const x = (e.clientX / window.innerWidth) * 100;
       const y = (e.clientY / window.innerHeight) * 100;
-      setMousePos({ x, y });
+
+      // Use translate3d for better performance (GPU acceleration)
+      // We use calc and negative percentages to center the gradient on the mouse
+      glowRef.current.style.transform = `translate3d(calc(-50% + ${x}vw), calc(-50% + ${y}vh), 0)`;
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
@@ -46,11 +50,15 @@ const Hero = () => {
 
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20 bg-dark-950">
-      {/* Volumetric Mouse Follow Glow */}
+      {/* Volumetric Mouse Follow Glow - Optimized with direct DOM updates */}
       <div 
-        className="absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000"
+        ref={glowRef}
+        className="absolute w-[100vw] h-[100vh] z-0 pointer-events-none transition-opacity duration-1000 bg-[radial-gradient(circle_at_center,_rgba(59,130,246,0.08)_0%,_transparent_40%)]"
         style={{
-          background: `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, rgba(59, 130, 246, 0.08) 0%, transparent 40%)`
+          left: '50%',
+          top: '50%',
+          transform: 'translate3d(-50%, -50%, 0)',
+          willChange: 'transform'
         }}
       ></div>
 

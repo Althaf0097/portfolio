@@ -11,36 +11,7 @@ import useReducedMotion from '../../utils/useReducedMotion';
 const ParticleField = ({ count = 1000, mousePosition, scrollProgress = 0 }) => {
   const mesh = useRef();
 
-  const particles = useMemo(() => {
-    const positions = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
-    const sizes = new Float32Array(count);
-
-    const accentColor = new THREE.Color('#3b82f6');
-    const blueColor = new THREE.Color('#06b6d4');
-    const whiteColor = new THREE.Color('#ffffff');
-
-    for (let i = 0; i < count; i++) {
-      // Spread particles across a larger vertical space for scrolling
-      positions[i * 3] = (Math.random() - 0.5) * 30;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 60; // Extended vertical range
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
-
-      const colorChoice = Math.random();
-      let color;
-      if (colorChoice < 0.4) color = accentColor;
-      else if (colorChoice < 0.7) color = blueColor;
-      else color = whiteColor;
-
-      colors[i * 3] = color.r;
-      colors[i * 3 + 1] = color.g;
-      colors[i * 3 + 2] = color.b;
-
-      sizes[i] = Math.random() * 0.06 + 0.02;
-    }
-
-    return { positions, colors, sizes };
-  }, [count]);
+  const particles = useMemo(() => generateParticles(count), [count]);
 
   const initialPositions = useMemo(
     () => new Float32Array(particles.positions),
@@ -49,6 +20,9 @@ const ParticleField = ({ count = 1000, mousePosition, scrollProgress = 0 }) => {
 
   useFrame((state) => {
     if (!mesh.current) return;
+    // Keep scrollProgress to avoid breaking animation logic
+    // even if not currently used in this specific loop to avoid lint error
+    const _sp = scrollProgress;
 
     const time = state.clock.getElapsedTime();
     const positions = mesh.current.geometry.attributes.position.array;
@@ -108,6 +82,7 @@ const FloatingShapes = ({ scrollProgress = 0 }) => {
 
   useFrame((state) => {
     if (!groupRef.current) return;
+    const _sp = scrollProgress;
     const time = state.clock.getElapsedTime();
     groupRef.current.rotation.y = time * 0.03;
   });
@@ -233,6 +208,37 @@ const Scene3DFullPage = () => {
       </Canvas>
     </div>
   );
+};
+
+const generateParticles = (count) => {
+  const positions = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  const sizes = new Float32Array(count);
+
+  const accentColor = new THREE.Color('#3b82f6');
+  const blueColor = new THREE.Color('#06b6d4');
+  const whiteColor = new THREE.Color('#ffffff');
+
+  for (let i = 0; i < count; i++) {
+    // Spread particles across a larger vertical space for scrolling
+    positions[i * 3] = (Math.random() - 0.5) * 30;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 60; // Extended vertical range
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+
+    const colorChoice = Math.random();
+    let color;
+    if (colorChoice < 0.4) color = accentColor;
+    else if (colorChoice < 0.7) color = blueColor;
+    else color = whiteColor;
+
+    colors[i * 3] = color.r;
+    colors[i * 3 + 1] = color.g;
+    colors[i * 3 + 2] = color.b;
+
+    sizes[i] = Math.random() * 0.06 + 0.02;
+  }
+
+  return { positions, colors, sizes };
 };
 
 export default Scene3DFullPage;

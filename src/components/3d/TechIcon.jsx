@@ -1,5 +1,5 @@
-import { useRef, useMemo } from 'react';
-import { useFrame, useLoader } from '@react-three/fiber';
+import { useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
 import { Float, Decal, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 

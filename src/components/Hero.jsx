@@ -1,19 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { siteConfig } from '../config/siteConfig';
 import { useSound } from '../utils/sound';
 import profileImg from '../assets/images/profile photo.png';
 
 const Hero = () => {
-  const { playClick, playHover } = useSound();
+  const { playClick } = useSound();
   const [roleIndex, setRoleIndex] = useState(0);
   const [isFlashing, setIsFlashing] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+
+  const glowRef = useRef(null);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
+      if (!glowRef.current) return;
+
       const x = (e.clientX / window.innerWidth) * 100;
       const y = (e.clientY / window.innerHeight) * 100;
-      setMousePos({ x, y });
+
+      // Update element position directly using transform for GPU acceleration
+      // Offset by -50% to center the glow on the mouse
+      glowRef.current.style.transform = `translate3d(${x}vw, ${y}vh, 0) translate3d(-50%, -50%, 0)`;
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
@@ -46,11 +52,16 @@ const Hero = () => {
 
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20 bg-dark-950">
-      {/* Volumetric Mouse Follow Glow */}
+      {/* Volumetric Mouse Follow Glow - Optimized with direct DOM manipulation */}
       <div 
-        className="absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000"
+        ref={glowRef}
+        className="absolute w-[100vw] h-[100vw] z-0 pointer-events-none transition-opacity duration-1000 opacity-100"
         style={{
-          background: `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, rgba(59, 130, 246, 0.08) 0%, transparent 40%)`
+          background: 'radial-gradient(circle at center, rgba(59, 130, 246, 0.08) 0%, transparent 40%)',
+          left: 0,
+          top: 0,
+          willChange: 'transform',
+          transform: 'translate3d(50vw, 50vh, 0) translate3d(-50%, -50%, 0)'
         }}
       ></div>
 

@@ -1,19 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { siteConfig } from '../config/siteConfig';
 import { useSound } from '../utils/sound';
 import profileImg from '../assets/images/profile photo.png';
 
 const Hero = () => {
-  const { playClick, playHover } = useSound();
+  const { playClick } = useSound();
   const [roleIndex, setRoleIndex] = useState(0);
   const [isFlashing, setIsFlashing] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+
+  // Use ref for high-frequency mouse tracking to bypass React renders
+  const glowRef = useRef(null);
 
   useEffect(() => {
+    // Initial style to ensure it's set
+    if (glowRef.current) {
+      glowRef.current.style.willChange = 'background';
+    }
+
     const handleMouseMove = (e) => {
+      if (!glowRef.current) return;
       const x = (e.clientX / window.innerWidth) * 100;
       const y = (e.clientY / window.innerHeight) * 100;
-      setMousePos({ x, y });
+
+      // Direct DOM update for 60fps performance
+      glowRef.current.style.background = `radial-gradient(circle at ${x}% ${y}%, rgba(59, 130, 246, 0.08) 0%, transparent 40%)`;
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
@@ -46,11 +56,12 @@ const Hero = () => {
 
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20 bg-dark-950">
-      {/* Volumetric Mouse Follow Glow */}
+      {/* Volumetric Mouse Follow Glow - Managed via ref for performance */}
       <div 
+        ref={glowRef}
         className="absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000"
         style={{
-          background: `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, rgba(59, 130, 246, 0.08) 0%, transparent 40%)`
+          background: 'radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 40%)'
         }}
       ></div>
 

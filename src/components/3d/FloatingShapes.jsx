@@ -6,7 +6,7 @@ import { Icosahedron, Octahedron, MeshDistortMaterial } from '@react-three/drei'
  * Floating geometric shapes with subtle animation
  * Adds depth and visual interest to the 3D scene
  */
-const FloatingShapes = () => {
+const FloatingShapes = ({ scrollProgressRef }) => {
   const group = useRef();
   const shape1 = useRef();
   const shape2 = useRef();
@@ -18,6 +18,9 @@ const FloatingShapes = () => {
     // Gentle group rotation
     if (group.current) {
       group.current.rotation.y = time * 0.05;
+      // Apply parallax scroll effect from ref
+      const scrollY = scrollProgressRef?.current || 0;
+      group.current.position.y = scrollY * 10;
     }
 
     // Individual shape animations

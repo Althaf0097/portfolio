@@ -1,0 +1,3 @@
+## 2025-05-15 - Optimizing High-Frequency Mouse Events with Direct DOM Access
+**Learning:** Updating React state on every `mousemove` event triggers a full component re-render cycle, which is computationally expensive for high-frequency interactions like a "mouse-follow" glow effect. Using `useRef` to track coordinates and updating the element's `style` attribute directly completely bypasses React's reconciliation engine.
+**Action:** For visual effects that follow mouse movement or scroll, prefer `useRef` and direct DOM manipulation or Three.js `useFrame` updates over `useState` to maintain 60fps performance and zero React re-renders.

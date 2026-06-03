@@ -1,19 +1,32 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { siteConfig } from '../config/siteConfig';
 import { useSound } from '../utils/sound';
 import profileImg from '../assets/images/profile photo.png';
 
 const Hero = () => {
-  const { playClick, playHover } = useSound();
+  const { playClick } = useSound();
   const [roleIndex, setRoleIndex] = useState(0);
   const [isFlashing, setIsFlashing] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+  const glowRef = useRef(null);
+  const containerRef = useRef(null);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
-      const x = (e.clientX / window.innerWidth) * 100;
-      const y = (e.clientY / window.innerHeight) * 100;
-      setMousePos({ x, y });
+      if (!glowRef.current || !containerRef.current) return;
+
+      const rect = containerRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // Show glow on first move
+      if (glowRef.current.style.opacity === '0') {
+        glowRef.current.style.opacity = '1';
+      }
+
+      // Use translate3d for hardware acceleration and to avoid the paint pipeline.
+      // This is more performant than updating background properties.
+      // We also bypass React reconciliation for high-frequency mouse events.
+      glowRef.current.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`;
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
@@ -45,12 +58,21 @@ const Hero = () => {
   const nextRoleIndex = (roleIndex + 1) % siteConfig.roles.length;
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20 bg-dark-950">
+    <section
+      ref={containerRef}
+      className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20 bg-dark-950"
+    >
       {/* Volumetric Mouse Follow Glow */}
       <div 
-        className="absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000"
+        ref={glowRef}
+        className="absolute top-0 left-0 z-0 pointer-events-none transition-opacity duration-1000"
         style={{
-          background: `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, rgba(59, 130, 246, 0.08) 0%, transparent 40%)`
+          width: '100vmax',
+          height: '100vmax',
+          background: `radial-gradient(circle at center, rgba(59, 130, 246, 0.08) 0%, transparent 40%)`,
+          willChange: 'transform',
+          transform: 'translate3d(-100%, -100%, 0)',
+          opacity: 0
         }}
       ></div>
 

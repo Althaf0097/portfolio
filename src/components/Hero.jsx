@@ -1,22 +1,51 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { siteConfig } from '../config/siteConfig';
 import { useSound } from '../utils/sound';
 import profileImg from '../assets/images/profile photo.png';
 
 const Hero = () => {
-  const { playClick, playHover } = useSound();
+  const { playClick } = useSound();
   const [roleIndex, setRoleIndex] = useState(0);
   const [isFlashing, setIsFlashing] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+
+  const containerRef = useRef(null);
+  const glowRef = useRef(null);
+  const rectRef = useRef(null);
+  const hasMovedRef = useRef(false);
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      const x = (e.clientX / window.innerWidth) * 100;
-      const y = (e.clientY / window.innerHeight) * 100;
-      setMousePos({ x, y });
+    const updateRect = () => {
+      if (containerRef.current) {
+        rectRef.current = containerRef.current.getBoundingClientRect();
+      }
     };
+
+    updateRect();
+    window.addEventListener('resize', updateRect);
+    window.addEventListener('scroll', updateRect, { passive: true });
+
+    const handleMouseMove = (e) => {
+      if (!glowRef.current || !rectRef.current) return;
+
+      const x = e.clientX - rectRef.current.left;
+      const y = e.clientY - rectRef.current.top;
+
+      // Use GPU-accelerated transform instead of updating state/background
+      // This prevents React re-renders and keeps the animation smooth at 60fps
+      glowRef.current.style.transform = `translate3d(calc(-50% + ${x}px), calc(-50% + ${y}px), 0)`;
+
+      if (!hasMovedRef.current) {
+        glowRef.current.style.opacity = '1';
+        hasMovedRef.current = true;
+      }
+    };
+
     window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('resize', updateRect);
+      window.removeEventListener('scroll', updateRect);
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
   }, []);
 
   useEffect(() => {
@@ -45,12 +74,19 @@ const Hero = () => {
   const nextRoleIndex = (roleIndex + 1) % siteConfig.roles.length;
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20 bg-dark-950">
-      {/* Volumetric Mouse Follow Glow */}
+    <section
+      ref={containerRef}
+      className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20 bg-dark-950"
+    >
+      {/* Volumetric Mouse Follow Glow - Optimized with direct DOM updates to skip React re-renders */}
       <div 
-        className="absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000"
+        ref={glowRef}
+        className="absolute top-0 left-0 w-[1000px] h-[1000px] z-0 pointer-events-none transition-opacity duration-1000 rounded-full"
         style={{
-          background: `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, rgba(59, 130, 246, 0.08) 0%, transparent 40%)`
+          background: 'radial-gradient(circle at center, rgba(59, 130, 246, 0.08) 0%, transparent 70%)',
+          transform: 'translate3d(-50%, -50%, 0)',
+          willChange: 'transform',
+          opacity: 0
         }}
       ></div>
 

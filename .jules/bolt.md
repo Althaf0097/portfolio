@@ -1,0 +1,3 @@
+## 2026-06-06 - [Hero Mouse Tracking Optimization]
+**Learning:** High-frequency mouse tracking using `useState` caused excessive re-renders in the `Hero` component. Moving to `useRef` and direct DOM manipulation eliminated these re-renders. A critical discovery was that the manual DOM updates were being reset by React during unrelated re-renders (like the role switcher timer) because the `background` property was also defined in the JSX `style` prop.
+**Action:** When using refs for high-frequency style updates, omit the manipulated properties from the React `style` prop and initialize them within `useEffect` to prevent state-sync "snapping" or jitter.

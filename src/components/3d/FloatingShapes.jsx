@@ -4,9 +4,9 @@ import { Icosahedron, Octahedron, MeshDistortMaterial } from '@react-three/drei'
 
 /**
  * Floating geometric shapes with subtle animation
- * Adds depth and visual interest to the 3D scene
+ * Optimized for performance using refs for scroll-based parallax
  */
-const FloatingShapes = () => {
+const FloatingShapes = ({ scrollProgressRef }) => {
   const group = useRef();
   const shape1 = useRef();
   const shape2 = useRef();
@@ -14,10 +14,12 @@ const FloatingShapes = () => {
 
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
+    const scrollY = scrollProgressRef?.current || 0;
 
-    // Gentle group rotation
+    // Gentle group rotation and scroll-based vertical movement
     if (group.current) {
       group.current.rotation.y = time * 0.05;
+      group.current.position.y = scrollY * 15;
     }
 
     // Individual shape animations
@@ -42,7 +44,6 @@ const FloatingShapes = () => {
 
   return (
     <group ref={group}>
-      {/* Primary accent shape - top right */}
       <Icosahedron ref={shape1} args={[0.8, 1]} position={[4, 2, -5]}>
         <MeshDistortMaterial
           color="#6366f1"
@@ -56,7 +57,6 @@ const FloatingShapes = () => {
         />
       </Icosahedron>
 
-      {/* Cyan shape - bottom left */}
       <Octahedron ref={shape2} args={[0.6, 0]} position={[-5, -1.5, -4]}>
         <MeshDistortMaterial
           color="#22d3ee"
@@ -70,7 +70,6 @@ const FloatingShapes = () => {
         />
       </Octahedron>
 
-      {/* Small accent shape - left */}
       <Icosahedron ref={shape3} args={[0.4, 1]} position={[-3, 1, -3]}>
         <MeshDistortMaterial
           color="#818cf8"

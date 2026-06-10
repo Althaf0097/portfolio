@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { siteConfig } from '../config/siteConfig';
 import { useSound } from '../utils/sound';
 import profileImg from '../assets/images/profile photo.png';
@@ -7,16 +7,43 @@ const Hero = () => {
   const { playClick, playHover } = useSound();
   const [roleIndex, setRoleIndex] = useState(0);
   const [isFlashing, setIsFlashing] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+
+  const containerRef = useRef(null);
+  const glowRef = useRef(null);
+  const rectRef = useRef(null);
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      const x = (e.clientX / window.innerWidth) * 100;
-      const y = (e.clientY / window.innerHeight) * 100;
-      setMousePos({ x, y });
+    const updateRect = () => {
+      if (containerRef.current) {
+        rectRef.current = containerRef.current.getBoundingClientRect();
+      }
     };
+
+    updateRect();
+    window.addEventListener('resize', updateRect);
+    window.addEventListener('scroll', updateRect, { passive: true });
+
+    // Initialize position to center
+    if (glowRef.current && rectRef.current) {
+      glowRef.current.style.transform = `translate3d(${rectRef.current.width / 2}px, ${rectRef.current.height / 2}px, 0)`;
+    }
+
+    const handleMouseMove = (e) => {
+      if (!glowRef.current || !rectRef.current) return;
+
+      const x = e.clientX - rectRef.current.left;
+      const y = e.clientY - rectRef.current.top;
+
+      // Using translate3d for GPU acceleration and to avoid layout thrashing
+      glowRef.current.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    };
+
     window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('resize', updateRect);
+      window.removeEventListener('scroll', updateRect);
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
   }, []);
 
   useEffect(() => {
@@ -45,12 +72,17 @@ const Hero = () => {
   const nextRoleIndex = (roleIndex + 1) % siteConfig.roles.length;
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20 bg-dark-950">
-      {/* Volumetric Mouse Follow Glow */}
+    <section ref={containerRef} className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20 bg-dark-950">
+      {/* Volumetric Mouse Follow Glow - Optimized with useRef and translate3d to avoid re-renders */}
       <div 
-        className="absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000"
+        ref={glowRef}
+        className="absolute left-0 top-0 w-[2000px] h-[2000px] z-0 pointer-events-none transition-opacity duration-1000"
         style={{
-          background: `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, rgba(59, 130, 246, 0.08) 0%, transparent 40%)`
+          background: 'radial-gradient(circle at center, rgba(59, 130, 246, 0.08) 0%, transparent 40%)',
+          willChange: 'transform',
+          marginLeft: '-1000px',
+          marginTop: '-1000px',
+          transform: 'translate3d(50%, 50%, 0)'
         }}
       ></div>
 

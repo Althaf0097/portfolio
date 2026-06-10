@@ -1,0 +1,3 @@
+## 2025-03-24 - [Hero Mouse Tracking Optimization]
+**Learning:** High-frequency events like `mousemove` in components with complex JSX trees (like `Hero.jsx`) cause significant performance degradation when managed via React state. The entire component tree re-renders on every pixel moved, leading to frame drops and high CPU usage.
+**Action:** Use `useRef` for high-frequency tracking and apply updates directly to the DOM using `translate3d` to leverage GPU acceleration and bypass the React reconciliation cycle. Cache layout measurements (`getBoundingClientRect`) on resize/scroll to avoid layout thrashing during the interaction.

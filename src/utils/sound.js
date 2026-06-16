@@ -32,7 +32,7 @@ class SoundManager {
       oscillator.type = 'sine';
       oscillator.start(this.audioContext.currentTime);
       oscillator.stop(this.audioContext.currentTime + 0.08);
-    } catch (e) {
+    } catch {
       // Audio not supported
     }
   }
@@ -65,13 +65,13 @@ class SoundManager {
       oscillator.type = 'square';
       oscillator.start(this.audioContext.currentTime);
       oscillator.stop(this.audioContext.currentTime + 0.04);
-    } catch (e) {
+    } catch {
       // Audio not supported
     }
   }
 
-  // Soft hover sound
-  playHover() {
+  // Success sound
+  playSuccess() {
     if (!this.enabled) return;
     
     try {
@@ -90,13 +90,13 @@ class SoundManager {
       oscillator.type = 'sine';
       oscillator.start(this.audioContext.currentTime);
       oscillator.stop(this.audioContext.currentTime + 0.04);
-    } catch (e) {
+    } catch {
       // Audio not supported
     }
   }
 
-  // Success sound
-  playSuccess() {
+  // Soft hover sound
+  playHover() {
     if (!this.enabled) return;
     
     try {
@@ -118,7 +118,7 @@ class SoundManager {
         oscillator.start(this.audioContext.currentTime + i * 0.05);
         oscillator.stop(this.audioContext.currentTime + 0.3 + i * 0.05);
       });
-    } catch (e) {
+    } catch {
       // Audio not supported
     }
   }

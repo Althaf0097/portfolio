@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { siteConfig } from '../config/siteConfig';
 import { useSound } from '../utils/sound';
 import profileImg from '../assets/images/profile photo.png';
@@ -7,13 +7,17 @@ const Hero = () => {
   const { playClick, playHover } = useSound();
   const [roleIndex, setRoleIndex] = useState(0);
   const [isFlashing, setIsFlashing] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+  const glowRef = useRef(null);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
       const x = (e.clientX / window.innerWidth) * 100;
       const y = (e.clientY / window.innerHeight) * 100;
-      setMousePos({ x, y });
+
+      // Direct DOM manipulation to avoid React re-renders on mouse move
+      if (glowRef.current) {
+        glowRef.current.style.background = `radial-gradient(circle at ${x}% ${y}%, rgba(59, 130, 246, 0.08) 0%, transparent 40%)`;
+      }
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
@@ -48,9 +52,11 @@ const Hero = () => {
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20 bg-dark-950">
       {/* Volumetric Mouse Follow Glow */}
       <div 
+        ref={glowRef}
         className="absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000"
         style={{
-          background: `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, rgba(59, 130, 246, 0.08) 0%, transparent 40%)`
+          background: `radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 40%)`,
+          willChange: 'background'
         }}
       ></div>
 
@@ -203,6 +209,7 @@ const Hero = () => {
           <a
             href="#projects"
             onClick={(e) => handleScrollTo(e, '#projects')}
+            onMouseEnter={playHover}
             className="w-full sm:w-auto px-10 py-4 btn-premium-accent rounded-xl text-xs font-bold uppercase tracking-[0.2em] font-sans"
           >
             View Projects
@@ -211,6 +218,7 @@ const Hero = () => {
           <a
             href="#contact"
             onClick={(e) => handleScrollTo(e, '#contact')}
+            onMouseEnter={playHover}
             className="w-full sm:w-auto px-10 py-4 btn-premium rounded-xl text-xs font-bold uppercase tracking-[0.2em] font-sans"
           >
             Contact Me

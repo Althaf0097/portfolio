@@ -280,6 +280,18 @@ const Contact = () => {
                   />
                 </div>
 
+                {/* Honeypot field for bot detection */}
+                <div className="hidden" aria-hidden="true">
+                  <input
+                    type="text"
+                    name="subject_confirm"
+                    value={honeypot}
+                    onChange={(e) => setHoneypot(e.target.value)}
+                    tabIndex="-1"
+                    autoComplete="off"
+                  />
+                </div>
+
                 <div className="space-y-3">
                   <label className="text-[10px] font-mono font-black text-accent-400/60 uppercase tracking-[0.2em] ml-2">Manifest//Message</label>
                   <textarea

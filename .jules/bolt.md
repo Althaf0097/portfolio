@@ -1,0 +1,3 @@
+## 2025-05-15 - Optimizing High-Frequency Mouse/Scroll Events
+**Learning:** High-frequency events like `mousemove` and `scroll` in React components can cause significant performance degradation when tied to `useState`, as they trigger a full component re-render on every update. Using `useRef` for these values and direct DOM manipulation or `useFrame` (in Three.js) allows for 60fps updates with zero React re-renders.
+**Action:** Always audit `mousemove` and `scroll` listeners. Use `useRef` for values that don't need to trigger UI updates through React's reconciliation, and apply styles directly or through frame loops.

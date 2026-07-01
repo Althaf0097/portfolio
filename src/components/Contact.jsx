@@ -19,6 +19,8 @@ const Contact = () => {
     message: '',
   });
   const [honeypot, setHoneypot] = useState(''); // Bot trap
+  // Use setHoneypot to satisfy linting while keeping it as a controlled input
+  const handleHoneypotChange = (e) => setHoneypot(e.target.value);
   const [status, setStatus] = useState({ type: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState([]);
@@ -292,6 +294,18 @@ const Contact = () => {
                     placeholder="Describe your objective..."
                     className="w-full px-8 py-5 bg-white/[0.02] border border-white/5 rounded-2xl text-white placeholder-slate-700 focus:border-accent-400/40 focus:bg-accent-400/[0.02] outline-none transition-all font-mono text-sm resize-none"
                   ></textarea>
+                </div>
+
+                {/* Hidden Honeypot Field */}
+                <div className="hidden">
+                  <input
+                    type="text"
+                    name="website"
+                    value={honeypot}
+                    onChange={handleHoneypotChange}
+                    tabIndex="-1"
+                    autoComplete="off"
+                  />
                 </div>
 
                 <button

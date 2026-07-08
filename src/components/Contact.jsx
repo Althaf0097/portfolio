@@ -239,6 +239,17 @@ const Contact = () => {
               </div>
 
               <form ref={formRef} onSubmit={handleSubmit} className="space-y-8">
+                {/* Honeypot field (Bot trap) */}
+                <input
+                  type="text"
+                  name="honeypot"
+                  style={{ display: 'none' }}
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                  tabIndex="-1"
+                  autoComplete="off"
+                />
+
                 {/* Form errors */}
                 {formErrors.length > 0 && (
                   <div className="bg-red-500/5 border border-red-500/20 px-6 py-5 rounded-2xl mb-8">

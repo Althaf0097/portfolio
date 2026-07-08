@@ -1,35 +1,146 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { siteConfig } from '../config/siteConfig';
 import { useSound } from '../utils/sound';
 import profileImg from '../assets/images/profile photo.png';
+import BoxStructureOverlay from './ui/BoxStructureOverlay';
+import { useTheme } from '../context/ThemeContext';
 
 const Hero = () => {
-  const { playClick, playHover } = useSound();
-  const [roleIndex, setRoleIndex] = useState(0);
-  const [isFlashing, setIsFlashing] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+  const { isDarkRed } = useTheme();
+  const { playClick } = useSound();
+  const sectionRef = useRef(null);
+  const nameRef = useRef(null);
+  const taglineRef = useRef(null);
+  const ctaRef = useRef(null);
+  const imageRef = useRef(null);
+  const marqueeRef = useRef(null);
+  const badgeRef = useRef(null);
+  const scrollHintRef = useRef(null);
+  const orb1Ref = useRef(null);
+  const orb2Ref = useRef(null);
+  const orb3Ref = useRef(null);
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      const x = (e.clientX / window.innerWidth) * 100;
-      const y = (e.clientY / window.innerHeight) * 100;
-      setMousePos({ x, y });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ delay: 0.6 });
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIsFlashing(true);
-      
-      // Delay to complete the split animation
-      setTimeout(() => {
-        setRoleIndex((prev) => (prev + 1) % siteConfig.roles.length);
-        setIsFlashing(false);
-      }, 700);
-    }, 4000);
-    return () => clearInterval(interval);
+      // Badge fade in
+      tl.fromTo(badgeRef.current,
+        { opacity: 0, y: 20, scale: 0.9 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.5)' }
+      );
+
+      // Name reveal — word by word
+      const nameWords = nameRef.current.querySelectorAll('.word');
+      tl.fromTo(nameWords,
+        { opacity: 0, y: 80, rotateX: 40 },
+        {
+          opacity: 1, y: 0, rotateX: 0,
+          duration: 0.8, ease: 'power4.out',
+          stagger: 0.12
+        },
+        '-=0.3'
+      );
+
+      // Profile image clip reveal
+      tl.fromTo(imageRef.current,
+        { clipPath: 'inset(100% 0 0 0)', opacity: 0 },
+        {
+          clipPath: 'inset(0% 0 0 0)', opacity: 1,
+          duration: 1, ease: 'power3.inOut'
+        },
+        '-=0.5'
+      );
+
+      // Tagline
+      tl.fromTo(taglineRef.current,
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', clearProps: 'all' },
+        '-=0.4'
+      );
+
+      // CTA buttons
+      const buttons = ctaRef.current.querySelectorAll('a');
+      tl.fromTo(buttons,
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out', stagger: 0.15 },
+        '-=0.3'
+      );
+
+      // Marquee start
+      tl.fromTo(marqueeRef.current,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.8 },
+        '-=0.3'
+      );
+
+      // Scroll hint
+      tl.fromTo(scrollHintRef.current,
+        { opacity: 0, y: -10 },
+        { opacity: 0.4, y: 0, duration: 0.6 },
+        '-=0.2'
+      );
+
+      // Parallax orbs on scroll
+      gsap.to(orb1Ref.current, {
+        y: -100,
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 1
+        }
+      });
+
+      gsap.to(orb2Ref.current, {
+        y: -60, x: 40,
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 1
+        }
+      });
+
+      gsap.to(orb3Ref.current, {
+        y: -80,
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 1
+        }
+      });
+
+      // Scrubbed scrolling text parallax & fade
+      gsap.to([nameRef.current, taglineRef.current], {
+        y: -70,
+        opacity: 0.2,
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top top',
+          end: '60% top',
+          scrub: 1
+        }
+      });
+
+      // Infinite marquee animation
+      const marqueeTrack = marqueeRef.current?.querySelector('.marquee-track');
+      if (marqueeTrack) {
+        const trackWidth = marqueeTrack.scrollWidth / 2;
+        gsap.to(marqueeTrack, {
+          x: -trackWidth,
+          duration: 25,
+          ease: 'none',
+          repeat: -1,
+        });
+      }
+
+    }, sectionRef);
+
+    return () => ctx.revert();
   }, []);
 
   const handleScrollTo = (e, href) => {
@@ -37,191 +148,210 @@ const Hero = () => {
     playClick();
     const element = document.querySelector(href);
     if (element) {
-      const offsetTop = element.offsetTop - 64;
+      const offsetTop = element.offsetTop - 80;
       window.scrollTo({ top: offsetTop, behavior: 'smooth' });
     }
   };
 
-  const nextRoleIndex = (roleIndex + 1) % siteConfig.roles.length;
+  const roleItems = [...siteConfig.roles, ...siteConfig.roles];
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20 bg-dark-950">
-      {/* Volumetric Mouse Follow Glow */}
-      <div 
-        className="absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000"
-        style={{
-          background: `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, rgba(59, 130, 246, 0.08) 0%, transparent 40%)`
-        }}
-      ></div>
+    <section
+      ref={sectionRef}
+      className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 bg-box-structure"
+    >
+      <BoxStructureOverlay />
 
-      {/* Background Mesh Gradients */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-accent-400/20 rounded-full blur-[120px] mix-blend-screen animate-pulse pointer-events-none"></div>
-      <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-blue-400/15 rounded-full blur-[120px] mix-blend-screen animate-pulse pointer-events-none" style={{ animationDelay: '2s' }}></div>
+      {/* Ambient Gradient Orbs - Dramatic Top-Right Dark Nebula Eclipse in Cyber Noir Mode */}
+      {isDarkRed ? (
+        <>
+          {/* Top Right Dark Crimson Nebula Eclipse */}
+          <div className="absolute top-[-15%] right-[-10%] w-[750px] h-[750px] rounded-full bg-gradient-to-br from-red-600/35 via-red-950/45 to-black blur-[100px] pointer-events-none animate-pulse-slow" />
+          <div className="absolute top-[10%] right-[5%] w-[400px] h-[400px] rounded-full bg-red-500/15 blur-[80px] pointer-events-none animate-float" />
+          <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-red-900/20 blur-[100px] pointer-events-none animate-float-slow" />
+        </>
+      ) : (
+        <>
+          <div ref={orb1Ref} className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] orb-blue animate-float-slow" />
+          <div ref={orb2Ref} className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] orb-sky animate-float" />
+          <div ref={orb3Ref} className="absolute top-[30%] left-[20%] w-[300px] h-[300px] orb-indigo animate-pulse-soft" />
+        </>
+      )}
 
-      {/* Modern HUD Elements */}
-      <div className="absolute inset-0 z-[1] pointer-events-none opacity-20">
-        <div className="absolute top-1/4 left-0 w-24 hud-line-h"></div>
-        <div className="absolute top-1/4 left-24 hud-dot"></div>
-        <div className="absolute top-0 right-1/4 h-32 hud-line-v"></div>
-        <div className="absolute bottom-1/4 right-0 w-32 hud-line-h"></div>
-        <div className="absolute bottom-1/4 right-32 hud-dot"></div>
-      </div>
-
-      {/* Modern Grid Overlay */}
-      <div
-        className="absolute inset-0 opacity-[0.05] z-[2]"
-        style={{
-          backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-                           linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)`,
-          backgroundSize: 'clamp(20px, 5vw, 40px) clamp(20px, 5vw, 40px)',
-          maskImage: 'radial-gradient(circle at center, black, transparent 80%)'
-        }}
-      ></div>
-
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center flex flex-col items-center">
-        {/* Modern Label */}
-        <div className="group inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8 backdrop-blur-md animate-fade-in relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-accent-400"></span>
-          </span>
-          <span className="text-[10px] font-mono font-black tracking-[0.3em] text-slate-400 uppercase">SYSTEM_INIT_COMPLETE</span>
-        </div>
-
-        {/* Mobile/Tablet Profile Image - Hidden on lg screens */}
-        <div className="lg:hidden relative mb-8 animate-fade-in animate-delay-200">
-          <div className="absolute inset-0 bg-accent-400/20 blur-2xl rounded-full animate-pulse"></div>
-          <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-2 border-accent-400/50 shadow-[0_0_30px_rgba(239,68,68,0.3)] mx-auto">
-            <img 
-              src={profileImg} 
-              alt="Althaf" 
-              className="w-full h-full object-cover"
-              onError={(e) => { e.target.src = "https://ui-avatars.com/api/?name=Althaf+S&background=09090b&color=3b82f6&size=512&bold=true"; }}
-            />
-          </div>
-        </div>
-
-        {/* Main Display Area */}
-        <div className="relative mb-8 mt-4 flex justify-center w-full">
-          
-          <h1 className="relative text-6xl sm:text-7xl md:text-[6rem] font-black tracking-tight leading-none font-archivo cursor-default group/name text-center">
-            {/* Emerging Photo from Left on Hover */}
-            <div className="absolute top-1/2 -translate-y-1/2 right-[105%] mr-8 hidden lg:block w-48 h-52 rounded-3xl overflow-hidden border-2 border-accent-400/50 opacity-0 -translate-x-10 group-hover/name:opacity-100 group-hover/name:translate-x-0 transition-all duration-700 ease-out shadow-[0_0_50px_rgba(239,68,68,0.4)] z-50 pointer-events-none rotate-[-6deg] group-hover/name:rotate-0">
-              <div className="absolute inset-0 bg-accent-400/10 mix-blend-overlay z-10"></div>
-              <img 
-                src={profileImg} 
-                alt="Hover Preview" 
-                className="w-full h-full object-cover scale-125 group-hover/name:scale-100 transition-all duration-1000"
-                onError={(e) => { e.target.src = "https://ui-avatars.com/api/?name=Althaf+S&background=09090b&color=3b82f6&size=512&bold=true"; }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-dark-950/80 via-transparent to-transparent"></div>
-              {/* Decorative scanlines on the hover photo */}
-              <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.2)_50%)] bg-[length:100%_4px] opacity-20 z-20"></div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          {/* Left — Content */}
+          <div className="text-center lg:text-left order-2 lg:order-1">
+            {/* Availability Badge - Futuristic Cyber HUD Pill in Dark Mode */}
+            <div
+              ref={badgeRef}
+              className={`inline-flex items-center gap-3 px-4 py-2 rounded-full mb-8 transition-all duration-500 ${
+                isDarkRed
+                  ? 'bg-red-950/60 border border-red-500/50 shadow-lg shadow-red-500/20 font-mono text-xs tracking-widest'
+                  : 'bg-blue-50 border border-blue-100'
+              }`}
+            >
+              <span className="relative flex h-2.5 w-2.5">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isDarkRed ? 'bg-red-400' : 'bg-green-400'}`} />
+                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isDarkRed ? 'bg-red-500' : 'bg-green-500'}`} />
+              </span>
+              <span className={`text-sm font-medium ${isDarkRed ? 'text-red-300 font-mono text-xs uppercase' : 'text-blue-600'}`}>
+                {isDarkRed ? `// SYS::ACTIVE -- ${siteConfig.availability}` : siteConfig.availability}
+              </span>
             </div>
 
-            {/* Premium intense glow behind text on hover */}
-            <div className="absolute inset-0 bg-accent-400/0 group-hover/name:bg-accent-400/40 blur-[80px] rounded-full transition-all duration-1000 ease-out -z-10 pointer-events-none scale-50 group-hover/name:scale-150"></div>
-            
-            <span className="relative z-10 inline-block text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-300 uppercase transition-all duration-[800ms] cubic-bezier(0.16, 1, 0.3, 1) group-hover/name:scale-[1.08] group-hover/name:-translate-y-2 group-hover/name:tracking-[0.15em] drop-shadow-2xl">
-              {siteConfig.name}
-            </span>
-            
-            {/* Tech line that expands underneath */}
-            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-0 h-px bg-gradient-to-r from-transparent via-accent-400 to-transparent group-hover/name:w-[120%] transition-all duration-1000 ease-in-out opacity-0 group-hover/name:opacity-100 pointer-events-none"></div>
-            {/* Glowing core of the tech line */}
-            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-0 h-[3px] bg-accent-400 blur-sm group-hover/name:w-[40%] transition-all duration-700 delay-100 ease-out opacity-0 group-hover/name:opacity-100 pointer-events-none"></div>
-          </h1>
-          
-          {/* Decorative side accent */}
-          <div className="hidden lg:block absolute -left-12 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-accent-400/50 to-transparent"></div>
-        </div>
+            {/* Name */}
+            <h1
+              ref={nameRef}
+              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-[0.95] tracking-tight mb-6"
+              style={{ perspective: '1000px' }}
+            >
+              {siteConfig.name.split(' ').map((word, i) => (
+                <span key={i} className="word inline-block mr-4">
+                  {i === 0 ? (
+                    <span className="text-navy">{word}</span>
+                  ) : (
+                    <span className="text-gradient-blue">{word}</span>
+                  )}
+                </span>
+              ))}
+            </h1>
 
-        {/* Value Proposition */}
-        <div className="max-w-4xl mx-auto mb-16 text-center select-none">
-          <div className="relative h-20 md:h-28 flex items-center justify-center">
-            {/* Laser Beam */}
-            {isFlashing && (
-              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 z-50 pointer-events-none">
-                <div className="w-full animate-laser-ignite" />
-              </div>
-            )}
+            {/* Role */}
+            <p className={`text-xl sm:text-2xl font-display font-bold mb-6 tracking-tight ${
+              isDarkRed ? 'text-red-400 font-mono tracking-widest uppercase text-lg' : 'text-gray-700'
+            }`}>
+              {isDarkRed ? `// ROLE :: ${siteConfig.role}` : siteConfig.role}
+            </p>
 
-            {/* Roles Container */}
-            <div className="relative w-full h-full flex items-center justify-center">
-              {/* The Static State (Visible when NOT flashing) */}
-              <div className={`transition-opacity duration-200 ${isFlashing ? 'opacity-0' : 'opacity-100'}`}>
-                <p className="text-3xl md:text-4xl text-white font-black uppercase tracking-[0.25em]">
-                  {siteConfig.roles[roleIndex]}
-                </p>
-              </div>
+            {/* Tagline */}
+            <p
+              ref={taglineRef}
+              className={`text-base sm:text-lg font-medium leading-relaxed max-w-xl mx-auto lg:mx-0 mb-10 ${
+                isDarkRed ? 'text-white' : 'text-gray-700'
+              }`}
+            >
+              {siteConfig.tagline}
+            </p>
 
-              {/* The "Power-Down" Split Layers (Visible ONLY when flashing) */}
-              {isFlashing && (
-                <>
-                  {/* Top Half Moving Up */}
-                  <div 
-                    className="absolute inset-0 flex items-center justify-center animate-split-top pointer-events-none"
-                    style={{ clipPath: 'inset(0 0 49% 0)' }}
-                  >
-                    <p className="text-3xl md:text-4xl text-white font-black uppercase tracking-[0.25em]">
-                      {siteConfig.roles[roleIndex]}
-                    </p>
-                  </div>
+            {/* CTA Buttons - Cyber HUD Terminal Style in Dark Mode */}
+            <div ref={ctaRef} className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+              <a
+                href="#projects"
+                onClick={(e) => handleScrollTo(e, '#projects')}
+                className={`w-full sm:w-auto px-8 py-4 flex items-center justify-center gap-2 transition-all duration-300 ${
+                  isDarkRed
+                    ? 'bg-gradient-to-r from-red-600 to-rose-700 text-white shadow-lg shadow-red-600/40 font-mono tracking-widest uppercase text-xs border border-red-400/50 rounded-lg hover:scale-105'
+                    : 'btn-blue rounded-full text-sm font-semibold tracking-wide'
+                }`}
+              >
+                {isDarkRed ? '[ EXEC :: VIEW_WORK ]' : 'View My Work'}
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </a>
+              <a
+                href="#contact"
+                onClick={(e) => handleScrollTo(e, '#contact')}
+                className={`w-full sm:w-auto px-8 py-4 transition-all duration-300 text-center ${
+                  isDarkRed
+                    ? 'bg-red-950/50 border border-red-500/60 text-red-300 font-mono tracking-widest uppercase text-xs rounded-lg hover:bg-red-900/40 hover:text-white'
+                    : 'btn-outline rounded-full text-sm font-semibold tracking-wide'
+                }`}
+              >
+                {isDarkRed ? '[ INIT :: CONTACT ]' : 'Get in Touch'}
+              </a>
+            </div>
+          </div>
 
-                  {/* Bottom Half Moving Down */}
-                  <div 
-                    className="absolute inset-0 flex items-center justify-center animate-split-bottom pointer-events-none"
-                    style={{ clipPath: 'inset(49% 0 0 0)' }}
-                  >
-                    <p className="text-3xl md:text-4xl text-white font-black uppercase tracking-[0.25em]">
-                      {siteConfig.roles[roleIndex]}
-                    </p>
-                  </div>
-
-                  {/* The Incoming Role (Reveals from behind) */}
-                  <div className="absolute inset-0 flex items-center justify-center animate-fade-in opacity-0 animate-delay-500">
-                    <p className="text-3xl md:text-4xl text-white font-black uppercase tracking-[0.25em] text-glow filter drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]">
-                      {siteConfig.roles[nextRoleIndex]}
-                    </p>
-                  </div>
-                </>
+          {/* Right — Profile Image */}
+          <div className={`order-1 lg:order-2 flex justify-center lg:justify-end ${isDarkRed ? 'animate-photo-levitate' : ''}`}>
+            <div className="relative">
+              {/* Outer Counter-Rotating Ring in Dark Mode */}
+              {isDarkRed && (
+                <div className="absolute -inset-6 rounded-[2.5rem] bg-gradient-to-tr from-red-600/50 via-transparent to-red-500/40 opacity-70 animate-spin-reverse-slow pointer-events-none" />
               )}
+              {/* Decorative ring */}
+              <div className={`absolute -inset-4 rounded-[2rem] animate-spin-slow ${
+                isDarkRed
+                  ? 'bg-gradient-to-br from-red-500/80 via-transparent to-red-900/80 shadow-[0_0_55px_rgba(255,30,86,0.6)] opacity-90'
+                  : 'bg-gradient-to-br from-blue-100 via-transparent to-sky-100 opacity-60'
+              }`} />
+              <div
+                ref={imageRef}
+                className={`relative w-64 h-64 sm:w-80 sm:h-80 lg:w-96 lg:h-96 rounded-[2rem] overflow-hidden ${
+                  isDarkRed
+                    ? 'border-2 border-red-500/80 animate-ruby-pulse shadow-2xl shadow-red-600/50'
+                    : 'shadow-2xl shadow-blue-500/10'
+                }`}
+              >
+                <img
+                  src={profileImg}
+                  alt={siteConfig.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(siteConfig.name)}&background=2563EB&color=fff&size=512&bold=true`;
+                  }}
+                />
+                {/* Continuous Cyber Scanline Sweep in Dark Mode */}
+                {isDarkRed && (
+                  <div className="absolute left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-red-500 to-transparent shadow-[0_0_14px_#FF1E56] animate-cyber-scanline pointer-events-none z-10" />
+                )}
+                {/* Overlay gradient */}
+                <div className={`absolute inset-0 ${isDarkRed ? 'bg-gradient-to-t from-red-600/30 via-transparent to-transparent rounded-[2rem]' : 'bg-gradient-to-t from-blue-600/10 via-transparent to-transparent'}`} />
+              </div>
+              {/* Floating stats card */}
+              <div className={`absolute -bottom-6 -left-6 rounded-2xl px-5 py-4 border animate-float transition-all duration-500 ${
+                isDarkRed
+                  ? 'bg-[#0A050A]/95 border-red-500/50 shadow-xl shadow-red-500/30 font-mono'
+                  : 'bg-white border-gray-100 shadow-xl shadow-blue-500/10'
+              }`}>
+                <div className={`text-2xl font-black ${isDarkRed ? 'text-red-400' : 'text-blue-600'}`}>
+                  {isDarkRed ? `SYS_${siteConfig.roles.length}+` : `${siteConfig.roles.length}+`}
+                </div>
+                <div className={`text-xs font-bold uppercase tracking-wider ${isDarkRed ? 'text-gray-300 font-mono' : 'text-gray-600'}`}>
+                  {isDarkRed ? 'MODS_READY' : 'Skills'}
+                </div>
+              </div>
+              {/* Floating experience card */}
+              <div className={`absolute -top-4 -right-4 rounded-2xl px-5 py-4 border animate-float-slow transition-all duration-500 ${
+                isDarkRed
+                  ? 'bg-[#0A050A]/95 border-red-500/50 shadow-xl shadow-red-500/30 font-mono'
+                  : 'bg-white border-gray-100 shadow-xl shadow-blue-500/10'
+              }`}>
+                <div className={`text-2xl font-black ${isDarkRed ? 'text-white' : 'text-navy'}`}>1+</div>
+                <div className={`text-xs font-bold uppercase tracking-wider ${isDarkRed ? 'text-red-400 font-mono' : 'text-gray-600'}`}>
+                  {isDarkRed ? '// EXP_YR' : 'Year Exp.'}
+                </div>
+              </div>
             </div>
           </div>
-          
-          <div className="flex justify-center mt-4 mb-8">
-            <div className="h-px w-24 bg-gradient-to-r from-transparent via-accent-400/50 to-transparent"></div>
-          </div>
-          <p className="text-sm md:text-base font-sans text-slate-300 tracking-wide font-light leading-relaxed max-w-2xl mx-auto">
-            {siteConfig.tagline}
-          </p>
         </div>
 
-        {/* Modern CTA Cluster */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-          <a
-            href="#projects"
-            onClick={(e) => handleScrollTo(e, '#projects')}
-            className="w-full sm:w-auto px-10 py-4 btn-premium-accent rounded-xl text-xs font-bold uppercase tracking-[0.2em] font-sans"
-          >
-            View Projects
-          </a>
-
-          <a
-            href="#contact"
-            onClick={(e) => handleScrollTo(e, '#contact')}
-            className="w-full sm:w-auto px-10 py-4 btn-premium rounded-xl text-xs font-bold uppercase tracking-[0.2em] font-sans"
-          >
-            Contact Me
-          </a>
+        {/* Scrolling Marquee */}
+        <div ref={marqueeRef} className="mt-20 mb-8 marquee-container opacity-0" >
+          <div className="marquee-track">
+            {roleItems.map((role, i) => (
+              <span key={i} className={`inline-flex items-center gap-4 text-sm font-bold uppercase tracking-[0.2em] whitespace-nowrap ${isDarkRed ? 'text-gray-200 font-mono' : 'text-gray-400'}`}>
+                {role}
+                <span className={`w-1.5 h-1.5 rounded-full ${isDarkRed ? 'bg-red-500 animate-ping' : 'bg-blue-500'}`} />
+              </span>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Scroll Hint */}
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 opacity-30 hover:opacity-100 transition-opacity duration-500 cursor-pointer" onClick={(e) => handleScrollTo(e, '#about')}>
-        <span className="text-[10px] font-mono tracking-[0.4em] uppercase -rotate-90 origin-center mb-8">SCROLL</span>
-        <div className="w-px h-16 bg-gradient-to-b from-accent-400 to-transparent"></div>
+      <div
+        ref={scrollHintRef}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+        onClick={(e) => handleScrollTo(e, '#about')}
+        style={{ opacity: 0 }}
+      >
+        <span className="text-xs font-medium text-gray-400 tracking-widest uppercase">Scroll</span>
+        <div className="w-6 h-10 rounded-full border-2 border-gray-300 flex items-start justify-center p-1.5">
+          <div className="w-1 h-2.5 bg-blue-500 rounded-full animate-bounce" />
+        </div>
       </div>
     </section>
   );

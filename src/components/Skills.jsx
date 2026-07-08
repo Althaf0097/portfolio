@@ -1,79 +1,190 @@
+import { useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { skills } from '../config/siteConfig';
+import { useSound } from '../utils/sound';
+import InteractiveCard from './ui/InteractiveCard';
 
 const Skills = () => {
+  const sectionRef = useRef(null);
+  const titleRef = useRef(null);
+  const cardsRef = useRef([]);
+  const marqueeRef = useRef(null);
+  const auxRef = useRef(null);
+  const { playHover } = useSound();
+
   const skillCategories = [
-    { title: 'Frontend', skills: skills.frontend, icon: '🎨' },
-    { title: 'Backend', skills: skills.backend, icon: '⚙️' },
-    { title: 'Database', skills: skills.database, icon: '🗄️' },
-    { title: 'DevOps & Tools', skills: skills.devops, icon: '🚀' },
+    { title: 'Frontend', skills: skills.frontend, color: 'blue', icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+    )},
+    { title: 'Backend', skills: skills.backend, color: 'indigo', icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+      </svg>
+    )},
+    { title: 'Database', skills: skills.database, color: 'sky', icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+      </svg>
+    )},
+    { title: 'DevOps & Tools', skills: skills.devops, color: 'emerald', icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    )},
   ];
 
-  return (
-    <section id="skills" className="relative py-24 md:py-32 bg-dark-950 overflow-hidden">
-      {/* Volumetric background lighting */}
-      <div className="absolute top-1/2 right-0 w-[600px] h-[600px] glow-pool-blue opacity-10 pointer-events-none"></div>
+  // All skills for marquee
+  const allSkills = [...skills.frontend, ...skills.backend, ...skills.database, ...skills.devops, ...skills.other];
+  const marqueeItems = [...allSkills, ...allSkills];
 
-      {/* Modern HUD Elements */}
-      <div className="absolute inset-0 z-[1] pointer-events-none opacity-20">
-        <div className="absolute top-1/2 left-0 w-32 hud-line-h"></div>
-        <div className="absolute top-1/2 left-32 hud-dot"></div>
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Title reveal
+      gsap.fromTo(titleRef.current,
+        { opacity: 0, y: 50 },
+        {
+          opacity: 1, y: 0,
+          duration: 0.8, ease: 'power3.out',
+          scrollTrigger: {
+            trigger: titleRef.current,
+            start: 'top 85%',
+          }
+        }
+      );
+
+      // Staggered 3D card cascade on scroll
+      cardsRef.current.forEach((card, i) => {
+        if (!card) return;
+        gsap.fromTo(
+          card,
+          { opacity: 0, y: 85, rotateX: 18, scale: 0.88 },
+          {
+            opacity: 1,
+            y: 0,
+            rotateX: 0,
+            scale: 1,
+            duration: 0.9,
+            ease: 'back.out(1.5)',
+            delay: (i % 4) * 0.12,
+            scrollTrigger: {
+              trigger: card,
+              start: 'top 95%',
+              toggleActions: 'play reverse play reverse',
+            },
+          }
+        );
+      });
+
+      // Auxiliary bar
+      if (auxRef.current) {
+        gsap.fromTo(auxRef.current,
+          { opacity: 0, y: 30 },
+          {
+            opacity: 1, y: 0,
+            duration: 0.6, ease: 'power3.out',
+            scrollTrigger: {
+              trigger: auxRef.current,
+              start: 'top 90%',
+            }
+          }
+        );
+      }
+
+      // Marquee animation
+      const marqueeTrack = marqueeRef.current?.querySelector('.marquee-track');
+      if (marqueeTrack) {
+        const trackWidth = marqueeTrack.scrollWidth / 2;
+        gsap.to(marqueeTrack, {
+          x: -trackWidth,
+          duration: 30,
+          ease: 'none',
+          repeat: -1,
+        });
+      }
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  return (
+    <section id="skills" ref={sectionRef} className="relative py-24 md:py-32 bg-box-structure overflow-hidden border-t border-blue-100/60">
+      {/* Box structure grid overlay */}
+      <div className="absolute inset-0 bg-box-grid-subtle opacity-75 pointer-events-none" />
+      <div className="absolute top-16 left-8 text-blue-400/40 font-mono text-xl select-none">+</div>
+      <div className="absolute bottom-16 right-8 text-blue-400/40 font-mono text-xl select-none">+</div>
+
+      {/* Marquee band at top */}
+      <div ref={marqueeRef} className="absolute top-0 left-0 w-full py-4 border-b border-gray-100 marquee-container">
+        <div className="marquee-track">
+          {marqueeItems.map((skill, i) => (
+            <span key={i} className="inline-flex items-center gap-3 text-xs font-semibold text-gray-200 uppercase tracking-[0.2em] whitespace-nowrap">
+              {skill}
+              <span className="w-1 h-1 rounded-full bg-blue-200" />
+            </span>
+          ))}
+        </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Modern Section Header */}
-        <div className="mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-400/10 border border-accent-400/20 mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-accent-400 animate-pulse"></span>
-            <span className="text-[10px] font-mono font-bold tracking-[0.2em] text-accent-400 uppercase">Tech Stack</span>
-          </div>
-          <h2 className="text-5xl sm:text-6xl font-black text-white uppercase tracking-tighter font-sans">
-            Expert <span className="text-blue-400">Systems</span>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-8">
+        {/* Section Header */}
+        <div ref={titleRef} className="mb-16">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-sm font-medium mb-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+            Tech Stack
+          </span>
+          <h2 className="text-4xl sm:text-5xl font-black text-navy tracking-tight">
+            Skills & <span className="text-gradient-blue">Expertise</span>
           </h2>
         </div>
 
-        {/* Modern Bento Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 group/focus">
-          {skillCategories.map((category) => (
+        {/* Skills Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {skillCategories.map((category, i) => (
             <div
               key={category.title}
-              className={`group relative p-6 glass-premium rounded-3xl transition-all duration-700 group-hover/focus:opacity-40 hover:!opacity-100 hover:scale-[1.03] card-hover flex flex-col h-full border border-white/5 hover:border-accent-400/30 overflow-hidden`}
+              ref={(el) => (cardsRef.current[i] = el)}
+              className="h-full"
+              style={{ transformStyle: 'preserve-3d' }}
             >
-              {/* Premium Shine Effect */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-[1200ms] ease-in-out pointer-events-none"></div>
-              <div className={`absolute top-6 right-8 text-2xl opacity-20 group-hover:opacity-100 transition-all duration-700 ease-out drop-shadow-[0_0_20px_rgba(239,68,68,0.4)] ${category.icon === '🚀' ? 'group-hover:animate-rocket-launch' : 'group-hover:-translate-y-3 group-hover:scale-[1.8] group-hover:rotate-[12deg] group-hover:animate-bounce-subtle'}`}>
-                {category.icon}
-              </div>
+              <InteractiveCard onMouseEnter={playHover} className="p-6 h-full">
+                {/* Icon */}
+                <div className="w-12 h-12 flex items-center justify-center bg-blue-50 text-blue-600 rounded-xl mb-5 group-hover:bg-blue-600 group-hover:text-white transition-all duration-500 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-blue-500/20">
+                  {category.icon}
+                </div>
 
-              <h3 className="text-xl font-black text-white mb-6 pr-8 font-sans uppercase tracking-tight">
-                {category.title}
-              </h3>
+                <h3 className="text-lg font-bold text-navy mb-4 tracking-tight">
+                  {category.title}
+                </h3>
 
-              <div className="flex flex-wrap gap-2.5 mt-auto">
-                {category.skills.map((skill) => (
-                  <span
-                    key={skill}
-                    className="px-3.5 py-2 text-[10px] font-black text-slate-400 bg-white/5 border border-white/10 rounded-xl group-hover:border-accent-400/40 group-hover:text-white group-hover:bg-accent-400/10 transition-all duration-300 font-mono uppercase tracking-widest"
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
+                <div className="flex flex-wrap gap-2">
+                  {category.skills.map((skill) => (
+                    <span
+                      key={skill}
+                      className="px-3 py-1.5 text-xs font-bold text-gray-700 bg-gray-100 border border-gray-200 rounded-lg group-hover:border-blue-300 group-hover:text-blue-700 group-hover:bg-blue-50 transition-all duration-300"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </InteractiveCard>
             </div>
           ))}
         </div>
 
-        {/* Additional skills bar - Modern Utility Style */}
-        <div className="mt-16 p-10 glass-premium rounded-[2.5rem] border border-white/5 hover:border-accent-400/20 transition-all duration-500 shadow-2xl relative group overflow-hidden">
-          {/* Premium Shine Effect */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-[1500ms] ease-in-out pointer-events-none"></div>
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="flex items-center gap-4">
-              <span className="px-3 py-1.5 rounded bg-accent-400/10 text-accent-400 text-[10px] font-mono font-black border border-accent-400/20 tracking-widest">AUXILIARY</span>
-              <span className="text-xs font-black text-slate-500 uppercase tracking-[0.3em]">Complementary:</span>
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
+        {/* Auxiliary Skills */}
+        <div
+          ref={auxRef}
+          className="mt-12 p-8 bg-gray-50 border border-gray-100 rounded-2xl"
+        >
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <span className="text-sm font-bold text-gray-700 uppercase tracking-wider">Also proficient in</span>
+            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
               {skills.other.map((skill) => (
-                <span key={skill} className="text-xs font-black text-slate-400 hover:text-accent-400 transition-all duration-300 cursor-default uppercase tracking-[0.2em] font-mono hover:-translate-y-1">
+                <span key={skill} className="text-sm font-bold text-gray-700 hover:text-blue-600 transition-colors duration-300 cursor-default">
                   {skill}
                 </span>
               ))}

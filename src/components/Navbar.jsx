@@ -1,23 +1,49 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
 import { navLinks, siteConfig } from '../config/siteConfig';
 import { useSound } from '../utils/sound';
+import { useTheme } from '../context/ThemeContext';
 
 const Navbar = () => {
+  const { isDarkRed, toggleTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const navRef = useRef(null);
+  const linksRef = useRef([]);
+  const logoRef = useRef(null);
+  const ctaRef = useRef(null);
   const { playClick } = useSound();
 
   useEffect(() => {
+    let lastScrollY = window.scrollY;
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-      
-      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-      const scrolledTotal = (winScroll / height) * 100;
-      setScrollProgress(scrolledTotal);
+      const currentScrollY = window.scrollY;
+      setScrolled(currentScrollY > 30);
+      lastScrollY = currentScrollY;
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    // Entrance animation
+    const tl = gsap.timeline({ delay: 0.3 });
+    tl.fromTo(
+      logoRef.current,
+      { opacity: 0, x: -20 },
+      { opacity: 1, x: 0, duration: 0.6, ease: 'power3.out' }
+    );
+    tl.fromTo(
+      linksRef.current,
+      { opacity: 0, y: -12 },
+      { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out', stagger: 0.07 },
+      '-=0.3'
+    );
+    tl.fromTo(
+      ctaRef.current,
+      { opacity: 0, scale: 0.9 },
+      { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.6)' },
+      '-=0.2'
+    );
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -33,103 +59,172 @@ const Navbar = () => {
 
     const element = document.querySelector(href);
     if (element) {
-      const offsetTop = element.offsetTop - 64;
+      const offsetTop = element.offsetTop - 80;
       window.scrollTo({ top: offsetTop, behavior: 'smooth' });
     }
   };
 
   return (
-    <nav className={`fixed top-0 left-1/2 -translate-x-1/2 z-50 transition-all duration-700 w-full ${
-      scrolled 
-        ? 'max-w-4xl translate-y-4 rounded-full py-1' 
-        : 'max-w-7xl translate-y-0 py-4'
-    }`}>
-      {/* Scroll Progress Indicator */}
-      <div className="absolute top-0 left-0 h-[2px] bg-gradient-to-r from-accent-400 via-accent-500 to-accent-600 shadow-[0_0_10px_#3b82f6] transition-all duration-300 z-[60]" style={{ width: `${scrollProgress}%` }} />
-
-      <div className={`mx-4 sm:px-6 lg:px-8 transition-all duration-500 rounded-full ${scrolled ? 'glass-premium px-4' : 'bg-transparent'}`}>
-        <div className="flex items-center justify-between h-14">
-          {/* Modern Animated Logo */}
-          <a
-            href="#"
-            onClick={(e) => handleNavClick(e, '#')}
-            className="group flex items-center gap-1.5"
-          >
-            <div className="relative flex items-center">
-              <span className="text-2xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-200 group-hover:from-accent-400 group-hover:to-accent-600 transition-all duration-500 font-mono drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+    <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pointer-events-none pt-4 sm:pt-6">
+      <nav
+        ref={navRef}
+        className={`pointer-events-auto transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          scrolled
+            ? 'w-[92%] sm:w-[85%] max-w-3xl translate-y-1'
+            : 'w-[94%] sm:w-[90%] max-w-7xl translate-y-0'
+        }`}
+      >
+        <div
+          className={`transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] rounded-full ${
+            isDarkRed
+              ? scrolled
+                ? 'bg-[#0E080E]/95 px-5 sm:px-7 py-2.5 shadow-xl shadow-red-600/20 border border-red-500/35 backdrop-blur-xl'
+                : 'bg-[#080408]/85 backdrop-blur-md px-6 sm:px-8 py-3.5 border border-red-500/25 shadow-sm'
+              : scrolled
+                ? 'glass-white px-5 sm:px-7 py-2.5 shadow-xl shadow-blue-600/10 border border-white/90 backdrop-blur-xl'
+                : 'bg-white/40 backdrop-blur-md px-6 sm:px-8 py-3.5 border border-gray-200/50 shadow-sm'
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <a
+              ref={logoRef}
+              href="#"
+              onClick={(e) => handleNavClick(e, '#')}
+              className="group flex items-center gap-1.5"
+            >
+              <span className={`text-xl sm:text-2xl font-black tracking-tight group-hover:text-blue-600 transition-colors duration-300 font-display ${isDarkRed ? 'text-white' : 'text-navy'}`}>
                 {siteConfig.initials}
               </span>
-              <span className="text-2xl font-black text-accent-400 ml-0.5 animate-pulse">_</span>
-            </div>
-          </a>
-
-          {/* Desktop Navigation - Premium Pill Style */}
-          <div className={`hidden md:flex items-center gap-1 transition-all duration-500 ${scrolled ? 'opacity-100 translate-y-0' : 'opacity-90 translate-y-0'}`}>
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                onClick={(e) => handleNavClick(e, link.href)}
-                className="relative px-5 py-2 text-xs font-black uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-all duration-500 rounded-full group/nav overflow-hidden"
-              >
-                {/* Background glow pill that slides in on hover */}
-                <div className="absolute inset-0 bg-accent-400/10 rounded-full blur-md opacity-0 group-hover/nav:opacity-100 transition-opacity duration-500"></div>
-                
-                <span className="relative z-10 transition-transform duration-300 group-hover/nav:-translate-y-0.5 inline-block">{link.name}</span>
-                
-                {/* Premium active indicator line */}
-                <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-0 h-[2.5px] bg-accent-400 group-hover/nav:w-6 transition-all duration-500 ease-out shadow-[0_0_12px_rgba(239,68,68,1)] rounded-full"></div>
-              </a>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-4">
-            <a
-              href="#contact"
-              onClick={(e) => handleNavClick(e, '#contact')}
-              className="hidden sm:flex flex-row items-center gap-2 px-6 py-2.5 glass-premium-accent text-xs font-black uppercase tracking-widest hover:scale-105 transition-all duration-300 rounded-xl group/btn overflow-hidden relative shadow-lg shadow-accent-400/5 hover:shadow-accent-400/20"
-            >
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover/btn:translate-x-[150%] transition-transform duration-[1000ms] ease-in-out"></div>
-              <span className="relative z-10">CONNECT</span>
+              <span className="text-xl sm:text-2xl font-black text-blue-600 animate-pulse">
+                _
+              </span>
             </a>
 
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => {
-                playClick();
-                setIsOpen(!isOpen);
-              }}
-              className="md:hidden p-2 text-slate-400 hover:text-white transition-all"
-              aria-label="Toggle menu"
-            >
-              <div className="w-6 h-5 relative flex flex-col justify-between items-end">
-                <span className={`h-0.5 bg-current transition-all duration-300 ${isOpen ? 'w-6 translate-y-2 -rotate-45' : 'w-6'}`}></span>
-                <span className={`h-0.5 bg-current transition-all duration-300 ${isOpen ? 'opacity-0' : 'w-4'}`}></span>
-                <span className={`h-0.5 bg-current transition-all duration-300 ${isOpen ? 'w-6 -translate-y-2 rotate-45' : 'w-5'}`}></span>
-              </div>
-            </button>
-          </div>
-        </div>
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-1">
+              {navLinks.map((link, i) => (
+                <a
+                  key={link.name}
+                  ref={(el) => (linksRef.current[i] = el)}
+                  href={link.href}
+                  onClick={(e) => handleNavClick(e, link.href)}
+                  className={`relative px-4 py-1.5 text-sm font-semibold transition-all duration-300 rounded-full group/nav ${
+                    isDarkRed
+                      ? 'text-gray-300 hover:text-white'
+                      : scrolled
+                        ? 'text-gray-600 hover:text-blue-600'
+                        : 'text-gray-600 hover:text-navy'
+                  }`}
+                >
+                  <span className="relative z-10">{link.name}</span>
+                  <div className={`absolute inset-0 rounded-full opacity-0 scale-95 group-hover/nav:opacity-100 group-hover/nav:scale-100 transition-all duration-300 -z-0 ${isDarkRed ? 'bg-red-950/60' : 'bg-blue-50/80'}`} />
+                </a>
+              ))}
+            </div>
 
-        {/* Mobile Navigation Dropdown */}
-        <div className={`md:hidden overflow-hidden transition-all duration-700 cubic-bezier(0.16, 1, 0.3, 1) ${isOpen ? 'max-h-[500px] py-4 opacity-100 translate-y-0' : 'max-h-0 opacity-0 -translate-y-4'}`}>
-          <div className="flex flex-col gap-2 border-t border-white/5 pt-4 mt-2 glass-premium rounded-b-3xl -mx-4 px-4 pb-6 shadow-2xl">
-            {navLinks.map((link, index) => (
-              <a
-                key={link.name}
-                href={link.href}
-                onClick={(e) => handleNavClick(e, link.href)}
-                className="relative px-6 py-4 text-base font-black text-slate-400 hover:text-white transition-all duration-300 flex items-center justify-between group rounded-2xl overflow-hidden uppercase tracking-widest"
+            {/* CTA, Theme Toggle & Mobile Menu */}
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              {/* Top Right Theme Switcher */}
+              <button
+                onClick={() => {
+                  playClick();
+                  toggleTheme();
+                }}
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full font-semibold text-xs transition-all duration-500 border shadow-sm ${
+                  isDarkRed
+                    ? 'bg-red-950/70 text-red-400 border-red-500/40 hover:bg-red-900/80 hover:border-red-400 shadow-red-500/20'
+                    : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-blue-50 hover:text-blue-600'
+                }`}
+                title={isDarkRed ? 'Switch to Light Editorial Mode' : 'Switch to Dark Cyber-Noir Mode'}
               >
-                <div className="absolute inset-0 bg-accent-400/0 group-hover:bg-accent-400/5 transition-colors duration-300"></div>
-                <span className="relative z-10 group-hover:translate-x-2 transition-transform duration-300">{link.name}</span>
-                <span className="text-[10px] font-mono opacity-20 group-hover:opacity-100 group-hover:text-accent-400 transition-all duration-300">#0{index + 1}</span>
+                <span className={`w-2 h-2 rounded-full ${isDarkRed ? 'bg-red-500 animate-ping' : 'bg-blue-600'}`} />
+                <span>{isDarkRed ? 'Dark Noir' : 'Light Blue'}</span>
+              </button>
+
+              <a
+                ref={ctaRef}
+                href="#contact"
+                onClick={(e) => handleNavClick(e, '#contact')}
+                className={`hidden sm:flex items-center gap-2 font-semibold rounded-full transition-all duration-400 hover:shadow-lg hover:shadow-blue-500/25 hover:-translate-y-0.5 active:translate-y-0 ${
+                  scrolled
+                    ? 'px-5 py-2 bg-blue-600 text-white text-xs hover:bg-blue-700'
+                    : 'px-6 py-2.5 bg-navy text-white text-sm hover:bg-blue-600'
+                }`}
+              >
+                Let's Talk
               </a>
-            ))}
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => {
+                  playClick();
+                  setIsOpen(!isOpen);
+                }}
+                className="md:hidden p-2 text-gray-700 hover:text-blue-600 transition-all rounded-full hover:bg-blue-50"
+                aria-label="Toggle menu"
+              >
+                <div className="w-5 h-4 relative flex flex-col justify-between">
+                  <span
+                    className={`h-0.5 bg-current rounded-full transition-all duration-300 ${
+                      isOpen ? 'w-5 translate-y-[7px] -rotate-45' : 'w-5'
+                    }`}
+                  />
+                  <span
+                    className={`h-0.5 bg-current rounded-full transition-all duration-300 ${
+                      isOpen ? 'opacity-0 w-0' : 'w-3 ml-auto'
+                    }`}
+                  />
+                  <span
+                    className={`h-0.5 bg-current rounded-full transition-all duration-300 ${
+                      isOpen ? 'w-5 -translate-y-[7px] rotate-45' : 'w-4 ml-auto'
+                    }`}
+                  />
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile Navigation Dropdown */}
+          <div
+            className={`md:hidden overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              isOpen ? 'max-h-[380px] pt-4 pb-3 opacity-100' : 'max-h-0 opacity-0'
+            }`}
+          >
+            <div className={`flex flex-col gap-1 pt-2 border-t ${isDarkRed ? 'border-red-500/25' : 'border-gray-100'}`}>
+              {navLinks.map((link, index) => (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  onClick={(e) => handleNavClick(e, link.href)}
+                  className={`px-4 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 flex items-center justify-between ${
+                    isDarkRed
+                      ? 'text-white hover:text-red-400 hover:bg-red-950/40'
+                      : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50'
+                  }`}
+                >
+                  <span>{link.name}</span>
+                  <span className={`text-xs font-mono ${isDarkRed ? 'text-red-400/60' : 'text-gray-300'}`}>
+                    0{index + 1}
+                  </span>
+                </a>
+              ))}
+              <a
+                href="#contact"
+                onClick={(e) => handleNavClick(e, '#contact')}
+                className={`mt-2 mx-2 py-2.5 text-center text-white text-sm font-semibold rounded-full transition-all shadow-md ${
+                  isDarkRed
+                    ? 'bg-red-600 hover:bg-red-700 shadow-red-500/30'
+                    : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/20'
+                }`}
+              >
+                Let's Talk
+              </a>
+            </div>
           </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 };
 

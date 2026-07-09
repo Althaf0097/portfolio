@@ -48,7 +48,7 @@ function App() {
     gsap.ticker.lagSmoothing(0);
 
     // Refresh ScrollTrigger positions after layout calculation
-    const refreshTimer = setTimeout(() => {
+    setTimeout(() => {
       ScrollTrigger.refresh();
     }, 250);
 

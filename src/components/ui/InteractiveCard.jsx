@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { gsap } from 'gsap';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -11,15 +11,18 @@ const InteractiveCard = ({
   const { isDarkRed } = useTheme();
   const cardRef = useRef(null);
   const glareRef = useRef(null);
+  const rectRef = useRef(null);
 
   const handleMouseMove = (e) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    if (!cardRef.current || !rectRef.current) return;
 
-    const normalizedX = x / rect.width - 0.5;
-    const normalizedY = y / rect.height - 0.5;
+    // BOLT OPTIMIZATION: Use cached document-relative positions for stable tracking without layout thrashing
+    const { left, top, width, height } = rectRef.current;
+    const x = e.pageX - left;
+    const y = e.pageY - top;
+
+    const normalizedX = x / width - 0.5;
+    const normalizedY = y / height - 0.5;
 
     // Smooth GSAP 3D tilt
     gsap.to(cardRef.current, {
@@ -32,12 +35,12 @@ const InteractiveCard = ({
       overwrite: 'auto',
     });
 
-    // Move spotlight glare
+    // BOLT OPTIMIZATION: Move spotlight glare via transform: translate3d for GPU acceleration
     if (glareRef.current) {
-      const glareColor = isDarkRed ? 'rgba(255, 30, 86, 0.22)' : 'rgba(37, 99, 235, 0.15)';
       gsap.to(glareRef.current, {
         opacity: 1,
-        background: `radial-gradient(400px circle at ${x}px ${y}px, ${glareColor}, transparent 60%)`,
+        x: x - 400, // Center of 800px glare
+        y: y - 400,
         duration: 0.15,
         overwrite: 'auto',
       });
@@ -45,6 +48,16 @@ const InteractiveCard = ({
   };
 
   const handleMouseEnter = (e) => {
+    // BOLT OPTIMIZATION: Cache document-relative rect on enter
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      rectRef.current = {
+        left: rect.left + window.scrollX,
+        top: rect.top + window.scrollY,
+        width: rect.width,
+        height: rect.height,
+      };
+    }
     if (onMouseEnter) onMouseEnter(e);
   };
 
@@ -69,6 +82,8 @@ const InteractiveCard = ({
     }
   };
 
+  const glareColor = isDarkRed ? 'rgba(255, 30, 86, 0.22)' : 'rgba(37, 99, 235, 0.15)';
+
   return (
     <div
       ref={cardRef}
@@ -90,9 +105,16 @@ const InteractiveCard = ({
       } ${className}`}
     >
       {/* Interactive Mouse-Tracking Spotlight Glare */}
+      {/* BOLT OPTIMIZATION: Static gradient moved via GPU-accelerated transform */}
       <div
         ref={glareRef}
-        className="pointer-events-none absolute inset-0 opacity-0 z-10 transition-opacity duration-300"
+        className="pointer-events-none absolute w-[800px] h-[800px] opacity-0 z-10 transition-opacity duration-300"
+        style={{
+          background: `radial-gradient(circle at center, ${glareColor}, transparent 60%)`,
+          left: 0,
+          top: 0,
+          willChange: 'transform'
+        }}
       />
 
       {/* Subtle diagonal reflection sheen */}

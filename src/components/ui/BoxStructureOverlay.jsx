@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 
-const BoxStructureOverlay = ({ variant = 'default' }) => {
+const BoxStructureOverlay = () => {
   const containerRef = useRef(null);
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { gsap } from 'gsap';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -11,10 +11,11 @@ const InteractiveCard = ({
   const { isDarkRed } = useTheme();
   const cardRef = useRef(null);
   const glareRef = useRef(null);
+  const boundsRef = useRef(null);
 
   const handleMouseMove = (e) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
+    if (!cardRef.current || !boundsRef.current) return;
+    const rect = boundsRef.current;
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
@@ -32,12 +33,12 @@ const InteractiveCard = ({
       overwrite: 'auto',
     });
 
-    // Move spotlight glare
+    // Move spotlight glare using translate3d for better performance
     if (glareRef.current) {
-      const glareColor = isDarkRed ? 'rgba(255, 30, 86, 0.22)' : 'rgba(37, 99, 235, 0.15)';
       gsap.to(glareRef.current, {
         opacity: 1,
-        background: `radial-gradient(400px circle at ${x}px ${y}px, ${glareColor}, transparent 60%)`,
+        x: x,
+        y: y,
         duration: 0.15,
         overwrite: 'auto',
       });
@@ -45,6 +46,9 @@ const InteractiveCard = ({
   };
 
   const handleMouseEnter = (e) => {
+    if (cardRef.current) {
+      boundsRef.current = cardRef.current.getBoundingClientRect();
+    }
     if (onMouseEnter) onMouseEnter(e);
   };
 
@@ -92,7 +96,12 @@ const InteractiveCard = ({
       {/* Interactive Mouse-Tracking Spotlight Glare */}
       <div
         ref={glareRef}
-        className="pointer-events-none absolute inset-0 opacity-0 z-10 transition-opacity duration-300"
+        className="pointer-events-none absolute w-[400px] h-[400px] -left-[200px] -top-[200px] rounded-full opacity-0 z-10 will-change-transform"
+        style={{
+          background: isDarkRed
+            ? 'radial-gradient(circle, rgba(255, 30, 86, 0.22) 0%, transparent 60%)'
+            : 'radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, transparent 60%)',
+        }}
       />
 
       {/* Subtle diagonal reflection sheen */}

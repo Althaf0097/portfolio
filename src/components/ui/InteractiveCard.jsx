@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { gsap } from 'gsap';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -32,12 +32,13 @@ const InteractiveCard = ({
       overwrite: 'auto',
     });
 
-    // Move spotlight glare
+    // BOLT OPTIMIZATION: Use translate3d for mouse-tracking glare to leverage GPU acceleration
+    // instead of updating the background radial-gradient on every frame.
     if (glareRef.current) {
-      const glareColor = isDarkRed ? 'rgba(255, 30, 86, 0.22)' : 'rgba(37, 99, 235, 0.15)';
       gsap.to(glareRef.current, {
         opacity: 1,
-        background: `radial-gradient(400px circle at ${x}px ${y}px, ${glareColor}, transparent 60%)`,
+        x: x - 200, // Center of the 400px glare
+        y: y - 200,
         duration: 0.15,
         overwrite: 'auto',
       });
@@ -90,9 +91,17 @@ const InteractiveCard = ({
       } ${className}`}
     >
       {/* Interactive Mouse-Tracking Spotlight Glare */}
+      {/* BOLT OPTIMIZATION: Glare is now a fixed-size element moved with transforms */}
       <div
         ref={glareRef}
-        className="pointer-events-none absolute inset-0 opacity-0 z-10 transition-opacity duration-300"
+        className="pointer-events-none absolute w-[400px] h-[400px] rounded-full opacity-0 z-10 will-change-transform"
+        style={{
+          background: isDarkRed
+            ? 'radial-gradient(circle, rgba(255, 30, 86, 0.22) 0%, transparent 60%)'
+            : 'radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, transparent 60%)',
+          left: 0,
+          top: 0,
+        }}
       />
 
       {/* Subtle diagonal reflection sheen */}

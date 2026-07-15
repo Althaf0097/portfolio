@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { gsap } from 'gsap';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -21,6 +21,7 @@ const InteractiveCard = ({
     const normalizedX = x / rect.width - 0.5;
     const normalizedY = y / rect.height - 0.5;
 
+    // BOLT OPTIMIZATION: Use translate3d via GSAP for high-frequency updates to avoid expensive repaints
     // Smooth GSAP 3D tilt
     gsap.to(cardRef.current, {
       rotateY: normalizedX * 16,
@@ -34,10 +35,10 @@ const InteractiveCard = ({
 
     // Move spotlight glare
     if (glareRef.current) {
-      const glareColor = isDarkRed ? 'rgba(255, 30, 86, 0.22)' : 'rgba(37, 99, 235, 0.15)';
       gsap.to(glareRef.current, {
         opacity: 1,
-        background: `radial-gradient(400px circle at ${x}px ${y}px, ${glareColor}, transparent 60%)`,
+        x: x - 200, // Center of 400px glare
+        y: y - 200,
         duration: 0.15,
         overwrite: 'auto',
       });
@@ -90,9 +91,16 @@ const InteractiveCard = ({
       } ${className}`}
     >
       {/* Interactive Mouse-Tracking Spotlight Glare */}
+      {/* BOLT OPTIMIZATION: Static gradient moved with transform: translate3d for 60fps performance */}
       <div
         ref={glareRef}
-        className="pointer-events-none absolute inset-0 opacity-0 z-10 transition-opacity duration-300"
+        className="pointer-events-none absolute w-[400px] h-[400px] opacity-0 z-10 transition-opacity duration-300"
+        style={{
+          background: `radial-gradient(circle, ${isDarkRed ? 'rgba(255, 30, 86, 0.22)' : 'rgba(37, 99, 235, 0.15)'}, transparent 60%)`,
+          willChange: 'transform',
+          left: 0,
+          top: 0,
+        }}
       />
 
       {/* Subtle diagonal reflection sheen */}

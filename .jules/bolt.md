@@ -1,0 +1,3 @@
+## 2025-05-15 - GPU-Accelerated Glare Effects
+**Learning:** Animating `background: radial-gradient` on every `mousemove` forces the browser to recalculate the gradient and repaint the element on the main thread, which is a major performance bottleneck for interactive components. Moving this logic to a static overlay element animated via `transform: translate3d()` offloads the workload to the GPU, significantly reducing CPU usage and eliminating layout thrashing.
+**Action:** Always prefer composite properties (transform, opacity) for high-frequency interactions and leverage `gsap.quickTo()` for smoother, more efficient DOM updates.

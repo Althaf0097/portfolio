@@ -11,6 +11,15 @@ const InteractiveCard = ({
   const { isDarkRed } = useTheme();
   const cardRef = useRef(null);
   const glareRef = useRef(null);
+  const quickToX = useRef(null);
+  const quickToY = useRef(null);
+
+  useEffect(() => {
+    if (glareRef.current) {
+      quickToX.current = gsap.quickTo(glareRef.current, 'x', { duration: 0.2, ease: 'power2.out' });
+      quickToY.current = gsap.quickTo(glareRef.current, 'y', { duration: 0.2, ease: 'power2.out' });
+    }
+  }, []);
 
   const handleMouseMove = (e) => {
     if (!cardRef.current) return;
@@ -21,7 +30,7 @@ const InteractiveCard = ({
     const normalizedX = x / rect.width - 0.5;
     const normalizedY = y / rect.height - 0.5;
 
-    // Smooth GSAP 3D tilt
+    // BOLT OPTIMIZATION: Use 3D tilt with transform only
     gsap.to(cardRef.current, {
       rotateY: normalizedX * 16,
       rotateX: -normalizedY * 16,
@@ -32,15 +41,12 @@ const InteractiveCard = ({
       overwrite: 'auto',
     });
 
-    // Move spotlight glare
-    if (glareRef.current) {
-      const glareColor = isDarkRed ? 'rgba(255, 30, 86, 0.22)' : 'rgba(37, 99, 235, 0.15)';
-      gsap.to(glareRef.current, {
-        opacity: 1,
-        background: `radial-gradient(400px circle at ${x}px ${y}px, ${glareColor}, transparent 60%)`,
-        duration: 0.15,
-        overwrite: 'auto',
-      });
+    // BOLT OPTIMIZATION: Move spotlight glare using translate3d instead of background-gradient
+    // This reduces repaints and leverages GPU acceleration
+    if (glareRef.current && quickToX.current && quickToY.current) {
+      gsap.to(glareRef.current, { opacity: 1, duration: 0.2, overwrite: 'auto' });
+      quickToX.current(x);
+      quickToY.current(y);
     }
   };
 
@@ -69,6 +75,8 @@ const InteractiveCard = ({
     }
   };
 
+  const glareColor = isDarkRed ? 'rgba(255, 30, 86, 0.22)' : 'rgba(37, 99, 235, 0.15)';
+
   return (
     <div
       ref={cardRef}
@@ -78,6 +86,7 @@ const InteractiveCard = ({
       style={{
         transformStyle: 'preserve-3d',
         perspective: '1200px',
+        willChange: 'transform'
       }}
       className={`group relative rounded-2xl border transition-all duration-300 overflow-hidden cursor-pointer ${
         isDarkRed
@@ -90,9 +99,14 @@ const InteractiveCard = ({
       } ${className}`}
     >
       {/* Interactive Mouse-Tracking Spotlight Glare */}
+      {/* BOLT OPTIMIZATION: Large glare element moved via transform for high-performance interaction */}
       <div
         ref={glareRef}
-        className="pointer-events-none absolute inset-0 opacity-0 z-10 transition-opacity duration-300"
+        className="pointer-events-none absolute w-[800px] h-[800px] -top-[400px] -left-[400px] opacity-0 z-10 transition-opacity duration-300"
+        style={{
+          background: `radial-gradient(circle at center, ${glareColor}, transparent 60%)`,
+          willChange: 'transform'
+        }}
       />
 
       {/* Subtle diagonal reflection sheen */}

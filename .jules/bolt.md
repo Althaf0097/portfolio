@@ -1,0 +1,3 @@
+## 2026-07-17 - Eliminate Cascading Renders on Mount via Lazy State Initialization
+**Learning:** Calling `setState` synchronously within a `useEffect` hook to set media-query or platform-dependent state causes a cascading render cycle immediately after mounting. This impairs initial page load performance and violates React 19's purity guidelines.
+**Action:** Always lazy initialize platform-dependent state (e.g., `window.matchMedia().matches`) directly inside the `useState` initializer block with a safe environment check (e.g., `typeof window !== 'undefined'`). Only subscribe to changes using the event listener within the `useEffect` block, removing any synchronous `setState` on mount.

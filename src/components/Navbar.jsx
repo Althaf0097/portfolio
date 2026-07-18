@@ -15,11 +15,9 @@ const Navbar = () => {
   const { playClick } = useSound();
 
   useEffect(() => {
-    let lastScrollY = window.scrollY;
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       setScrolled(currentScrollY > 30);
-      lastScrollY = currentScrollY;
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();

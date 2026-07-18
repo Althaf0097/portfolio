@@ -71,6 +71,7 @@ function App() {
     document.addEventListener('click', handleAnchorClicks);
 
     return () => {
+      clearTimeout(refreshTimer);
       document.removeEventListener('click', handleAnchorClicks);
       gsap.ticker.remove(rafCallback);
       lenis.destroy();

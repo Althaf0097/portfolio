@@ -11,15 +11,53 @@ const InteractiveCard = ({
   const { isDarkRed } = useTheme();
   const cardRef = useRef(null);
   const glareRef = useRef(null);
+  const rectRef = useRef(null);
+  const quickX = useRef(null);
+  const quickY = useRef(null);
+
+  // BOLT OPTIMIZATION: Move spotlight glare movement to the GPU via transform: translate3d and gsap.quickTo()
+  useEffect(() => {
+    if (glareRef.current) {
+      quickX.current = gsap.quickTo(glareRef.current, 'x', { duration: 0.15, ease: 'power2.out' });
+      quickY.current = gsap.quickTo(glareRef.current, 'y', { duration: 0.15, ease: 'power2.out' });
+    }
+  }, []);
+
+  // BOLT OPTIMIZATION: Cache bounding box dimensions on enter to avoid expensive layout thrashing in high-frequency mousemove events
+  const handleMouseEnter = (e) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    rectRef.current = {
+      left: rect.left + window.scrollX,
+      top: rect.top + window.scrollY,
+      width: rect.width,
+      height: rect.height,
+    };
+
+    if (glareRef.current) {
+      gsap.to(glareRef.current, { opacity: 1, duration: 0.15, overwrite: 'auto' });
+    }
+
+    if (onMouseEnter) onMouseEnter(e);
+  };
 
   const handleMouseMove = (e) => {
     if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    if (!rectRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      rectRef.current = {
+        left: rect.left + window.scrollX,
+        top: rect.top + window.scrollY,
+        width: rect.width,
+        height: rect.height,
+      };
+    }
 
-    const normalizedX = x / rect.width - 0.5;
-    const normalizedY = y / rect.height - 0.5;
+    const x = e.pageX - rectRef.current.left;
+    const y = e.pageY - rectRef.current.top;
+
+    const normalizedX = x / rectRef.current.width - 0.5;
+    const normalizedY = y / rectRef.current.height - 0.5;
 
     // Smooth GSAP 3D tilt
     gsap.to(cardRef.current, {
@@ -32,20 +70,10 @@ const InteractiveCard = ({
       overwrite: 'auto',
     });
 
-    // Move spotlight glare
-    if (glareRef.current) {
-      const glareColor = isDarkRed ? 'rgba(255, 30, 86, 0.22)' : 'rgba(37, 99, 235, 0.15)';
-      gsap.to(glareRef.current, {
-        opacity: 1,
-        background: `radial-gradient(400px circle at ${x}px ${y}px, ${glareColor}, transparent 60%)`,
-        duration: 0.15,
-        overwrite: 'auto',
-      });
+    if (quickX.current && quickY.current) {
+      quickX.current(x - 200);
+      quickY.current(y - 200);
     }
-  };
-
-  const handleMouseEnter = (e) => {
-    if (onMouseEnter) onMouseEnter(e);
   };
 
   const handleMouseLeave = () => {
@@ -92,7 +120,14 @@ const InteractiveCard = ({
       {/* Interactive Mouse-Tracking Spotlight Glare */}
       <div
         ref={glareRef}
-        className="pointer-events-none absolute inset-0 opacity-0 z-10 transition-opacity duration-300"
+        className="pointer-events-none absolute w-[400px] h-[400px] rounded-full opacity-0 z-10 top-0 left-0"
+        style={{
+          background: isDarkRed
+            ? 'radial-gradient(circle, rgba(255, 30, 86, 0.22) 0%, transparent 60%)'
+            : 'radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, transparent 60%)',
+          transform: 'translate3d(-200px, -200px, 0)',
+          willChange: 'transform',
+        }}
       />
 
       {/* Subtle diagonal reflection sheen */}

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { projects, socialLinks } from '../config/siteConfig';
+import { projects } from '../config/siteConfig';
 import { useSound } from '../utils/sound';
 import InteractiveCard from './ui/InteractiveCard';
 

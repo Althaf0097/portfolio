@@ -11,6 +11,17 @@ const InteractiveCard = ({
   const { isDarkRed } = useTheme();
   const cardRef = useRef(null);
   const glareRef = useRef(null);
+  const quickToX = useRef(null);
+  const quickToY = useRef(null);
+
+  // BOLT OPTIMIZATION: GPU-accelerated mouse-tracking glare effect using translate3d and gsap.quickTo
+  useEffect(() => {
+    if (glareRef.current) {
+      gsap.set(glareRef.current, { x: -400, y: -400 });
+      quickToX.current = gsap.quickTo(glareRef.current, 'x', { duration: 0.15, ease: 'power2.out' });
+      quickToY.current = gsap.quickTo(glareRef.current, 'y', { duration: 0.15, ease: 'power2.out' });
+    }
+  }, []);
 
   const handleMouseMove = (e) => {
     if (!cardRef.current) return;
@@ -32,15 +43,17 @@ const InteractiveCard = ({
       overwrite: 'auto',
     });
 
-    // Move spotlight glare
+    // Move spotlight glare using hardware-accelerated transform
     if (glareRef.current) {
-      const glareColor = isDarkRed ? 'rgba(255, 30, 86, 0.22)' : 'rgba(37, 99, 235, 0.15)';
       gsap.to(glareRef.current, {
         opacity: 1,
-        background: `radial-gradient(400px circle at ${x}px ${y}px, ${glareColor}, transparent 60%)`,
         duration: 0.15,
         overwrite: 'auto',
       });
+      if (quickToX.current && quickToY.current) {
+        quickToX.current(x - 400);
+        quickToY.current(y - 400);
+      }
     }
   };
 
@@ -69,6 +82,8 @@ const InteractiveCard = ({
     }
   };
 
+  const glareColor = isDarkRed ? 'rgba(255, 30, 86, 0.22)' : 'rgba(37, 99, 235, 0.15)';
+
   return (
     <div
       ref={cardRef}
@@ -90,9 +105,14 @@ const InteractiveCard = ({
       } ${className}`}
     >
       {/* Interactive Mouse-Tracking Spotlight Glare */}
+      {/* BOLT OPTIMIZATION: static gradient positioned via translate3d to avoid layout/paint cost */}
       <div
         ref={glareRef}
-        className="pointer-events-none absolute inset-0 opacity-0 z-10 transition-opacity duration-300"
+        className="pointer-events-none absolute top-0 left-0 w-[800px] h-[800px] rounded-full opacity-0 z-10"
+        style={{
+          background: `radial-gradient(circle, ${glareColor} 0%, transparent 60%)`,
+          willChange: 'transform',
+        }}
       />
 
       {/* Subtle diagonal reflection sheen */}

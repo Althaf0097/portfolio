@@ -73,6 +73,7 @@ function App() {
     return () => {
       document.removeEventListener('click', handleAnchorClicks);
       gsap.ticker.remove(rafCallback);
+      clearTimeout(refreshTimer);
       lenis.destroy();
     };
   }, []);

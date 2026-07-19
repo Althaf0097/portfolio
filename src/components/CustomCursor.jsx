@@ -1,21 +1,21 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 
 const CustomCursor = () => {
   const cursorRef = useRef(null);
-  const plusRef = useRef(null);
-  const lineRefs = useRef([]);
-  const mouse = useRef({ x: 0, y: 0 });
-  const pos = useRef({ x: 0, y: 0 });
+  const ringRef = useRef(null);
+  const mouse = useRef({ x: -100, y: -100 });
+  const pos = useRef({ x: -100, y: -100 });
+  const hoveringRef = useRef(false);
 
   useEffect(() => {
     if (window.matchMedia("(pointer: coarse)").matches) return;
     document.body.classList.add('custom-cursor-active');
 
     const cursor = cursorRef.current;
-    const plusContainer = plusRef.current;
+    const ring = ringRef.current;
 
-    gsap.set([cursor, plusContainer], { xPercent: -50, yPercent: -50 });
+    gsap.set([cursor, ring], { xPercent: -50, yPercent: -50 });
 
     const onMouseMove = (e) => {
       mouse.current = { x: e.clientX, y: e.clientY };
@@ -23,95 +23,88 @@ const CustomCursor = () => {
       gsap.to(cursor, {
         x: mouse.current.x,
         y: mouse.current.y,
-        duration: 0.1,
-        ease: 'power2.out',
+        duration: 0.04,
+        ease: 'none',
       });
     };
 
     const tick = () => {
-      const dt = 1.0 - Math.pow(1.0 - 0.15, gsap.ticker.deltaRatio());
+      const dt = 1.0 - Math.pow(1.0 - 0.18, gsap.ticker.deltaRatio());
       pos.current.x += (mouse.current.x - pos.current.x) * dt;
       pos.current.y += (mouse.current.y - pos.current.y) * dt;
 
-      const vx = mouse.current.x - pos.current.x;
-      const vy = mouse.current.y - pos.current.y;
-      const velocity = Math.sqrt(vx * vx + vy * vy);
-
-      const baseRotation = velocity * 0.5;
-
-      gsap.set(plusContainer, {
+      gsap.set(ring, {
         x: pos.current.x,
         y: pos.current.y,
-        rotation: `+=${0.5 + baseRotation * 0.05}`,
       });
     };
 
     gsap.ticker.add(tick);
 
     const onMouseDown = () => {
-      gsap.to(lineRefs.current, { 
-        padding: '2px', 
-        duration: 0.2, 
-        backgroundColor: '#2563EB' 
-      });
+      gsap.to(cursor, { scale: 0.6, duration: 0.1 });
+      gsap.to(ring, { scale: 0.8, duration: 0.1 });
     };
 
     const onMouseUp = () => {
-      gsap.to(lineRefs.current, { 
-        padding: '0px', 
-        duration: 0.3, 
-        backgroundColor: '#3B82F6' 
-      });
+      gsap.to(cursor, { scale: hoveringRef.current ? 1.2 : 1, duration: 0.2 });
+      gsap.to(ring, { scale: hoveringRef.current ? 1.35 : 1, duration: 0.2 });
     };
 
-    const handleLinkHover = () => {
-      const targets = document.querySelectorAll('a, button, .group, [role="button"]');
-      
-      const onEnter = () => {
-        gsap.to(lineRefs.current[0], { y: -12, height: 12, duration: 0.4, ease: 'back.out(2)' });
-        gsap.to(lineRefs.current[1], { y: 12, height: 12, duration: 0.4, ease: 'back.out(2)' });
-        gsap.to(lineRefs.current[2], { x: -12, width: 12, duration: 0.4, ease: 'back.out(2)' });
-        gsap.to(lineRefs.current[3], { x: 12, width: 12, duration: 0.4, ease: 'back.out(2)' });
-        
-        gsap.to(cursor, { 
-          scale: 0.5, 
-          backgroundColor: '#2563EB', 
-          boxShadow: '0 0 15px rgba(37, 99, 235, 0.5)',
-          duration: 0.3 
-        });
-        gsap.to(lineRefs.current, { backgroundColor: '#60A5FA', duration: 0.3 });
-      };
+    // Event delegation for interactive elements
+    const handleMouseOver = (e) => {
+      const target = e.target.closest('a, button, .group, [role="button"], [data-interactive="true"], input, textarea, select, h1, h2, h3');
+      if (target) {
+        hoveringRef.current = true;
 
-      const onLeave = () => {
-        gsap.to(lineRefs.current, { x: 0, y: 0, width: 8, height: 8, duration: 0.4, ease: 'power2.out' });
-        gsap.to([lineRefs.current[0], lineRefs.current[1]], { width: 1.5, height: 8, backgroundColor: '#3B82F6' });
-        gsap.to([lineRefs.current[2], lineRefs.current[3]], { width: 8, height: 1.5, backgroundColor: '#3B82F6' });
-        
-        gsap.to(cursor, { 
-          scale: 1, 
-          backgroundColor: '#2563EB', 
-          boxShadow: '0 0 10px rgba(37, 99, 235, 0.4), 0 0 15px rgba(37, 99, 235, 0.2)',
-          duration: 0.3 
+        gsap.to(ring, {
+          scale: 1.45,
+          borderColor: 'rgba(126, 249, 255, 0.9)',
+          backgroundColor: 'rgba(79, 140, 255, 0.08)',
+          duration: 0.25,
+          ease: 'back.out(1.8)',
+          overwrite: 'auto',
         });
-      };
 
-      targets.forEach(el => {
-        el.addEventListener('mouseenter', onEnter);
-        el.addEventListener('mouseleave', onLeave);
-      });
-
-      return () => {
-        targets.forEach(el => {
-          el.removeEventListener('mouseenter', onEnter);
-          el.removeEventListener('mouseleave', onLeave);
+        gsap.to(cursor, {
+          scale: 1.25,
+          backgroundColor: '#4F8CFF',
+          boxShadow: '0 0 10px rgba(79, 140, 255, 0.9)',
+          duration: 0.2,
+          overwrite: 'auto',
         });
-      };
+      }
+    };
+
+    const handleMouseOut = (e) => {
+      const target = e.target.closest('a, button, .group, [role="button"], [data-interactive="true"], input, textarea, select, h1, h2, h3');
+      if (target) {
+        hoveringRef.current = false;
+
+        gsap.to(ring, {
+          scale: 1,
+          borderColor: 'rgba(79, 140, 255, 0.5)',
+          backgroundColor: 'transparent',
+          duration: 0.3,
+          ease: 'power3.out',
+          overwrite: 'auto',
+        });
+
+        gsap.to(cursor, {
+          scale: 1,
+          backgroundColor: '#ffffff',
+          boxShadow: '0 0 6px rgba(79, 140, 255, 0.6)',
+          duration: 0.25,
+          overwrite: 'auto',
+        });
+      }
     };
 
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mousedown', onMouseDown);
     window.addEventListener('mouseup', onMouseUp);
-    const cleanupHovers = handleLinkHover();
+    document.body.addEventListener('mouseover', handleMouseOver);
+    document.body.addEventListener('mouseout', handleMouseOut);
 
     return () => {
       document.body.classList.remove('custom-cursor-active');
@@ -119,49 +112,34 @@ const CustomCursor = () => {
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mouseup', onMouseUp);
-      cleanupHovers();
+      document.body.removeEventListener('mouseover', handleMouseOver);
+      document.body.removeEventListener('mouseout', handleMouseOut);
     };
   }, []);
 
   return (
     <>
-      {/* Core Dot */}
-      <div 
-        ref={cursorRef} 
+      {/* Tiny Precise Core Dot */}
+      <div
+        ref={cursorRef}
         className="fixed top-0 left-0 w-1.5 h-1.5 rounded-full pointer-events-none z-[9999]"
-        style={{ 
-          backgroundColor: '#2563EB',
-          boxShadow: '0 0 10px rgba(37, 99, 235, 0.4), 0 0 15px rgba(37, 99, 235, 0.2)',
-          willChange: 'transform'
+        style={{
+          backgroundColor: '#ffffff',
+          boxShadow: '0 0 6px rgba(79, 140, 255, 0.6)',
+          willChange: 'transform',
         }}
       />
-      
-      {/* Plus Sign Container */}
-      <div 
-        ref={plusRef} 
-        className="fixed top-0 left-0 w-8 h-8 pointer-events-none z-[9998] flex items-center justify-center"
-      >
-        <div 
-          ref={el => lineRefs.current[0] = el}
-          className="absolute w-[1.5px] h-2 -translate-y-2 origin-bottom"
-          style={{ backgroundColor: '#3B82F6', boxShadow: '0 0 8px rgba(37, 99, 235, 0.3)' }}
-        />
-        <div 
-          ref={el => lineRefs.current[1] = el}
-          className="absolute w-[1.5px] h-2 translate-y-2 origin-top"
-          style={{ backgroundColor: '#3B82F6', boxShadow: '0 0 8px rgba(37, 99, 235, 0.3)' }}
-        />
-        <div 
-          ref={el => lineRefs.current[2] = el}
-          className="absolute w-2 h-[1.5px] -translate-x-2 origin-right"
-          style={{ backgroundColor: '#3B82F6', boxShadow: '0 0 8px rgba(37, 99, 235, 0.3)' }}
-        />
-        <div 
-          ref={el => lineRefs.current[3] = el}
-          className="absolute w-2 h-[1.5px] translate-x-2 origin-left"
-          style={{ backgroundColor: '#3B82F6', boxShadow: '0 0 8px rgba(37, 99, 235, 0.3)' }}
-        />
-      </div>
+
+      {/* Trailing Ring */}
+      <div
+        ref={ringRef}
+        className="fixed top-0 left-0 w-7 h-7 rounded-full pointer-events-none z-[9998] border"
+        style={{
+          borderColor: 'rgba(79, 140, 255, 0.5)',
+          backgroundColor: 'transparent',
+          willChange: 'transform',
+        }}
+      />
     </>
   );
 };

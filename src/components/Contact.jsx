@@ -1,17 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import emailjs from '@emailjs/browser';
 import { siteConfig, socialLinks, emailConfig } from '../config/siteConfig';
 import { useSound } from '../utils/sound';
 import InteractiveCard from './ui/InteractiveCard';
-import {
-  validateFormData,
-  checkRateLimit,
-  isBot,
-  sanitizeInput,
-  logSecurityEvent
-} from '../utils/security';
+import WaveText from './ui/WaveText';
 
 const Contact = () => {
   const formRef = useRef();
@@ -25,51 +18,49 @@ const Contact = () => {
   const [status, setStatus] = useState({ type: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState([]);
+  const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
       // Title reveal
       gsap.fromTo(titleRef.current,
-        { opacity: 0, y: 55, scale: 0.94 },
+        { opacity: 0, y: 35, scale: 0.96 },
         {
           opacity: 1, y: 0, scale: 1,
-          duration: 0.9, ease: 'back.out(1.5)',
+          duration: 0.8, ease: 'power3.out',
           scrollTrigger: {
             trigger: titleRef.current,
             start: 'top 95%',
-            toggleActions: 'play reverse play reverse',
           }
         }
       );
 
-      // Staggered Contact Info cards reveal
+      // Staggered info items
       const infoItems = infoRef.current?.querySelectorAll('.contact-card-item') || [];
       if (infoItems.length > 0) {
         gsap.fromTo(infoItems,
-          { opacity: 0, x: -60, y: 25 },
+          { opacity: 0, x: -30 },
           {
-            opacity: 1, x: 0, y: 0,
-            duration: 0.85, ease: 'back.out(1.4)',
+            opacity: 1, x: 0,
+            duration: 0.8, ease: 'power3.out',
             stagger: 0.15,
             scrollTrigger: {
               trigger: infoRef.current,
               start: 'top 95%',
-              toggleActions: 'play reverse play reverse',
             }
           }
         );
       }
 
-      // 3D Perspective Form Card reveal
+      // Form card slide-in
       gsap.fromTo(formCardRef.current,
-        { opacity: 0, x: 75, rotateY: -14, scale: 0.92 },
+        { opacity: 0, x: 30 },
         {
-          opacity: 1, x: 0, rotateY: 0, scale: 1,
-          duration: 1.05, ease: 'back.out(1.4)',
+          opacity: 1, x: 0,
+          duration: 0.8, ease: 'power3.out',
           scrollTrigger: {
             trigger: formCardRef.current,
             start: 'top 95%',
-            toggleActions: 'play reverse play reverse',
           }
         }
       );
@@ -94,57 +85,29 @@ const Contact = () => {
     setFormErrors([]);
     setStatus({ type: '', message: '' });
 
-    if (isBot(honeypot)) {
-      logSecurityEvent('Bot detected via honeypot');
-      setStatus({ type: 'success', message: 'Thanks for your message!' });
-      return;
-    }
-
-    const rateCheck = checkRateLimit('contact-form');
-    if (!rateCheck.allowed) {
-      setStatus({ type: 'error', message: rateCheck.message });
-      logSecurityEvent('Rate limit exceeded');
-      return;
-    }
-
-    const validation = validateFormData(formData);
-    if (!validation.isValid) {
-      setFormErrors(validation.errors);
-      logSecurityEvent('Form validation failed', { errors: validation.errors });
-      return;
-    }
-
     setIsSubmitting(true);
 
-    const sanitizedData = {
-      name: sanitizeInput(formData.name),
-      email: sanitizeInput(formData.email),
-      message: sanitizeInput(formData.message),
-    };
-
     if (emailConfig.serviceId === 'YOUR_SERVICE_ID') {
-      console.log('Form submission (EmailJS not configured):', sanitizedData);
+      console.log('Form submission (EmailJS not configured):', formData);
       playSuccess();
-      setStatus({ type: 'success', message: 'Thanks for your message! (Email service not configured)' });
+      setShowSuccessOverlay(true);
       setFormData({ name: '', email: '', message: '' });
       setIsSubmitting(false);
-      setTimeout(() => setStatus({ type: '', message: '' }), 5000);
+      setTimeout(() => setShowSuccessOverlay(false), 4000);
       return;
     }
 
     try {
       await emailjs.sendForm(emailConfig.serviceId, emailConfig.templateId, formRef.current, emailConfig.publicKey);
       playSuccess();
-      setStatus({ type: 'success', message: "Thanks for your message! I'll get back to you soon." });
+      setShowSuccessOverlay(true);
       setFormData({ name: '', email: '', message: '' });
-      logSecurityEvent('Form submitted successfully');
+      setTimeout(() => setShowSuccessOverlay(false), 4000);
     } catch (error) {
       console.error('EmailJS Error:', error);
       setStatus({ type: 'error', message: 'Something went wrong. Please try again or email me directly.' });
-      logSecurityEvent('Form submission failed', { error: error.message });
     } finally {
       setIsSubmitting(false);
-      setTimeout(() => setStatus({ type: '', message: '' }), 5000);
     }
   };
 
@@ -160,65 +123,62 @@ const Contact = () => {
   ];
 
   return (
-    <section id="contact" ref={sectionRef} className="relative py-24 md:py-32 bg-box-structure overflow-hidden border-t border-blue-100/60">
-      {/* Box structure grid overlay */}
-      <div className="absolute inset-0 bg-box-grid-subtle opacity-80 pointer-events-none" />
-      <div className="absolute top-12 left-10 text-blue-400/40 font-mono text-xl select-none">+</div>
-      <div className="absolute bottom-12 right-10 text-blue-400/40 font-mono text-xl select-none">+</div>
-
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] orb-blue opacity-20 pointer-events-none" />
+    <section id="contact" ref={sectionRef} className="relative py-16 md:py-32 overflow-hidden border-t border-white/5">
+      {/* Decorative glows */}
+      <div className="absolute top-[20%] left-[-10%] w-[350px] h-[350px] rounded-full bg-primary/5 blur-[90px] pointer-events-none" />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
-        <div ref={titleRef} className="mb-16 text-center">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-sm font-medium mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-            Contact
+        <div ref={titleRef} className="mb-10 sm:mb-16 text-center">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-primary text-xs font-mono uppercase tracking-[0.2em] mb-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+            // Contact
           </span>
-          <h2 className="text-4xl sm:text-5xl font-black text-navy tracking-tight">
-            Let's <span className="text-gradient-blue">Connect</span>
+          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-normal">
+            <WaveText text="Let's" />{' '}<span className="text-gradient"><WaveText text="Connect" gradient={true} /></span>
           </h2>
-          <p className="mt-4 text-lg text-gray-700 font-medium max-w-xl mx-auto">
-            Have a project in mind or just want to chat? I'd love to hear from you.
-          </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           {/* Contact Info */}
           <div ref={infoRef} className="space-y-6">
             {/* Email Card */}
-            <InteractiveCard className="contact-card-item">
-              <a
-                href={`mailto:${siteConfig.email}`}
-                className="group flex items-center gap-5 p-5 bg-gray-50 border border-gray-100 rounded-2xl hover:border-blue-200 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-500 card-lift shine-effect"
-              >
-                <div className="w-12 h-12 flex items-center justify-center bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-0.5">Email</div>
-                  <div className="text-base font-semibold text-navy group-hover:text-blue-600 transition-colors">{siteConfig.email}</div>
-                </div>
-              </a>
-            </InteractiveCard>
+            <div className="contact-card-item">
+              <InteractiveCard>
+                <a
+                  href={`mailto:${siteConfig.email}`}
+                  className="group flex items-center gap-4 sm:gap-5 p-4 sm:p-5 bg-[#101010]/40 transition-all duration-500 h-full w-full"
+                >
+                  <div className="w-12 h-12 flex items-center justify-center bg-white/5 text-primary rounded-xl group-hover:bg-primary group-hover:text-white border border-white/10 transition-all duration-500">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-muted uppercase tracking-wider mb-0.5 font-mono">// Email</div>
+                    <div className="text-sm sm:text-base font-semibold text-white group-hover:text-primary transition-colors break-all">{siteConfig.email}</div>
+                  </div>
+                </a>
+              </InteractiveCard>
+            </div>
 
             {/* Location Card */}
-            <InteractiveCard className="contact-card-item">
-              <div className="flex items-center gap-5 p-5 bg-gray-50 border border-gray-100 rounded-2xl shine-effect">
-                <div className="w-12 h-12 flex items-center justify-center bg-blue-50 text-blue-600 rounded-xl">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
+            <div className="contact-card-item">
+              <InteractiveCard>
+                <div className="flex items-center gap-4 sm:gap-5 p-4 sm:p-5 bg-[#101010]/40 h-full w-full">
+                  <div className="w-12 h-12 flex items-center justify-center bg-white/5 text-primary rounded-xl border border-white/10">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-muted uppercase tracking-wider mb-0.5 font-mono">// Location</div>
+                    <div className="text-base font-semibold text-white">{siteConfig.location}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-0.5">Location</div>
-                  <div className="text-base font-semibold text-navy">{siteConfig.location}</div>
-                </div>
-              </div>
-            </InteractiveCard>
+              </InteractiveCard>
+            </div>
 
             {/* Socials */}
             <div className="contact-card-item flex gap-3 pt-2">
@@ -228,7 +188,7 @@ const Contact = () => {
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-11 h-11 flex items-center justify-center bg-gray-50 border border-gray-100 text-gray-400 rounded-xl hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 hover:-translate-y-1 transition-all duration-300"
+                  className="w-11 h-11 flex items-center justify-center bg-white/5 border border-white/10 text-muted rounded-xl hover:text-primary hover:border-primary hover:bg-primary/10 hover:-translate-y-1 transition-all duration-300"
                 >
                   {link.icon}
                 </a>
@@ -237,110 +197,101 @@ const Contact = () => {
           </div>
 
           {/* Form Card */}
-          <div ref={formCardRef}>
-            <InteractiveCard className="bg-white border border-gray-200 rounded-2xl p-8 shadow-lg shadow-gray-200/50 shine-effect">
-              <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
-                {/* Honeypot */}
-                <input
-                  type="text"
-                  name="honeypot"
-                  value={honeypot}
-                  onChange={(e) => setHoneypot(e.target.value)}
-                  className="hidden"
-                  tabIndex={-1}
-                  autoComplete="off"
-                />
-
-                {/* Errors */}
-                {formErrors.length > 0 && (
-                  <div className="bg-red-50 border border-red-100 px-5 py-4 rounded-xl">
-                    <ul className="text-red-500 text-sm space-y-1">
-                      {formErrors.map((error, index) => (
-                        <li key={index} className="flex gap-2 items-start">
-                          <span className="text-red-400 mt-0.5">•</span> {error}
-                        </li>
-                      ))}
-                    </ul>
+          <div ref={formCardRef} className="relative">
+            <InteractiveCard className="p-5 sm:p-8 glass-card">
+              {/* Submission success screen */}
+              {showSuccessOverlay ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
+                  <div className="w-16 h-16 rounded-full bg-success/20 border border-success/30 flex items-center justify-center text-success mb-6">
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
                   </div>
-                )}
-
-                <div>
-                  <label className="block text-sm font-bold text-gray-800 mb-2">Your Name</label>
+                  <h3 className="text-xl font-bold text-white mb-2">Message Transmitted</h3>
+                  <p className="text-sm text-muted font-mono">// Connection established. Response incoming shortly.</p>
+                </div>
+              ) : (
+                <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+                  {/* Honeypot */}
                   <input
                     type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    onKeyDown={handleKeyDown}
-                    required
-                    placeholder="John Doe"
-                    className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-navy placeholder-gray-400 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm font-medium"
+                    name="honeypot"
+                    value={honeypot}
+                    onChange={(e) => setHoneypot(e.target.value)}
+                    className="hidden"
+                    tabIndex={-1}
+                    autoComplete="off"
                   />
-                </div>
 
-                <div>
-                  <label className="block text-sm font-bold text-gray-800 mb-2">Your Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    onKeyDown={handleKeyDown}
-                    required
-                    placeholder="john@example.com"
-                    className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-navy placeholder-gray-400 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm font-medium"
-                  />
-                </div>
+                  {formErrors.length > 0 && (
+                    <div className="bg-red-950/20 border border-red-500/30 px-5 py-4 rounded-xl">
+                      <ul className="text-red-400 text-sm space-y-1">
+                        {formErrors.map((error, index) => (
+                          <li key={index} className="flex gap-2 items-start">
+                            <span className="text-red-500 mt-0.5">•</span> {error}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
-                <div>
-                  <label className="block text-sm font-bold text-gray-800 mb-2">Your Message</label>
-                  <textarea
-                    name="message"
-                    value={formData.message}
-                    onChange={handleChange}
-                    onKeyDown={handleKeyDown}
-                    required
-                    rows={4}
-                    placeholder="Tell me about your project..."
-                    className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-navy placeholder-gray-400 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm font-medium resize-none"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="relative w-full py-4 bg-blue-600 text-white font-semibold text-sm rounded-xl overflow-hidden disabled:opacity-50 transition-all duration-500 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 active:scale-[0.98] group"
-                >
-                  {/* Shine effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-1000 ease-in-out" />
-                  <span className="relative z-10 flex items-center justify-center gap-2">
-                    {isSubmitting ? (
-                      <>
-                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                        </svg>
-                        Sending...
-                      </>
-                    ) : (
-                      <>
-                        Send Message
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                        </svg>
-                      </>
-                    )}
-                  </span>
-                </button>
-
-                {status.message && (
-                  <div className={`text-center text-sm font-medium animate-fade-in pt-2 ${
-                    status.type === 'success' ? 'text-green-600' : 'text-red-500'
-                  }`}>
-                    {status.message}
+                  <div>
+                    <label className="block text-sm font-bold text-muted mb-2 font-mono">// Your Name</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      onKeyDown={handleKeyDown}
+                      required
+                      placeholder="John Doe"
+                      className="w-full px-4 py-3.5 rounded-xl placeholder-gray-600 outline-none text-sm font-medium"
+                    />
                   </div>
-                )}
-              </form>
+
+                  <div>
+                    <label className="block text-sm font-bold text-muted mb-2 font-mono">// Your Email</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      onKeyDown={handleKeyDown}
+                      required
+                      placeholder="john@example.com"
+                      className="w-full px-4 py-3.5 rounded-xl placeholder-gray-600 outline-none text-sm font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-muted mb-2 font-mono">// Your Message</label>
+                    <textarea
+                      name="message"
+                      value={formData.message}
+                      onChange={handleChange}
+                      onKeyDown={handleKeyDown}
+                      required
+                      rows={4}
+                      placeholder="Tell me about your project..."
+                      className="w-full px-4 py-3.5 rounded-xl placeholder-gray-600 outline-none text-sm font-medium resize-none font-mono"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-4 btn-primary rounded-xl uppercase tracking-wider text-xs font-semibold hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                  >
+                    {isSubmitting ? 'Sending...' : 'Send Message'}
+                  </button>
+
+                  {status.message && (
+                    <div className="text-center text-sm font-medium text-red-500 pt-2 font-mono">
+                      {status.message}
+                    </div>
+                  )}
+                </form>
+              )}
             </InteractiveCard>
           </div>
         </div>

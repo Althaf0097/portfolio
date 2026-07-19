@@ -8,11 +8,11 @@ import Hero from './components/Hero';
 import About from './components/About';
 import Skills from './components/Skills';
 import Projects from './components/Projects';
+
 import Contact from './components/Contact';
 import Footer from './components/Footer';
-import { initProtection } from './utils/protection';
-import { initSecurity } from './utils/security';
-import { ThemeProvider, useTheme } from './context/ThemeContext';
+
+import { ThemeProvider } from './context/ThemeContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -20,10 +20,6 @@ function App() {
   const lenisRef = useRef(null);
 
   useEffect(() => {
-    // Initialize content protection
-    initProtection();
-    initSecurity();
-
     // Initialize Lenis smooth scroll
     const lenis = new Lenis({
       duration: 1.6,
@@ -74,6 +70,7 @@ function App() {
       document.removeEventListener('click', handleAnchorClicks);
       gsap.ticker.remove(rafCallback);
       lenis.destroy();
+      clearTimeout(refreshTimer);
     };
   }, []);
 
@@ -85,13 +82,11 @@ function App() {
 }
 
 function AppContent() {
-  const { isDarkRed } = useTheme();
-
   return (
-    <div className={`min-h-screen relative transition-colors duration-700 ${isDarkRed ? 'bg-[#060406] text-white' : 'bg-white text-navy'}`}>
+    <div className="min-h-screen relative text-white bg-[radial-gradient(circle_at_50%_20%,rgba(79,140,255,0.18),rgba(5,5,5,0.78)_42%,#050505_78%)]">
       <CustomCursor />
       <Navbar />
-      <main>
+      <main className="relative z-10">
         <Hero />
         <About />
         <Skills />

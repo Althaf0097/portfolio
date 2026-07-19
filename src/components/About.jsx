@@ -1,293 +1,184 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { aboutContent, siteConfig } from '../config/siteConfig';
+import { aboutContent } from '../config/siteConfig';
 import { useSound } from '../utils/sound';
 import InteractiveCard from './ui/InteractiveCard';
-import { useTheme } from '../context/ThemeContext';
+import WaveText from './ui/WaveText';
 
 const About = () => {
-  const { isDarkRed } = useTheme();
+  const { playHover } = useSound();
   const sectionRef = useRef(null);
   const titleRef = useRef(null);
-  const bioRef = useRef(null);
-  const statsRef = useRef([]);
-  const terminalRef = useRef(null);
-  const { playHover } = useSound();
+  const leftColRef = useRef(null);
+  const rightColRef = useRef(null);
+  const marqueeRef = useRef(null);
+
+  const stats = [
+    { label: 'Years of Experience', value: aboutContent.stats.yearsExperience },
+    { label: 'Completed Projects', value: aboutContent.stats.projects },
+    { label: 'Happy Clients', value: aboutContent.stats.clients },
+  ];
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Title reveal animation
-      gsap.fromTo(
-        titleRef.current,
-        { opacity: 0, y: 50 },
+      // Title reveal
+      gsap.fromTo(titleRef.current,
+        { opacity: 0, y: 30 },
         {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          ease: 'power3.out',
+          opacity: 1, y: 0,
+          duration: 0.8, ease: 'power3.out',
           scrollTrigger: {
             trigger: titleRef.current,
             start: 'top 85%',
-          },
+          }
         }
       );
 
-      // Scrubbed scrolling text highlight animation (word-by-word fill on scroll)
-      const words = bioRef.current.querySelectorAll('.scrub-word');
-      gsap.fromTo(
-        words,
-        { opacity: isDarkRed ? 0.4 : 0.65, color: isDarkRed ? '#A1A1AA' : '#475569' },
+      // Left Column (Image overlay) entry
+      gsap.fromTo(leftColRef.current,
+        { opacity: 0, x: -50 },
         {
-          opacity: 1,
-          color: isDarkRed ? '#FFFFFF' : '#0B1120',
-          stagger: 0.1,
-          ease: 'none',
+          opacity: 1, x: 0,
+          duration: 1, ease: 'power3.out',
           scrollTrigger: {
-            trigger: bioRef.current,
+            trigger: leftColRef.current,
             start: 'top 80%',
-            end: 'bottom 60%',
-            scrub: 1,
-          },
+          }
         }
       );
 
-      // Stats counter & card animation on scroll
-      statsRef.current.forEach((stat, i) => {
-        if (!stat) return;
-        gsap.fromTo(
-          stat,
-          { opacity: 0, y: 70, scale: 0.85 },
-          {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            duration: 0.85,
-            ease: 'back.out(1.6)',
-            delay: i * 0.15,
-            scrollTrigger: {
-              trigger: stat,
-              start: 'top 95%',
-              toggleActions: 'play reverse play reverse',
-            },
+      // Right Column entry
+      gsap.fromTo(rightColRef.current,
+        { opacity: 0, x: 50 },
+        {
+          opacity: 1, x: 0,
+          duration: 1, ease: 'power3.out',
+          scrollTrigger: {
+            trigger: rightColRef.current,
+            start: 'top 80%',
           }
-        );
-      });
-
-      // profile.json Terminal card 3D reveal on scroll
-      if (terminalRef.current) {
-        gsap.fromTo(
-          terminalRef.current,
-          { opacity: 0, x: -70, y: 40, rotateY: 16, scale: 0.9 },
-          {
-            opacity: 1,
-            x: 0,
-            y: 0,
-            rotateY: 0,
-            scale: 1,
-            duration: 1.1,
-            ease: 'back.out(1.4)',
-            scrollTrigger: {
-              trigger: terminalRef.current,
-              start: 'top 95%',
-              toggleActions: 'play reverse play reverse',
-            },
-          }
-        );
-
-        // Stagger every line of code inside profile.json
-        const codeLines = terminalRef.current.querySelectorAll('.json-line');
-        if (codeLines.length > 0) {
-          gsap.fromTo(
-            codeLines,
-            { opacity: 0, x: -25 },
-            {
-              opacity: 1,
-              x: 0,
-              duration: 0.5,
-              stagger: 0.1,
-              ease: 'power2.out',
-              scrollTrigger: {
-                trigger: terminalRef.current,
-                start: 'top 95%',
-                toggleActions: 'play reverse play reverse',
-              },
-            }
-          );
         }
+      );
+
+      // Paragraph scrub animation
+      const paragraphs = rightColRef.current.querySelectorAll('p');
+      gsap.fromTo(paragraphs,
+        { opacity: 0.2, y: 20 },
+        {
+          opacity: 1, y: 0,
+          stagger: 0.1,
+          scrollTrigger: {
+            trigger: rightColRef.current,
+            start: 'top 75%',
+            end: 'bottom 85%',
+            scrub: 1.5,
+          }
+        }
+      );
+
+      // Background slow horizontal scrolling text marquee + scroll interaction
+      const marqueeTrack = marqueeRef.current?.querySelector('.marquee-track');
+      if (marqueeTrack) {
+        const trackWidth = marqueeTrack.scrollWidth / 2;
+        
+        // Continuous slow scroll
+        gsap.to(marqueeTrack, {
+          x: -trackWidth,
+          duration: 40,
+          ease: 'none',
+          repeat: -1,
+        });
+
+        // Fast scroll scrub on page scroll
+        gsap.to(marqueeTrack, {
+          x: `-=${trackWidth * 0.5}`,
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 1,
+          }
+        });
       }
+
     }, sectionRef);
 
     return () => ctx.revert();
-  }, [isDarkRed]);
-
-  const stats = [
-    {
-      label: 'Experience',
-      value: aboutContent.stats.yearsExperience,
-      icon: '⚡',
-    },
-    { label: 'Projects', value: aboutContent.stats.projects, icon: '🚀' },
-    { label: 'Clients', value: aboutContent.stats.clients, icon: '🤝' },
-  ];
+  }, []);
 
   return (
-    <section
-      id="about"
-      ref={sectionRef}
-      className="relative py-24 md:py-32 bg-box-structure overflow-hidden border-y border-blue-100/60"
-    >
-      {/* Box structure grid overlay */}
-      <div className="absolute inset-0 bg-box-grid-subtle opacity-75 pointer-events-none" />
-      <div className="absolute top-12 left-10 text-blue-400/40 font-mono text-xl select-none">+</div>
-      <div className="absolute bottom-12 right-10 text-blue-400/40 font-mono text-xl select-none">+</div>
+    <section id="about" ref={sectionRef} className="relative py-16 md:py-32 overflow-hidden border-t border-white/5">
+      {/* Dynamic light glows in background */}
+      <div className="absolute top-[30%] left-[-10%] w-[350px] h-[350px] rounded-full bg-primary/5 blur-[90px] pointer-events-none" />
 
-      {/* Blue & White ambient gradient orb */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] orb-blue opacity-30 pointer-events-none" />
+      {/* Slow Moving Background Marquee */}
+      <div ref={marqueeRef} className="absolute top-[10%] left-0 w-full overflow-hidden select-none pointer-events-none opacity-5 py-4 hidden sm:block">
+        <div className="marquee-track flex gap-12 whitespace-nowrap text-8xl font-black uppercase font-sans tracking-widest text-white">
+          <span>ALPHAF S • DEVELOPER • DESIGNER • AI BUILDER • CREATOR • </span>
+          <span>ALPHAF S • DEVELOPER • DESIGNER • AI BUILDER • CREATOR • </span>
+        </div>
+      </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 sm:pt-16">
         {/* Section Header */}
         <div
           ref={titleRef}
-          className="mb-16 text-center"
+          className="mb-10 sm:mb-16 text-center"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-sm font-medium mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-            About Me
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-primary text-xs font-mono uppercase tracking-[0.2em] mb-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+            // About Me
           </span>
-          <h2 className="text-4xl sm:text-5xl font-black text-navy tracking-tight">
-            Get to Know <span className="text-gradient-blue">Me</span>
+          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-normal">
+            <WaveText text="Get to Know" />{' '}<span className="text-gradient"><WaveText text="Me" gradient={true} /></span>
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-          {/* Terminal Card */}
-          <div
-            className="lg:col-span-5 order-2 lg:order-1"
-            ref={terminalRef}
-          >
-            <InteractiveCard onMouseEnter={playHover} className="relative group overflow-hidden">
-              <div className="absolute -inset-1 bg-gradient-to-br from-blue-200/50 to-sky-200/50 rounded-[1.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-              <div className="relative bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow duration-500 shine-effect">
-                {/* Window Controls */}
-                <div className="bg-gray-50 px-5 py-3.5 flex items-center justify-between border-b border-gray-100">
-                  <div className="flex gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-300" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-300" />
-                    <div className="w-3 h-3 rounded-full bg-green-300" />
-                  </div>
-                  <span className="text-xs font-mono text-gray-400 font-medium">
-                    profile.json
-                  </span>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
+          {/* Left Column — Large interactive image card */}
+          <div ref={leftColRef} className="lg:col-span-5 flex justify-center">
+            <InteractiveCard onMouseEnter={playHover} className="p-2 relative group overflow-hidden max-w-[19rem] sm:max-w-sm rounded-[2rem]">
+              <div className="absolute -inset-1 bg-gradient-to-br from-primary/30 to-secondary/30 rounded-[2rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              
+              <div className="relative overflow-hidden rounded-[1.8rem] bg-card border border-white/10 aspect-[4/5] flex items-center justify-center">
+                {/* Tech structure lines in background */}
+                <div className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] bg-[size:16px_16px]" />
+                
+                {/* Abstract graphic replacing profile image */}
+                <div className="w-36 h-36 sm:w-48 sm:h-48 rounded-full border border-primary/20 flex items-center justify-center bg-primary/5 animate-float relative z-10">
+                  <svg className="w-20 h-20 sm:w-24 sm:h-24 text-primary opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                  </svg>
                 </div>
 
-                {/* Code Content */}
-                <div className="p-6 sm:p-8 font-mono text-sm leading-relaxed space-y-2">
-                  <div className="json-line flex gap-4">
-                    <span className="text-gray-300 text-xs w-6 text-right">
-                      1
-                    </span>
-                    <span>
-                      <span className="text-blue-600">const</span>{' '}
-                      <span className="text-navy font-semibold">profile</span>{' '}
-                      <span className="text-gray-400">=</span> {'{'}
-                    </span>
-                  </div>
-                  <div className="json-line flex gap-4">
-                    <span className="text-gray-300 text-xs w-6 text-right">
-                      2
-                    </span>
-                    <span className="pl-4">
-                      <span className="text-sky-600">name</span>
-                      <span className="text-gray-400">:</span>{' '}
-                      <span className="text-green-600">
-                        "{siteConfig.name}"
-                      </span>
-                      ,
-                    </span>
-                  </div>
-                  <div className="json-line flex gap-4">
-                    <span className="text-gray-300 text-xs w-6 text-right">
-                      3
-                    </span>
-                    <span className="pl-4">
-                      <span className="text-sky-600">role</span>
-                      <span className="text-gray-400">:</span>{' '}
-                      <span className="text-green-600">
-                        "{siteConfig.role}"
-                      </span>
-                      ,
-                    </span>
-                  </div>
-                  <div className="json-line flex gap-4">
-                    <span className="text-gray-300 text-xs w-6 text-right">
-                      4
-                    </span>
-                    <span className="pl-4">
-                      <span className="text-sky-600">location</span>
-                      <span className="text-gray-400">:</span>{' '}
-                      <span className="text-green-600">
-                        "{siteConfig.location}"
-                      </span>
-                      ,
-                    </span>
-                  </div>
-                  <div className="json-line flex gap-4">
-                    <span className="text-gray-300 text-xs w-6 text-right">
-                      5
-                    </span>
-                    <span className="pl-4">
-                      <span className="text-sky-600">status</span>
-                      <span className="text-gray-400">:</span>{' '}
-                      <span className="text-green-600">"Available"</span>
-                    </span>
-                  </div>
-                  <div className="json-line flex gap-4">
-                    <span className="text-gray-300 text-xs w-6 text-right">
-                      6
-                    </span>
-                    <span>{'}'}</span>
-                  </div>
+                <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 p-4 rounded-xl bg-black/60 border border-white/10 backdrop-blur-md z-20">
+                  <div className="text-xs font-mono uppercase tracking-widest text-primary mb-1">Status</div>
+                  <div className="text-sm font-semibold text-white font-mono">Available for projects</div>
                 </div>
               </div>
             </InteractiveCard>
           </div>
 
-          {/* Content with Scrubbed Scroll Text Highlight */}
-          <div className="lg:col-span-7 space-y-8 order-1 lg:order-2">
-            <div ref={bioRef} className="space-y-6">
+          {/* Right Column — Biography & counters */}
+          <div ref={rightColRef} className="lg:col-span-7 space-y-7 sm:space-y-8">
+            <div className="space-y-4 sm:space-y-6 text-muted text-sm sm:text-lg leading-relaxed">
               {aboutContent.bio.map((paragraph, index) => (
-                <p
-                  key={index}
-                  className="text-xl sm:text-2xl leading-relaxed font-medium tracking-tight"
-                >
-                  {paragraph.split(' ').map((word, wIdx) => (
-                    <span
-                      key={wIdx}
-                      className="scrub-word inline-block mr-[0.3em] transition-colors duration-150"
-                    >
-                      {word}
-                    </span>
-                  ))}
+                <p key={index}>
+                  {paragraph}
                 </p>
               ))}
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-3 gap-4 pt-6">
+            {/* Stats Grid with dynamic counting */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-6 border-t border-white/5">
               {stats.map((stat, i) => (
-                <div
-                  key={i}
-                  ref={(el) => (statsRef.current[i] = el)}
-                >
-                  <InteractiveCard onMouseEnter={playHover} className="p-5 text-center h-full">
-                    <span className="text-2xl mb-2 block group-hover:scale-110 transition-transform duration-300">
-                      {stat.icon}
-                    </span>
-                    <div className="text-2xl sm:text-3xl font-black text-navy mb-1 group-hover:text-blue-600 transition-colors duration-300">
+                <div key={i}>
+                  <InteractiveCard onMouseEnter={playHover} className="p-4 sm:p-5 text-center h-full glass-card">
+                    <div className="text-2xl sm:text-4xl font-black text-white mb-1 sm:mb-2 font-display tracking-tight text-gradient">
                       {stat.value}
                     </div>
-                    <div className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    <div className="text-[10px] sm:text-xs font-bold text-muted uppercase tracking-wider font-mono">
                       {stat.label}
                     </div>
                   </InteractiveCard>

@@ -1,6 +1,5 @@
 import { useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
-import { useTheme } from '../../context/ThemeContext';
 
 const InteractiveCard = ({
   children,
@@ -8,7 +7,6 @@ const InteractiveCard = ({
   featured = false,
   onMouseEnter,
 }) => {
-  const { isDarkRed } = useTheme();
   const cardRef = useRef(null);
   const glareRef = useRef(null);
 
@@ -18,27 +16,26 @@ const InteractiveCard = ({
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    const normalizedX = x / rect.width - 0.5;
-    const normalizedY = y / rect.height - 0.5;
+    const normalizedX = (x / rect.width - 0.5) * 2;
+    const normalizedY = (y / rect.height - 0.5) * 2;
 
-    // Smooth GSAP 3D tilt
+    // Smooth GSAP 3D card tilt & elevation (lift to -16px, rotate up to 12deg)
     gsap.to(cardRef.current, {
-      rotateY: normalizedX * 16,
-      rotateX: -normalizedY * 16,
-      y: -10,
-      scale: 1.02,
-      duration: 0.3,
+      rotateY: normalizedX * 12,
+      rotateX: -normalizedY * 12,
+      y: -16,
+      scale: 1.03,
+      duration: 0.35,
       ease: 'power2.out',
       overwrite: 'auto',
     });
 
-    // Move spotlight glare
+    // Move spotlight glare (mixture of primary blue #4F8CFF and accent cyan #00E5FF)
     if (glareRef.current) {
-      const glareColor = isDarkRed ? 'rgba(255, 30, 86, 0.22)' : 'rgba(37, 99, 235, 0.15)';
       gsap.to(glareRef.current, {
         opacity: 1,
-        background: `radial-gradient(400px circle at ${x}px ${y}px, ${glareColor}, transparent 60%)`,
-        duration: 0.15,
+        background: `radial-gradient(350px circle at ${x}px ${y}px, rgba(0, 229, 255, 0.2) 0%, rgba(79, 140, 255, 0.1) 50%, transparent 100%)`,
+        duration: 0.25,
         overwrite: 'auto',
       });
     }
@@ -72,6 +69,7 @@ const InteractiveCard = ({
   return (
     <div
       ref={cardRef}
+      data-interactive="true"
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -79,27 +77,31 @@ const InteractiveCard = ({
         transformStyle: 'preserve-3d',
         perspective: '1200px',
       }}
-      className={`group relative rounded-2xl border transition-all duration-300 overflow-hidden cursor-pointer ${
-        isDarkRed
-          ? featured
-            ? 'bg-[#0E080E] border-red-500/50 shadow-xl shadow-red-500/20'
-            : 'bg-[#0E080E] border-red-500/25 hover:border-red-400 hover:shadow-2xl hover:shadow-red-600/25'
-          : featured
-            ? 'bg-white border-blue-300 shadow-xl shadow-blue-500/10'
-            : 'bg-white border-gray-200 hover:border-blue-400 hover:shadow-2xl hover:shadow-blue-600/15'
+      className={`group relative rounded-[24px] border border-white/10 transition-all duration-500 overflow-hidden cursor-pointer backdrop-blur-[24px] ${
+        featured
+          ? 'bg-white/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_30px_rgba(79,140,255,0.15)] hover:border-[#7EF9FF]/50 hover:shadow-[0_25px_60px_rgba(0,0,0,0.7),0_0_40px_rgba(0,229,255,0.3)]'
+          : 'bg-white/[0.05] shadow-[0_15px_35px_rgba(0,0,0,0.5)] hover:border-[#4F8CFF]/50 hover:shadow-[0_25px_50px_rgba(0,0,0,0.65),0_0_30px_rgba(79,140,255,0.25)]'
       } ${className}`}
     >
+      {/* Top light reflection line (Apple-inspired white top rim highlight) */}
+      <div className="pointer-events-none absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-100 group-hover:via-white/60 transition-all duration-500 z-30" />
+
+      {/* Cyber Edge Glow Highlight (Primary & Accent Gradient) */}
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-20 group-hover:opacity-100 group-hover:via-accent transition-all duration-500 z-30" />
+
       {/* Interactive Mouse-Tracking Spotlight Glare */}
       <div
         ref={glareRef}
-        className="pointer-events-none absolute inset-0 opacity-0 z-10 transition-opacity duration-300"
+        className="pointer-events-none absolute inset-0 opacity-0 z-10 transition-opacity duration-300 mix-blend-screen"
       />
 
-      {/* Subtle diagonal reflection sheen */}
-      <div className={`pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 bg-gradient-to-br ${isDarkRed ? 'from-red-500/15 via-transparent to-transparent' : 'from-white/60 via-transparent to-transparent'}`} />
+      {/* Ambient static inner shadows and glass sheen */}
+      <div className="pointer-events-none absolute inset-0 transition-opacity duration-500 z-10 bg-gradient-to-br from-white/[0.02] via-transparent to-primary/5 shadow-[inset_0_0_24px_rgba(255,255,255,0.05)]" />
 
-      {/* Card Content */}
-      <div className="relative z-20 flex flex-col h-full">{children}</div>
+      {/* Card Content wrapper maintaining preserve-3d for inner layers */}
+      <div className="relative z-20 flex flex-col h-full" style={{ transform: 'translateZ(30px)' }}>
+        {children}
+      </div>
     </div>
   );
 };

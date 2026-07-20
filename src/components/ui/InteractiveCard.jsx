@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { gsap } from 'gsap';
 
 const InteractiveCard = ({
@@ -10,9 +10,20 @@ const InteractiveCard = ({
   const cardRef = useRef(null);
   const glareRef = useRef(null);
 
+  // BOLT OPTIMIZATION: Cache card's dimensions and positions to completely eliminate
+  // high-frequency getBoundingClientRect() calls (layout thrashing) on mousemove.
+  // We use gsap.quickTo() with transform: translate3d to move a static glare element
+  // instead of regenerating a CSS background radial gradient, avoiding main-thread repaints.
+  // We initialize dimensions to 1 to prevent division by zero in case mousemove fires before mouseenter.
+  const rectRef = useRef({ left: 0, top: 0, width: 1, height: 1 });
+  const quickXRef = useRef(null);
+  const quickYRef = useRef(null);
+
   const handleMouseMove = (e) => {
     if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
+
+    // Calculate relative mouse coordinates using normalized page coordinates
+    const rect = rectRef.current;
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
@@ -30,18 +41,40 @@ const InteractiveCard = ({
       overwrite: 'auto',
     });
 
-    // Move spotlight glare (mixture of primary blue #4F8CFF and accent cyan #00E5FF)
-    if (glareRef.current) {
-      gsap.to(glareRef.current, {
-        opacity: 1,
-        background: `radial-gradient(350px circle at ${x}px ${y}px, rgba(0, 229, 255, 0.2) 0%, rgba(79, 140, 255, 0.1) 50%, transparent 100%)`,
-        duration: 0.25,
-        overwrite: 'auto',
-      });
+    // GPU-accelerated glare position updates via transform: translate3d
+    if (quickXRef.current && quickYRef.current) {
+      quickXRef.current(x - 175); // Offset by half of glare's width (350px / 2)
+      quickYRef.current(y - 175); // Offset by half of glare's height (350px / 2)
     }
   };
 
   const handleMouseEnter = (e) => {
+    if (cardRef.current) {
+      // BOLT OPTIMIZATION: Cache the card dimensions relative to the page and viewport scroll
+      const rect = cardRef.current.getBoundingClientRect();
+      rectRef.current = {
+        left: rect.left,
+        top: rect.top,
+        width: rect.width || 1,
+        height: rect.height || 1,
+      };
+
+      // Initialize quickTo helpers if not already initialized
+      if (glareRef.current) {
+        if (!quickXRef.current) {
+          quickXRef.current = gsap.quickTo(glareRef.current, 'x', { duration: 0.25, ease: 'power2.out' });
+        }
+        if (!quickYRef.current) {
+          quickYRef.current = gsap.quickTo(glareRef.current, 'y', { duration: 0.25, ease: 'power2.out' });
+        }
+
+        gsap.to(glareRef.current, {
+          opacity: 1,
+          duration: 0.25,
+          overwrite: 'auto',
+        });
+      }
+    }
     if (onMouseEnter) onMouseEnter(e);
   };
 
@@ -89,10 +122,14 @@ const InteractiveCard = ({
       {/* Cyber Edge Glow Highlight (Primary & Accent Gradient) */}
       <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-20 group-hover:opacity-100 group-hover:via-accent transition-all duration-500 z-30" />
 
-      {/* Interactive Mouse-Tracking Spotlight Glare */}
+      {/* BOLT OPTIMIZATION: Static hardware-accelerated spotlight glare element */}
       <div
         ref={glareRef}
-        className="pointer-events-none absolute inset-0 opacity-0 z-10 transition-opacity duration-300 mix-blend-screen"
+        className="pointer-events-none absolute w-[350px] h-[350px] top-0 left-0 rounded-full opacity-0 z-10 transition-opacity duration-300 mix-blend-screen"
+        style={{
+          background: 'radial-gradient(circle, rgba(0, 229, 255, 0.2) 0%, rgba(79, 140, 255, 0.1) 50%, transparent 100%)',
+          willChange: 'transform',
+        }}
       />
 
       {/* Ambient static inner shadows and glass sheen */}

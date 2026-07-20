@@ -32,8 +32,8 @@ class SoundManager {
       oscillator.type = 'sine';
       oscillator.start(this.audioContext.currentTime);
       oscillator.stop(this.audioContext.currentTime + 0.08);
-    } catch (e) {
-      // Audio not supported
+    } catch {
+      // Use optional catch binding to satisfy ESLint unused variable rules
     }
   }
 
@@ -65,8 +65,8 @@ class SoundManager {
       oscillator.type = 'square';
       oscillator.start(this.audioContext.currentTime);
       oscillator.stop(this.audioContext.currentTime + 0.04);
-    } catch (e) {
-      // Audio not supported
+    } catch {
+      // Use optional catch binding to satisfy ESLint unused variable rules
     }
   }
 
@@ -90,8 +90,8 @@ class SoundManager {
       oscillator.type = 'sine';
       oscillator.start(this.audioContext.currentTime);
       oscillator.stop(this.audioContext.currentTime + 0.04);
-    } catch (e) {
-      // Audio not supported
+    } catch {
+      // Use optional catch binding to satisfy ESLint unused variable rules
     }
   }
 
@@ -118,8 +118,8 @@ class SoundManager {
         oscillator.start(this.audioContext.currentTime + i * 0.05);
         oscillator.stop(this.audioContext.currentTime + 0.3 + i * 0.05);
       });
-    } catch (e) {
-      // Audio not supported
+    } catch {
+      // Use optional catch binding to satisfy ESLint unused variable rules
     }
   }
 

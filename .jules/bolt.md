@@ -1,0 +1,3 @@
+## 2025-02-21 - GPU-Accelerated spotlight glare tracking
+**Learning:** High-frequency mouse-tracking animations that update `background` gradients with absolute layout coordinates are extremely CPU-intensive, forcing the browser to perform expensive repaints and layout recalculations on every single mouse event. Moving these coordinates into a hardware-accelerated `transform: translate3d()` composite layer using `gsap.quickTo()` completely offloads the visual updates to the GPU, bringing repaints down to zero and maintaining a locked 60fps interaction speed.
+**Action:** Always prefer pre-rendered static elements moved via transforms and hardware acceleration with `willChange: transform` hints over dynamic CSS property manipulation for high-frequency user interactions.

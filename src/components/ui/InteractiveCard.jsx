@@ -9,6 +9,21 @@ const InteractiveCard = ({
 }) => {
   const cardRef = useRef(null);
   const glareRef = useRef(null);
+  const xTo = useRef(null);
+  const yTo = useRef(null);
+
+  useEffect(() => {
+    if (glareRef.current) {
+      xTo.current = gsap.quickTo(glareRef.current, 'x', {
+        duration: 0.25,
+        ease: 'power2.out',
+      });
+      yTo.current = gsap.quickTo(glareRef.current, 'y', {
+        duration: 0.25,
+        ease: 'power2.out',
+      });
+    }
+  }, []);
 
   const handleMouseMove = (e) => {
     if (!cardRef.current) return;
@@ -30,14 +45,17 @@ const InteractiveCard = ({
       overwrite: 'auto',
     });
 
-    // Move spotlight glare (mixture of primary blue #4F8CFF and accent cyan #00E5FF)
+    // BOLT OPTIMIZATION: Shift glare updates to the GPU using translate3d & gsap.quickTo
     if (glareRef.current) {
       gsap.to(glareRef.current, {
         opacity: 1,
-        background: `radial-gradient(350px circle at ${x}px ${y}px, rgba(0, 229, 255, 0.2) 0%, rgba(79, 140, 255, 0.1) 50%, transparent 100%)`,
         duration: 0.25,
         overwrite: 'auto',
       });
+      if (xTo.current && yTo.current) {
+        xTo.current(x);
+        yTo.current(y);
+      }
     }
   };
 
@@ -89,10 +107,16 @@ const InteractiveCard = ({
       {/* Cyber Edge Glow Highlight (Primary & Accent Gradient) */}
       <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-20 group-hover:opacity-100 group-hover:via-accent transition-all duration-500 z-30" />
 
-      {/* Interactive Mouse-Tracking Spotlight Glare */}
+      {/* Interactive Mouse-Tracking Spotlight Glare (GPU Accelerated) */}
       <div
         ref={glareRef}
-        className="pointer-events-none absolute inset-0 opacity-0 z-10 transition-opacity duration-300 mix-blend-screen"
+        className="pointer-events-none absolute w-[700px] h-[700px] rounded-full opacity-0 z-10 mix-blend-screen"
+        style={{
+          background: 'radial-gradient(circle, rgba(0, 229, 255, 0.2) 0%, rgba(79, 140, 255, 0.1) 50%, transparent 100%)',
+          left: '-350px',
+          top: '-350px',
+          willChange: 'transform',
+        }}
       />
 
       {/* Ambient static inner shadows and glass sheen */}

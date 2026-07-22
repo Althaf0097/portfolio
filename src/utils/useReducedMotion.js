@@ -5,11 +5,16 @@ import { useEffect, useState } from 'react';
  * Returns true if user prefers reduced motion
  */
 export const useReducedMotion = () => {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  // BOLT OPTIMIZATION: Use lazy initialization to avoid synchronous state update in useEffect, preventing cascading renders.
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+    return false;
+  });
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setPrefersReducedMotion(mediaQuery.matches);
 
     const handleChange = (event) => {
       setPrefersReducedMotion(event.matches);

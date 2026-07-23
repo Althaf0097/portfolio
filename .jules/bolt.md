@@ -1,0 +1,3 @@
+## 2025-03-01 - GPU-Accelerated Spotlight Glare in Interactive Cards
+**Learning:** High-frequency event handlers tracking mouse coordinates can trigger expensive main-thread repaints if they repeatedly modify non-composited CSS properties like `background` radial gradients. Leveraging `transform: translate3d()` via GSAP's optimized `quickTo()` shifts the animation workload entirely to the GPU, preventing recurrent main-thread layout recalculations.
+**Action:** Always prefer composited properties like `transform` (utilizing translate3d) and `opacity` with hardware acceleration for high-frequency user interactions over updating layout-affecting properties.

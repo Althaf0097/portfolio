@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { gsap } from 'gsap';
 
 const InteractiveCard = ({
@@ -30,14 +30,23 @@ const InteractiveCard = ({
       overwrite: 'auto',
     });
 
-    // Move spotlight glare (mixture of primary blue #4F8CFF and accent cyan #00E5FF)
+    // BOLT OPTIMIZATION: Shift the high-frequency glare movement to the GPU
+    // utilizing `transform: translate3d()` and `gsap.quickTo()`. This avoids
+    // browser main-thread layout recalculations/repaints caused by updating
+    // `background` gradient values on every mousemove.
     if (glareRef.current) {
+      if (!glareRef.current.quickToX) {
+        glareRef.current.quickToX = gsap.quickTo(glareRef.current, 'x', { duration: 0.25, ease: 'power2.out' });
+        glareRef.current.quickToY = gsap.quickTo(glareRef.current, 'y', { duration: 0.25, ease: 'power2.out' });
+      }
+
       gsap.to(glareRef.current, {
         opacity: 1,
-        background: `radial-gradient(350px circle at ${x}px ${y}px, rgba(0, 229, 255, 0.2) 0%, rgba(79, 140, 255, 0.1) 50%, transparent 100%)`,
-        duration: 0.25,
+        duration: 0.2,
         overwrite: 'auto',
       });
+      glareRef.current.quickToX(x);
+      glareRef.current.quickToY(y);
     }
   };
 
@@ -90,9 +99,15 @@ const InteractiveCard = ({
       <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-20 group-hover:opacity-100 group-hover:via-accent transition-all duration-500 z-30" />
 
       {/* Interactive Mouse-Tracking Spotlight Glare */}
+      {/* BOLT OPTIMIZATION: Glare is styled statically as a radial gradient and centered.
+          The mousemovement is translated directly using GPU transform coordinates. */}
       <div
         ref={glareRef}
-        className="pointer-events-none absolute inset-0 opacity-0 z-10 transition-opacity duration-300 mix-blend-screen"
+        className="pointer-events-none absolute top-0 left-0 w-[700px] h-[700px] -mt-[350px] -ml-[350px] opacity-0 z-10 transition-opacity duration-300 mix-blend-screen"
+        style={{
+          background: 'radial-gradient(350px circle at center, rgba(0, 229, 255, 0.2) 0%, rgba(79, 140, 255, 0.1) 50%, transparent 100%)',
+          willChange: 'transform',
+        }}
       />
 
       {/* Ambient static inner shadows and glass sheen */}

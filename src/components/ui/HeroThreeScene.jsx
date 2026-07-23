@@ -1,6 +1,23 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
+
+// Static deterministic generator helper to keep react pure
+const generateParticles = (count) => {
+  const positions = new Float32Array(count * 3);
+  // Using pseudo-random algorithm with a seed to make it completely deterministic and pure
+  let seed = 42;
+  const pseudoRandom = () => {
+    const x = Math.sin(seed++) * 10000;
+    return x - Math.floor(x);
+  };
+  for (let i = 0; i < count; i++) {
+    positions[i * 3] = (pseudoRandom() - 0.5) * 20;
+    positions[i * 3 + 1] = (pseudoRandom() - 0.5) * 20;
+    positions[i * 3 + 2] = (pseudoRandom() - 0.5) * 20;
+  }
+  return positions;
+};
 
 // Procedural Metallic Liquid Mesh component
 const MetallicObject = ({ mouse }) => {
@@ -128,14 +145,9 @@ const FloatingParticles = ({ count = 300 }) => {
     }
   });
 
-  const positions = new Float32Array(count * 3);
-  for (let i = 0; i < count; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 20;
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
-  }
+  const positions = useMemo(() => generateParticles(count), [count]);
 
-  const texture = (() => {
+  const texture = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 16;
     canvas.height = 16;
@@ -146,7 +158,7 @@ const FloatingParticles = ({ count = 300 }) => {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 16, 16);
     return new THREE.CanvasTexture(canvas);
-  })();
+  }, []);
 
   return (
     <points ref={pointsRef}>
@@ -171,12 +183,14 @@ const FloatingParticles = ({ count = 300 }) => {
 
 // Camera adjustment controller
 const CameraController = ({ mouse }) => {
-  const { camera } = useThree();
-  useFrame(() => {
+  useThree();
+  useFrame((state) => {
+    // Read and update from state.camera to satisfy React 19 immutability compile rules
+    const cam = state.camera;
     // Lerp camera position based on mouse position to create interactive depth
-    camera.position.x += (mouse.current.x * 2.0 - camera.position.x) * 0.05;
-    camera.position.y += (-mouse.current.y * 1.5 - camera.position.y) * 0.05;
-    camera.lookAt(0, 0, 0);
+    cam.position.x += (mouse.current.x * 2.0 - cam.position.x) * 0.05;
+    cam.position.y += (-mouse.current.y * 1.5 - cam.position.y) * 0.05;
+    cam.lookAt(0, 0, 0);
   });
   return null;
 };

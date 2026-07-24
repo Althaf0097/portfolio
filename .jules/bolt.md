@@ -1,0 +1,3 @@
+## 2024-07-24 - InteractiveCard Glare & Rendering Optimizations
+**Learning:** Updating inline background gradients (like radial-gradient) on mouse movement triggers continuous main-thread repaints and style/layout recalculations. Moving this composition to the GPU via fixed dimension divs, absolute positioning (explicit top-0 left-0), translate3d, and will-change CSS hints completely eliminates layout thrashing. Additionally, initializing threeJS float32 arrays and textures inside active render loops generates massive CPU/GPU memory re-allocation bottlenecks; using useMemo fully optimizes this.
+**Action:** Always favor GPU compositing (translate3d) over background redraws, and memoize all static textures/positions in WebGL render cycles.

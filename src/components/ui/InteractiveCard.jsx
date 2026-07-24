@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { gsap } from 'gsap';
 
 const InteractiveCard = ({
@@ -31,10 +31,12 @@ const InteractiveCard = ({
     });
 
     // Move spotlight glare (mixture of primary blue #4F8CFF and accent cyan #00E5FF)
+    // BOLT OPTIMIZATION: Using GPU-accelerated translate3d on a static gradient overlay instead of dynamic background gradient recalculations avoids layout thrashing and expensive main-thread repaints.
     if (glareRef.current) {
       gsap.to(glareRef.current, {
         opacity: 1,
-        background: `radial-gradient(350px circle at ${x}px ${y}px, rgba(0, 229, 255, 0.2) 0%, rgba(79, 140, 255, 0.1) 50%, transparent 100%)`,
+        x: x - 350,
+        y: y - 350,
         duration: 0.25,
         overwrite: 'auto',
       });
@@ -90,9 +92,14 @@ const InteractiveCard = ({
       <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-20 group-hover:opacity-100 group-hover:via-accent transition-all duration-500 z-30" />
 
       {/* Interactive Mouse-Tracking Spotlight Glare */}
+      {/* BOLT OPTIMIZATION: Avoid mixing CSS transitions with GSAP values to prevent frame-by-frame style conflicts, and use absolute 0/0 position with transform to leverage GPU rendering. */}
       <div
         ref={glareRef}
-        className="pointer-events-none absolute inset-0 opacity-0 z-10 transition-opacity duration-300 mix-blend-screen"
+        className="pointer-events-none absolute top-0 left-0 w-[700px] h-[700px] opacity-0 z-10 mix-blend-screen"
+        style={{
+          background: 'radial-gradient(circle, rgba(0, 229, 255, 0.2) 0%, rgba(79, 140, 255, 0.1) 50%, transparent 100%)',
+          willChange: 'transform',
+        }}
       />
 
       {/* Ambient static inner shadows and glass sheen */}

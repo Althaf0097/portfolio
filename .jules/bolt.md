@@ -1,0 +1,3 @@
+## 2026-07-19 - Interactive Card Layout Thrashing and GPU Acceleration
+**Learning:** Avoid high-frequency DOM measurements like `getBoundingClientRect()` within `onMouseMove` events, which triggers layout thrashing. Moving spotlight/glare calculations onto the GPU via `transform: translate3d()` and GSAP's high-performance `quickTo()` setters prevents layout calculations on the main thread during mouse hover interactions.
+**Action:** Always cache dimensions in a `useRef` on element entry (`onMouseEnter`) and update properties using CSS 3D transforms via high-speed animation libraries or direct refs instead of mutating non-transform CSS properties.

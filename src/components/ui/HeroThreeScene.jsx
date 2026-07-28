@@ -1,6 +1,18 @@
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useMemo } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { useEffect } from 'react';
 import * as THREE from 'three';
+
+// Static helpers to generate coordinates in order to ensure react-hooks/purity rules are satisfied in React 19
+const generateParticlePositions = (count) => {
+  const positions = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 20;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+  }
+  return positions;
+};
 
 // Procedural Metallic Liquid Mesh component
 const MetallicObject = ({ mouse }) => {
@@ -120,6 +132,9 @@ const MetallicObject = ({ mouse }) => {
 const FloatingParticles = ({ count = 300 }) => {
   const pointsRef = useRef();
 
+  // BOLT OPTIMIZATION: Use useMemo for stable particle coordinates generation across renders to satisfy react-hooks/refs
+  const positions = useMemo(() => generateParticlePositions(count), [count]);
+
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
     if (pointsRef.current) {
@@ -127,13 +142,6 @@ const FloatingParticles = ({ count = 300 }) => {
       pointsRef.current.rotation.x = t * 0.01;
     }
   });
-
-  const positions = new Float32Array(count * 3);
-  for (let i = 0; i < count; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 20;
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
-  }
 
   const texture = (() => {
     const canvas = document.createElement('canvas');
@@ -171,8 +179,9 @@ const FloatingParticles = ({ count = 300 }) => {
 
 // Camera adjustment controller
 const CameraController = ({ mouse }) => {
-  const { camera } = useThree();
-  useFrame(() => {
+  // BOLT OPTIMIZATION: Read camera directly from the useFrame state callback to comply with React 19 rules and optimize performance
+  useFrame((state) => {
+    const { camera } = state;
     // Lerp camera position based on mouse position to create interactive depth
     camera.position.x += (mouse.current.x * 2.0 - camera.position.x) * 0.05;
     camera.position.y += (-mouse.current.y * 1.5 - camera.position.y) * 0.05;

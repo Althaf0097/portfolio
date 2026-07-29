@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { gsap } from 'gsap';
 
 const InteractiveCard = ({
@@ -10,11 +10,28 @@ const InteractiveCard = ({
   const cardRef = useRef(null);
   const glareRef = useRef(null);
 
+  // BOLT OPTIMIZATION: Cache the bounding rect of the card in a ref on mouse enter.
+  // This eliminates layout thrashing by avoiding getBoundingClientRect() calls inside the high-frequency onMouseMove handler.
+  const cachedRectRef = useRef(null);
+
   const handleMouseMove = (e) => {
     if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+
+    let rect = cachedRectRef.current;
+    if (!rect) {
+      rect = cardRef.current.getBoundingClientRect();
+      cachedRectRef.current = {
+        left: rect.left + window.scrollX,
+        top: rect.top + window.scrollY,
+        width: rect.width,
+        height: rect.height,
+      };
+      rect = cachedRectRef.current;
+    }
+
+    // Use page relative coordinates since rect is cached with scroll offsets
+    const x = e.pageX - rect.left;
+    const y = e.pageY - rect.top;
 
     const normalizedX = (x / rect.width - 0.5) * 2;
     const normalizedY = (y / rect.height - 0.5) * 2;
@@ -42,10 +59,20 @@ const InteractiveCard = ({
   };
 
   const handleMouseEnter = (e) => {
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      cachedRectRef.current = {
+        left: rect.left + window.scrollX,
+        top: rect.top + window.scrollY,
+        width: rect.width,
+        height: rect.height,
+      };
+    }
     if (onMouseEnter) onMouseEnter(e);
   };
 
   const handleMouseLeave = () => {
+    cachedRectRef.current = null;
     if (!cardRef.current) return;
     gsap.to(cardRef.current, {
       rotateY: 0,

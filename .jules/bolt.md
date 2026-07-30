@@ -1,0 +1,3 @@
+## 2025-03-01 - Optimizing High-Frequency Mouse-Tracking Spotlight Glare
+**Learning:** Animating heavy CSS properties (like `background` with radial-gradients) on high-frequency events like `onMouseMove` triggers continuous repaints and severe main thread layout recalculations. Furthermore, calling `getBoundingClientRect()` on every mousemove frame causes severe layout thrashing.
+**Action:** Replace high-frequency dynamic CSS gradient generation with a static gradient background on a pre-sized absolute-positioned overlay. Move this overlay using hardware-accelerated 3D transforms (`translate3d()`) driven by GSAP, and cache container element dimensions on `onMouseEnter` (normalized using page scroll coordinates) instead of calling `getBoundingClientRect` on mouse move.

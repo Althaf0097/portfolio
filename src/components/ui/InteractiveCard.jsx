@@ -9,15 +9,49 @@ const InteractiveCard = ({
 }) => {
   const cardRef = useRef(null);
   const glareRef = useRef(null);
+  const dimensionsRef = useRef({ width: 0, height: 0, pageLeft: 0, pageTop: 0 });
+  const hasDimensionsRef = useRef(false);
+
+  const xTo = useRef(null);
+  const yTo = useRef(null);
+
+  useEffect(() => {
+    if (glareRef.current) {
+      // BOLT OPTIMIZATION: Initialize quickTo animations to shift work onto GPU (transform: translate3d)
+      xTo.current = gsap.quickTo(glareRef.current, 'x', { duration: 0.25, ease: 'power2.out' });
+      yTo.current = gsap.quickTo(glareRef.current, 'y', { duration: 0.25, ease: 'power2.out' });
+    }
+  }, []);
+
+  const updateDimensions = () => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    dimensionsRef.current = {
+      width: rect.width || 1,
+      height: rect.height || 1,
+      pageLeft: rect.left + window.scrollX,
+      pageTop: rect.top + window.scrollY,
+    };
+    hasDimensionsRef.current = true;
+  };
 
   const handleMouseMove = (e) => {
     if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    if (!hasDimensionsRef.current) {
+      updateDimensions();
+    }
 
-    const normalizedX = (x / rect.width - 0.5) * 2;
-    const normalizedY = (y / rect.height - 0.5) * 2;
+    const { width, height, pageLeft, pageTop } = dimensionsRef.current;
+
+    // Normalize coordinates using page-relative scroll offsets
+    const mouseX = e.pageX;
+    const mouseY = e.pageY;
+
+    const x = mouseX - pageLeft;
+    const y = mouseY - pageTop;
+
+    const normalizedX = (x / width - 0.5) * 2;
+    const normalizedY = (y / height - 0.5) * 2;
 
     // Smooth GSAP 3D card tilt & elevation (lift to -16px, rotate up to 12deg)
     gsap.to(cardRef.current, {
@@ -30,22 +64,27 @@ const InteractiveCard = ({
       overwrite: 'auto',
     });
 
-    // Move spotlight glare (mixture of primary blue #4F8CFF and accent cyan #00E5FF)
+    // BOLT OPTIMIZATION: Shift dynamic spotlight rendering to GPU translate3d with quickTo
     if (glareRef.current) {
       gsap.to(glareRef.current, {
         opacity: 1,
-        background: `radial-gradient(350px circle at ${x}px ${y}px, rgba(0, 229, 255, 0.2) 0%, rgba(79, 140, 255, 0.1) 50%, transparent 100%)`,
         duration: 0.25,
         overwrite: 'auto',
       });
+      if (xTo.current && yTo.current) {
+        xTo.current(x - 350);
+        yTo.current(y - 350);
+      }
     }
   };
 
   const handleMouseEnter = (e) => {
+    updateDimensions();
     if (onMouseEnter) onMouseEnter(e);
   };
 
   const handleMouseLeave = () => {
+    hasDimensionsRef.current = false;
     if (!cardRef.current) return;
     gsap.to(cardRef.current, {
       rotateY: 0,
@@ -77,7 +116,7 @@ const InteractiveCard = ({
         transformStyle: 'preserve-3d',
         perspective: '1200px',
       }}
-      className={`group relative rounded-[24px] border border-white/10 transition-all duration-500 overflow-hidden cursor-pointer backdrop-blur-[24px] ${
+      className={`group relative rounded-[24px] border border-white/10 transition-[border-color,box-shadow,background-color] duration-500 overflow-hidden cursor-pointer backdrop-blur-[24px] ${
         featured
           ? 'bg-white/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_30px_rgba(79,140,255,0.15)] hover:border-[#7EF9FF]/50 hover:shadow-[0_25px_60px_rgba(0,0,0,0.7),0_0_40px_rgba(0,229,255,0.3)]'
           : 'bg-white/[0.05] shadow-[0_15px_35px_rgba(0,0,0,0.5)] hover:border-[#4F8CFF]/50 hover:shadow-[0_25px_50px_rgba(0,0,0,0.65),0_0_30px_rgba(79,140,255,0.25)]'
@@ -89,10 +128,15 @@ const InteractiveCard = ({
       {/* Cyber Edge Glow Highlight (Primary & Accent Gradient) */}
       <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-20 group-hover:opacity-100 group-hover:via-accent transition-all duration-500 z-30" />
 
-      {/* Interactive Mouse-Tracking Spotlight Glare */}
+      {/* BOLT OPTIMIZATION: Hardware accelerated absolute spotlight glare, avoiding background updates and transition-opacity conflict */}
       <div
         ref={glareRef}
-        className="pointer-events-none absolute inset-0 opacity-0 z-10 transition-opacity duration-300 mix-blend-screen"
+        className="pointer-events-none absolute top-0 left-0 w-[700px] h-[700px] rounded-full opacity-0 z-10 mix-blend-screen"
+        style={{
+          background: 'radial-gradient(circle, rgba(0, 229, 255, 0.2) 0%, rgba(79, 140, 255, 0.1) 50%, transparent 100%)',
+          willChange: 'transform',
+          transform: 'translate3d(-350px, -350px, 0)',
+        }}
       />
 
       {/* Ambient static inner shadows and glass sheen */}

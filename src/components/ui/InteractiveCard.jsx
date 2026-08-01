@@ -1,6 +1,10 @@
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { gsap } from 'gsap';
 
+// BOLT OPTIMIZATION: High-frequency mouse tracking optimized by:
+// 1. Caching card dimensions inside a useRef to eliminate expensive getBoundingClientRect() calls (layout thrashing) on onMouseMove.
+// 2. Animating the spotlight glare utilizing GPU-accelerated transforms (translate3d via gsap.quickTo) rather than mutating background property, shifting animation workload to GPU and avoiding expensive paint and layout recalculations.
+// 3. Replacing global transition-all CSS classes with targeted transitions on non-animated properties to prevent rendering conflicts and visual jitter.
 const InteractiveCard = ({
   children,
   className = '',
@@ -10,14 +14,41 @@ const InteractiveCard = ({
   const cardRef = useRef(null);
   const glareRef = useRef(null);
 
+  // Dimensions and coordinates cache to prevent layout thrashing
+  const dimensionsRef = useRef({ width: 0, height: 0, left: 0, top: 0 });
+
+  // High-performance quickTo setters for transforms to bypass main-thread DOM thrashing
+  const quickX = useRef(null);
+  const quickY = useRef(null);
+
+  const initQuickTo = () => {
+    if (glareRef.current && !quickX.current) {
+      quickX.current = gsap.quickTo(glareRef.current, 'x', { duration: 0.15, ease: 'power1.out' });
+      quickY.current = gsap.quickTo(glareRef.current, 'y', { duration: 0.15, ease: 'power1.out' });
+    }
+  };
+
   const handleMouseMove = (e) => {
     if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
 
-    const normalizedX = (x / rect.width - 0.5) * 2;
-    const normalizedY = (y / rect.height - 0.5) * 2;
+    // Read dimensions from the cached ref
+    const rect = dimensionsRef.current;
+    if (rect.width === 0 || rect.height === 0) {
+      // Lazy-initialize if first move or cache invalid
+      const bounds = cardRef.current.getBoundingClientRect();
+      dimensionsRef.current = {
+        width: bounds.width,
+        height: bounds.height,
+        left: bounds.left + window.scrollX,
+        top: bounds.top + window.scrollY,
+      };
+    }
+
+    const x = e.pageX - dimensionsRef.current.left;
+    const y = e.pageY - dimensionsRef.current.top;
+
+    const normalizedX = (x / dimensionsRef.current.width - 0.5) * 2;
+    const normalizedY = (y / dimensionsRef.current.height - 0.5) * 2;
 
     // Smooth GSAP 3D card tilt & elevation (lift to -16px, rotate up to 12deg)
     gsap.to(cardRef.current, {
@@ -30,11 +61,17 @@ const InteractiveCard = ({
       overwrite: 'auto',
     });
 
-    // Move spotlight glare (mixture of primary blue #4F8CFF and accent cyan #00E5FF)
+    // Move spotlight glare overlay using translate3d
+    initQuickTo();
+    if (quickX.current && quickY.current) {
+      // Move using quickTo. Since the overlay is absolute with left/top at -350px,
+      // translating by (x, y) correctly aligns the center of the 700x700px overlay with the cursor (x, y).
+      quickX.current(x);
+      quickY.current(y);
+    }
     if (glareRef.current) {
       gsap.to(glareRef.current, {
         opacity: 1,
-        background: `radial-gradient(350px circle at ${x}px ${y}px, rgba(0, 229, 255, 0.2) 0%, rgba(79, 140, 255, 0.1) 50%, transparent 100%)`,
         duration: 0.25,
         overwrite: 'auto',
       });
@@ -42,6 +79,15 @@ const InteractiveCard = ({
   };
 
   const handleMouseEnter = (e) => {
+    if (cardRef.current) {
+      const bounds = cardRef.current.getBoundingClientRect();
+      dimensionsRef.current = {
+        width: bounds.width,
+        height: bounds.height,
+        left: bounds.left + window.scrollX,
+        top: bounds.top + window.scrollY,
+      };
+    }
     if (onMouseEnter) onMouseEnter(e);
   };
 
@@ -77,7 +123,7 @@ const InteractiveCard = ({
         transformStyle: 'preserve-3d',
         perspective: '1200px',
       }}
-      className={`group relative rounded-[24px] border border-white/10 transition-all duration-500 overflow-hidden cursor-pointer backdrop-blur-[24px] ${
+      className={`group relative rounded-[24px] border border-white/10 overflow-hidden cursor-pointer backdrop-blur-[24px] transition-[border-color,box-shadow,background-color] duration-500 ${
         featured
           ? 'bg-white/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_30px_rgba(79,140,255,0.15)] hover:border-[#7EF9FF]/50 hover:shadow-[0_25px_60px_rgba(0,0,0,0.7),0_0_40px_rgba(0,229,255,0.3)]'
           : 'bg-white/[0.05] shadow-[0_15px_35px_rgba(0,0,0,0.5)] hover:border-[#4F8CFF]/50 hover:shadow-[0_25px_50px_rgba(0,0,0,0.65),0_0_30px_rgba(79,140,255,0.25)]'
@@ -90,9 +136,19 @@ const InteractiveCard = ({
       <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-20 group-hover:opacity-100 group-hover:via-accent transition-all duration-500 z-30" />
 
       {/* Interactive Mouse-Tracking Spotlight Glare */}
+      {/* Spotlight is centered at center of this 700x700px overlay.
+          With top-[-350px] left-[-350px], translating it by (x, y) aligns its center perfectly with the cursor. */}
       <div
         ref={glareRef}
-        className="pointer-events-none absolute inset-0 opacity-0 z-10 transition-opacity duration-300 mix-blend-screen"
+        style={{
+          width: '700px',
+          height: '700px',
+          background: 'radial-gradient(350px circle at center, rgba(0, 229, 255, 0.2) 0%, rgba(79, 140, 255, 0.1) 50%, transparent 100%)',
+          top: '-350px',
+          left: '-350px',
+          willChange: 'transform',
+        }}
+        className="pointer-events-none absolute opacity-0 z-10 mix-blend-screen"
       />
 
       {/* Ambient static inner shadows and glass sheen */}

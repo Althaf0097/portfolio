@@ -1,0 +1,3 @@
+## 2025-08-02 - GPU Glare Translation & Cached Dimensions Optimization
+**Learning:** High-frequency mouse tracking triggers expensive reflows (layout thrashing) if `getBoundingClientRect()` is repeatedly queried, especially while GSAP is simultaneously animating element transforms. Additionally, animating linear gradients or radial backgrounds dynamically forces the browser to re-rasterize and repaint the entire container on the CPU.
+**Action:** Cache element dimension and scroll bounds in a `useRef` on mouse enter, and translate pre-rendered absolute glare overlays using GPU-accelerated `translate3d` and GSAP's optimized `quickTo` helper to entirely shift visual workload to the GPU.

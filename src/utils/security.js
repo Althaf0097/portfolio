@@ -164,7 +164,7 @@ export const initSecurity = () => {
       logSecurityEvent('Eval blocked');
       throw new Error('eval() is disabled for security');
     };
-  } catch (e) {
+  } catch {
     // eval cannot be overwritten in strict mode
   }
   
@@ -175,7 +175,7 @@ export const initSecurity = () => {
     const message = args.join(' ');
     if (message.includes('XSS') || message.includes('injection')) {
       suspiciousActivityCount++;
-      logSecurityEvent('Potential attack detected', { message });
+      logSecurityEvent('Potential attack detected', { message, suspiciousActivityCount });
     }
     originalConsoleError.apply(console, args);
   };

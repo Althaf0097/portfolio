@@ -1,0 +1,3 @@
+## 2025-08-05 - Optimizing High-Frequency Mouse Tracking & Eliminating Layout Thrashing
+**Learning:** Frequent calls to `getBoundingClientRect` on mousemove events trigger expensive layout recalculations (layout thrashing) that block the browser's main thread. Additionally, continuously re-generating radial gradients dynamically inside JSX or style attributes triggers main-thread repaint overhead.
+**Action:** Always cache element dimensions inside a `useRef` upon `onMouseEnter` to prevent dynamic layout queries. Couple this with `gsap.quickTo()` for transforms and implement absolute-positioned overlay spotlights moved with GPU-accelerated `transform: translate3d(...)` properties.

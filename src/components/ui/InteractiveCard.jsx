@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { gsap } from 'gsap';
 
 const InteractiveCard = ({
@@ -9,10 +9,15 @@ const InteractiveCard = ({
 }) => {
   const cardRef = useRef(null);
   const glareRef = useRef(null);
+  // BOLT OPTIMIZATION: Cache bounding client rect inside a ref during mouse enter/leave to completely eliminate high-frequency layout thrashing (getBoundingClientRect) during mouse move.
+  const rectRef = useRef(null);
 
   const handleMouseMove = (e) => {
     if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
+    if (!rectRef.current) {
+      rectRef.current = cardRef.current.getBoundingClientRect();
+    }
+    const rect = rectRef.current;
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
@@ -42,10 +47,14 @@ const InteractiveCard = ({
   };
 
   const handleMouseEnter = (e) => {
+    if (cardRef.current) {
+      rectRef.current = cardRef.current.getBoundingClientRect();
+    }
     if (onMouseEnter) onMouseEnter(e);
   };
 
   const handleMouseLeave = () => {
+    rectRef.current = null;
     if (!cardRef.current) return;
     gsap.to(cardRef.current, {
       rotateY: 0,

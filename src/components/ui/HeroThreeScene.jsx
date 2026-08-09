@@ -1,5 +1,5 @@
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useRef, useState, useEffect } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { useRef, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 
 // Procedural Metallic Liquid Mesh component
@@ -116,6 +116,17 @@ const MetallicObject = ({ mouse }) => {
   );
 };
 
+// Helper to generate particle positions outside component body to maintain React 19 component purity.
+const generatePositions = (count) => {
+  const positions = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 20;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+  }
+  return positions;
+};
+
 // Particles component floating in background
 const FloatingParticles = ({ count = 300 }) => {
   const pointsRef = useRef();
@@ -128,14 +139,11 @@ const FloatingParticles = ({ count = 300 }) => {
     }
   });
 
-  const positions = new Float32Array(count * 3);
-  for (let i = 0; i < count; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 20;
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
-  }
+  // BOLT OPTIMIZATION: Memoize positions array to avoid calling Math.random during render and satisfy React 19 purity rules.
+  const positions = useMemo(() => generatePositions(count), [count]);
 
-  const texture = (() => {
+  // BOLT OPTIMIZATION: Memoize canvas and CanvasTexture creation to eliminate memory leaks and garbage collection bottlenecks in WebGL/Three.js context.
+  const texture = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 16;
     canvas.height = 16;
@@ -145,8 +153,16 @@ const FloatingParticles = ({ count = 300 }) => {
     grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 16, 16);
-    return new THREE.CanvasTexture(canvas);
-  })();
+    const tex = new THREE.CanvasTexture(canvas);
+    return tex;
+  }, []);
+
+  // BOLT OPTIMIZATION: Cleanup the texture on unmount to prevent severe GPU memory leaks.
+  useEffect(() => {
+    return () => {
+      texture.dispose();
+    };
+  }, [texture]);
 
   return (
     <points ref={pointsRef}>
@@ -171,8 +187,10 @@ const FloatingParticles = ({ count = 300 }) => {
 
 // Camera adjustment controller
 const CameraController = ({ mouse }) => {
-  const { camera } = useThree();
-  useFrame(() => {
+  // BOLT OPTIMIZATION: Destructure camera from state argument inside useFrame instead of using useThree hook,
+  // to comply with React 19 immutability rules and ensure stable component updates.
+  useFrame((state) => {
+    const { camera } = state;
     // Lerp camera position based on mouse position to create interactive depth
     camera.position.x += (mouse.current.x * 2.0 - camera.position.x) * 0.05;
     camera.position.y += (-mouse.current.y * 1.5 - camera.position.y) * 0.05;

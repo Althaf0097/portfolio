@@ -1,5 +1,5 @@
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useRef, useState, useEffect } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { useRef, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 
 // Procedural Metallic Liquid Mesh component
@@ -116,6 +116,31 @@ const MetallicObject = ({ mouse }) => {
   );
 };
 
+// BOLT OPTIMIZATION: Move non-deterministic calculations outside of the render loop to satisfy React 19 purity rules
+const generatePositions = (count) => {
+  const positions = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 20;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+  }
+  return positions;
+};
+
+// BOLT OPTIMIZATION: Move texture canvas creation outside to prevent memory leak and canvas duplication on every render
+const createCircleTexture = () => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 16;
+  canvas.height = 16;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createRadialGradient(8, 8, 0, 8, 8, 8);
+  grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+  grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 16, 16);
+  return new THREE.CanvasTexture(canvas);
+};
+
 // Particles component floating in background
 const FloatingParticles = ({ count = 300 }) => {
   const pointsRef = useRef();
@@ -128,25 +153,9 @@ const FloatingParticles = ({ count = 300 }) => {
     }
   });
 
-  const positions = new Float32Array(count * 3);
-  for (let i = 0; i < count; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 20;
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
-  }
-
-  const texture = (() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 16;
-    canvas.height = 16;
-    const ctx = canvas.getContext('2d');
-    const grad = ctx.createRadialGradient(8, 8, 0, 8, 8, 8);
-    grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-    grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 16, 16);
-    return new THREE.CanvasTexture(canvas);
-  })();
+  // BOLT OPTIMIZATION: Memoize positions and texture to prevent memory leaks and GC overhead
+  const positions = useMemo(() => generatePositions(count), [count]);
+  const texture = useMemo(() => createCircleTexture(), []);
 
   return (
     <points ref={pointsRef}>
@@ -171,9 +180,9 @@ const FloatingParticles = ({ count = 300 }) => {
 
 // Camera adjustment controller
 const CameraController = ({ mouse }) => {
-  const { camera } = useThree();
-  useFrame(() => {
-    // Lerp camera position based on mouse position to create interactive depth
+  // BOLT OPTIMIZATION: Destructure camera from state argument in useFrame to avoid direct modifications on hook returned values (React 19 rules)
+  useFrame((state) => {
+    const { camera } = state;
     camera.position.x += (mouse.current.x * 2.0 - camera.position.x) * 0.05;
     camera.position.y += (-mouse.current.y * 1.5 - camera.position.y) * 0.05;
     camera.lookAt(0, 0, 0);

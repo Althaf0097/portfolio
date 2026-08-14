@@ -8,8 +8,16 @@ const CustomCursor = () => {
   const pos = useRef({ x: -100, y: -100 });
   const hoveringRef = useRef(false);
 
+  // Use state with lazy initialization to prevent cascading renders
+  const [isActive] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !window.matchMedia("(pointer: coarse)").matches;
+    }
+    return false;
+  });
+
   useEffect(() => {
-    if (window.matchMedia("(pointer: coarse)").matches) return;
+    if (!isActive) return;
     document.body.classList.add('custom-cursor-active');
 
     const cursor = cursorRef.current;
@@ -115,7 +123,9 @@ const CustomCursor = () => {
       document.body.removeEventListener('mouseover', handleMouseOver);
       document.body.removeEventListener('mouseout', handleMouseOut);
     };
-  }, []);
+  }, [isActive]);
+
+  if (!isActive) return null;
 
   return (
     <>

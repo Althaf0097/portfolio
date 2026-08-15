@@ -1,0 +1,3 @@
+## 2025-08-15 - Eliminate Layout Thrashing and Main-Thread Repaints in 3D Interactive Cards
+**Learning:** Calling `getBoundingClientRect()` inside high-frequency `onMouseMove` event handlers causes severe browser layout thrashing. Re-evaluating inline CSS background gradient strings on every frame forces main-thread style recalculation and repaints.
+**Action:** Cache card dimensions on `onMouseEnter` (including scroll offset normalization) and use pre-initialized GSAP `quickTo` setters on hardware-accelerated CSS `transform: translate3d()` properties for 60fps tilt and spotlight glare tracking.

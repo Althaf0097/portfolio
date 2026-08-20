@@ -1,6 +1,9 @@
 import { useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 
+// BOLT OPTIMIZATION: Optimized 3D card tilt and glare effect using GSAP quickTo and cached rects.
+// Avoids layout thrashing by caching card bounds on mouse enter instead of querying getBoundingClientRect on every mousemove frame.
+// Shifts glare positioning to hardware-accelerated transform translate3d instead of recalculating background radial-gradient on the CPU.
 const InteractiveCard = ({
   children,
   className = '',
@@ -9,44 +12,76 @@ const InteractiveCard = ({
 }) => {
   const cardRef = useRef(null);
   const glareRef = useRef(null);
+  const rectRef = useRef(null);
+  const quickToRef = useRef(null);
+
+  useEffect(() => {
+    if (!cardRef.current) return;
+
+    const xTo = gsap.quickTo(cardRef.current, 'rotateY', { duration: 0.35, ease: 'power2.out' });
+    const yTo = gsap.quickTo(cardRef.current, 'rotateX', { duration: 0.35, ease: 'power2.out' });
+    const elevateTo = gsap.quickTo(cardRef.current, 'y', { duration: 0.35, ease: 'power2.out' });
+    const scaleTo = gsap.quickTo(cardRef.current, 'scale', { duration: 0.35, ease: 'power2.out' });
+
+    let glareXTo = null;
+    let glareYTo = null;
+    let glareOpacityTo = null;
+
+    if (glareRef.current) {
+      glareXTo = gsap.quickTo(glareRef.current, 'x', { duration: 0.25, ease: 'power2.out' });
+      glareYTo = gsap.quickTo(glareRef.current, 'y', { duration: 0.25, ease: 'power2.out' });
+      glareOpacityTo = gsap.quickTo(glareRef.current, 'opacity', { duration: 0.25, ease: 'power2.out' });
+    }
+
+    quickToRef.current = {
+      xTo,
+      yTo,
+      elevateTo,
+      scaleTo,
+      glareXTo,
+      glareYTo,
+      glareOpacityTo,
+    };
+  }, []);
 
   const handleMouseMove = (e) => {
     if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
+    if (!rectRef.current) {
+      rectRef.current = cardRef.current.getBoundingClientRect();
+    }
+    const rect = rectRef.current;
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
     const normalizedX = (x / rect.width - 0.5) * 2;
     const normalizedY = (y / rect.height - 0.5) * 2;
 
-    // Smooth GSAP 3D card tilt & elevation (lift to -16px, rotate up to 12deg)
-    gsap.to(cardRef.current, {
-      rotateY: normalizedX * 12,
-      rotateX: -normalizedY * 12,
-      y: -16,
-      scale: 1.03,
-      duration: 0.35,
-      ease: 'power2.out',
-      overwrite: 'auto',
-    });
+    const q = quickToRef.current;
+    if (q) {
+      q.xTo(normalizedX * 12);
+      q.yTo(-normalizedY * 12);
+      q.elevateTo(-16);
+      q.scaleTo(1.03);
 
-    // Move spotlight glare (mixture of primary blue #4F8CFF and accent cyan #00E5FF)
-    if (glareRef.current) {
-      gsap.to(glareRef.current, {
-        opacity: 1,
-        background: `radial-gradient(350px circle at ${x}px ${y}px, rgba(0, 229, 255, 0.2) 0%, rgba(79, 140, 255, 0.1) 50%, transparent 100%)`,
-        duration: 0.25,
-        overwrite: 'auto',
-      });
+      if (q.glareXTo && q.glareYTo && q.glareOpacityTo) {
+        q.glareXTo(x);
+        q.glareYTo(y);
+        q.glareOpacityTo(1);
+      }
     }
   };
 
   const handleMouseEnter = (e) => {
+    if (cardRef.current) {
+      rectRef.current = cardRef.current.getBoundingClientRect();
+    }
     if (onMouseEnter) onMouseEnter(e);
   };
 
   const handleMouseLeave = () => {
+    rectRef.current = null;
     if (!cardRef.current) return;
+
     gsap.to(cardRef.current, {
       rotateY: 0,
       rotateX: 0,
@@ -76,6 +111,7 @@ const InteractiveCard = ({
       style={{
         transformStyle: 'preserve-3d',
         perspective: '1200px',
+        willChange: 'transform',
       }}
       className={`group relative rounded-[24px] border border-white/10 transition-all duration-500 overflow-hidden cursor-pointer backdrop-blur-[24px] ${
         featured
@@ -92,7 +128,11 @@ const InteractiveCard = ({
       {/* Interactive Mouse-Tracking Spotlight Glare */}
       <div
         ref={glareRef}
-        className="pointer-events-none absolute inset-0 opacity-0 z-10 transition-opacity duration-300 mix-blend-screen"
+        className="pointer-events-none absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] rounded-full opacity-0 z-10 mix-blend-screen"
+        style={{
+          background: 'radial-gradient(circle, rgba(0, 229, 255, 0.2) 0%, rgba(79, 140, 255, 0.1) 50%, transparent 100%)',
+          willChange: 'transform, opacity',
+        }}
       />
 
       {/* Ambient static inner shadows and glass sheen */}

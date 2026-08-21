@@ -1,0 +1,3 @@
+## 2025-05-18 - Memoizing WebGL Textures and Buffer Attributes in R3F Components
+**Learning:** Re-instantiating HTML Canvas elements and `THREE.CanvasTexture` during render loops or component function evaluation in React Three Fiber components causes severe WebGL texture allocation overhead and memory churn. Furthermore, calling non-deterministic functions like `Math.random()` inside render functions violates React 19 component purity rules.
+**Action:** Always extract buffer data generation into static helper functions outside the component body and wrap canvas texture instantiation inside `useMemo` hooks.

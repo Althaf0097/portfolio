@@ -11,8 +11,8 @@ export const ThemeProvider = ({ children }) => {
     try {
       localStorage.setItem('portfolio_theme', 'dark-red');
       localStorage.setItem('theme', 'dark-red');
-    } catch (e) {
-      console.warn('Could not save theme to localStorage', e);
+    } catch {
+      // Ignore localStorage unavailable errors
     }
     const root = document.documentElement;
     root.classList.add('dark', 'dark-theme', 'theme-dark-red');
@@ -27,5 +27,5 @@ export const ThemeProvider = ({ children }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTheme = () => useContext(ThemeContext);
-

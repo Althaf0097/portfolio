@@ -1,0 +1,3 @@
+## 2025-05-18 - High-Frequency Card Glare & Tilt Optimization with GSAP quickTo
+**Learning:** Calling `getBoundingClientRect()` on every `mousemove` event causes layout thrashing, and updating `background: radial-gradient(...)` dynamically triggers expensive main-thread repaints. In addition, creating `gsap.to()` tween instances per mouse frame generates GC pressure and animation stutter when combined with CSS `transition-all`.
+**Action:** Cache component bounding rectangles on `mouseenter`, use pre-allocated `gsap.quickTo()` setters for GPU transform updates, replace dynamic gradient string property updates with `translate3d()` on a fixed glare element, and restrict CSS transitions to non-animated properties (`transition-[border-color,box-shadow,background-color]`).

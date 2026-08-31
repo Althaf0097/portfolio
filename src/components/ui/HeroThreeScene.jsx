@@ -1,5 +1,5 @@
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useRef, useState, useEffect } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { useRef, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 
 // Procedural Metallic Liquid Mesh component
@@ -27,80 +27,83 @@ const MetallicObject = ({ mouse }) => {
   });
 
   // Custom Shader Material code for procedurally undulating liquid geometry
-  const customShader = {
-    uniforms: {
-      uTime: { value: 0 },
-      uMouse: { value: new THREE.Vector2(0, 0) },
-      uColor1: { value: new THREE.Color('#4F8CFF') },
-      uColor2: { value: new THREE.Color('#7EF9FF') },
-    },
-    vertexShader: `
-      uniform float uTime;
-      uniform vec2 uMouse;
-      varying vec3 vNormal;
-      varying vec3 vViewPosition;
+  const customShader = useMemo(
+    () => ({
+      uniforms: {
+        uTime: { value: 0 },
+        uMouse: { value: new THREE.Vector2(0, 0) },
+        uColor1: { value: new THREE.Color('#4F8CFF') },
+        uColor2: { value: new THREE.Color('#7EF9FF') },
+      },
+      vertexShader: `
+        uniform float uTime;
+        uniform vec2 uMouse;
+        varying vec3 vNormal;
+        varying vec3 vViewPosition;
 
-      // Simple 3D noise approximation function
-      float hash(vec3 p) {
-        p = fract(p * 0.3183099 + .1);
-        p *= 17.0;
-        return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
-      }
-      float noise(vec3 x) {
-        vec3 i = floor(x);
-        vec3 f = fract(x);
-        f = f * f * (3.0 - 2.0 * f);
-        return mix(
-          mix(mix(hash(i + vec3(0,0,0)), hash(i + vec3(1,0,0)), f.x),
-              mix(hash(i + vec3(0,1,0)), hash(i + vec3(1,1,0)), f.x), f.y),
-          mix(mix(hash(i + vec3(0,0,1)), hash(i + vec3(1,0,1)), f.x),
-              mix(hash(i + vec3(0,1,1)), hash(i + vec3(1,1,1)), f.x), f.y), f.z
-        );
-      }
+        // Simple 3D noise approximation function
+        float hash(vec3 p) {
+          p = fract(p * 0.3183099 + .1);
+          p *= 17.0;
+          return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+        }
+        float noise(vec3 x) {
+          vec3 i = floor(x);
+          vec3 f = fract(x);
+          f = f * f * (3.0 - 2.0 * f);
+          return mix(
+            mix(mix(hash(i + vec3(0,0,0)), hash(i + vec3(1,0,0)), f.x),
+                mix(hash(i + vec3(0,1,0)), hash(i + vec3(1,1,0)), f.x), f.y),
+            mix(mix(hash(i + vec3(0,0,1)), hash(i + vec3(1,0,1)), f.x),
+                mix(hash(i + vec3(0,1,1)), hash(i + vec3(1,1,1)), f.x), f.y), f.z
+          );
+        }
 
-      void main() {
-        vNormal = normalize(normalMatrix * normal);
-        
-        // Procedural displacement wave offsets using noise + time
-        float displacement = noise(position * 1.5 + uTime * 0.8) * 0.45;
-        displacement += sin(position.y * 3.0 + uTime * 2.0) * 0.15;
-        
-        vec3 displacedPosition = position + normal * displacement;
-        
-        vec4 modelViewPosition = modelViewMatrix * vec4(displacedPosition, 1.0);
-        vViewPosition = -modelViewPosition.xyz;
-        
-        gl_Position = projectionMatrix * modelViewPosition;
-      }
-    `,
-    fragmentShader: `
-      uniform vec3 uColor1;
-      uniform vec3 uColor2;
-      uniform vec2 uMouse;
-      varying vec3 vNormal;
-      varying vec3 vViewPosition;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
 
-      void main() {
-        vec3 normal = normalize(vNormal);
-        vec3 viewDir = normalize(vViewPosition);
-        
-        // Fresnal edge highlight calculation
-        float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.5);
-        
-        // Dynamic metallic color mix based on fresnel and cursor
-        vec3 baseColor = mix(uColor1, uColor2, fresnel + length(uMouse) * 0.15);
-        
-        // High specularity highlights
-        vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
-        vec3 halfDir = normalize(lightDir + viewDir);
-        float spec = pow(max(dot(normal, halfDir), 0.0), 64.0);
-        
-        vec3 finalColor = baseColor + vec3(spec * 0.8) + fresnel * uColor2 * 0.5;
-        
-        gl_FragColor = vec4(finalColor, 0.95);
-      }
-    `,
-  };
+          // Procedural displacement wave offsets using noise + time
+          float displacement = noise(position * 1.5 + uTime * 0.8) * 0.45;
+          displacement += sin(position.y * 3.0 + uTime * 2.0) * 0.15;
+
+          vec3 displacedPosition = position + normal * displacement;
+
+          vec4 modelViewPosition = modelViewMatrix * vec4(displacedPosition, 1.0);
+          vViewPosition = -modelViewPosition.xyz;
+
+          gl_Position = projectionMatrix * modelViewPosition;
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 uColor1;
+        uniform vec3 uColor2;
+        uniform vec2 uMouse;
+        varying vec3 vNormal;
+        varying vec3 vViewPosition;
+
+        void main() {
+          vec3 normal = normalize(vNormal);
+          vec3 viewDir = normalize(vViewPosition);
+
+          // Fresnal edge highlight calculation
+          float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.5);
+
+          // Dynamic metallic color mix based on fresnel and cursor
+          vec3 baseColor = mix(uColor1, uColor2, fresnel + length(uMouse) * 0.15);
+
+          // High specularity highlights
+          vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
+          vec3 halfDir = normalize(lightDir + viewDir);
+          float spec = pow(max(dot(normal, halfDir), 0.0), 64.0);
+
+          vec3 finalColor = baseColor + vec3(spec * 0.8) + fresnel * uColor2 * 0.5;
+
+          gl_FragColor = vec4(finalColor, 0.95);
+        }
+      `,
+    }),
+    []
+  );
 
   return (
     <mesh ref={meshRef} castShadow receiveShadow>
@@ -116,7 +119,18 @@ const MetallicObject = ({ mouse }) => {
   );
 };
 
-// Particles component floating in background
+// Pure position generator to satisfy React 19 purity rules
+const generateParticlePositions = (count) => {
+  const positions = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 20;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+  }
+  return positions;
+};
+
+// Floating particles component
 const FloatingParticles = ({ count = 300 }) => {
   const pointsRef = useRef();
 
@@ -128,14 +142,9 @@ const FloatingParticles = ({ count = 300 }) => {
     }
   });
 
-  const positions = new Float32Array(count * 3);
-  for (let i = 0; i < count; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 20;
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
-  }
+  const positions = useMemo(() => generateParticlePositions(count), [count]);
 
-  const texture = (() => {
+  const texture = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 16;
     canvas.height = 16;
@@ -146,7 +155,7 @@ const FloatingParticles = ({ count = 300 }) => {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 16, 16);
     return new THREE.CanvasTexture(canvas);
-  })();
+  }, []);
 
   return (
     <points ref={pointsRef}>
@@ -171,8 +180,8 @@ const FloatingParticles = ({ count = 300 }) => {
 
 // Camera adjustment controller
 const CameraController = ({ mouse }) => {
-  const { camera } = useThree();
-  useFrame(() => {
+  useFrame((state) => {
+    const { camera } = state;
     // Lerp camera position based on mouse position to create interactive depth
     camera.position.x += (mouse.current.x * 2.0 - camera.position.x) * 0.05;
     camera.position.y += (-mouse.current.y * 1.5 - camera.position.y) * 0.05;

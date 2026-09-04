@@ -1,0 +1,3 @@
+## 2025-09-04 - GSAP quickTo vs CSS Gradient Manipulation for Card Spotlight
+**Learning:** Updating heavy CSS strings like `radial-gradient` dynamically on high-frequency `mousemove` events triggers CPU layout recalculations and repaints. Offloading spotlight positioning to a pre-rendered radial gradient layer moved using `gsap.quickTo` with hardware-accelerated `translate3d` transforms shifts work to the GPU and eliminates main-thread layout thrashing.
+**Action:** When creating high-frequency mouse-following spotlight glare effects, pre-render the gradient on an overlay layer and animate its `x`/`y` transform coordinates using GSAP `quickTo` setters rather than recalculating gradient CSS string coordinates.

@@ -1,5 +1,5 @@
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useRef, useState, useEffect } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { useRef, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 
 // Procedural Metallic Liquid Mesh component
@@ -116,9 +116,38 @@ const MetallicObject = ({ mouse }) => {
   );
 };
 
+// Static helper to generate particle positions outside render
+const createParticlePositions = (count) => {
+  const positions = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 20;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+  }
+  return positions;
+};
+
+// Static helper for particle texture
+const createParticleTexture = () => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 16;
+  canvas.height = 16;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createRadialGradient(8, 8, 0, 8, 8, 8);
+  grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+  grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 16, 16);
+  return new THREE.CanvasTexture(canvas);
+};
+
+const particlePositions250 = createParticlePositions(250);
+
 // Particles component floating in background
-const FloatingParticles = ({ count = 300 }) => {
+const FloatingParticles = () => {
   const pointsRef = useRef();
+
+  const particleTexture = useMemo(() => createParticleTexture(), []);
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
@@ -128,38 +157,18 @@ const FloatingParticles = ({ count = 300 }) => {
     }
   });
 
-  const positions = new Float32Array(count * 3);
-  for (let i = 0; i < count; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 20;
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
-  }
-
-  const texture = (() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 16;
-    canvas.height = 16;
-    const ctx = canvas.getContext('2d');
-    const grad = ctx.createRadialGradient(8, 8, 0, 8, 8, 8);
-    grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-    grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 16, 16);
-    return new THREE.CanvasTexture(canvas);
-  })();
-
   return (
     <points ref={pointsRef}>
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
-          args={[positions, 3]}
+          args={[particlePositions250, 3]}
         />
       </bufferGeometry>
       <pointsMaterial
         size={0.06}
         color="#7EF9FF"
-        map={texture}
+        map={particleTexture}
         transparent
         opacity={0.65}
         depthWrite={false}
@@ -171,12 +180,11 @@ const FloatingParticles = ({ count = 300 }) => {
 
 // Camera adjustment controller
 const CameraController = ({ mouse }) => {
-  const { camera } = useThree();
-  useFrame(() => {
+  useFrame((state) => {
     // Lerp camera position based on mouse position to create interactive depth
-    camera.position.x += (mouse.current.x * 2.0 - camera.position.x) * 0.05;
-    camera.position.y += (-mouse.current.y * 1.5 - camera.position.y) * 0.05;
-    camera.lookAt(0, 0, 0);
+    state.camera.position.x += (mouse.current.x * 2.0 - state.camera.position.x) * 0.05;
+    state.camera.position.y += (-mouse.current.y * 1.5 - state.camera.position.y) * 0.05;
+    state.camera.lookAt(0, 0, 0);
   });
   return null;
 };
@@ -204,7 +212,7 @@ const HeroThreeScene = () => {
         <pointLight position={[-5, -5, -5]} intensity={0.8} color="#7EF9FF" />
 
         <MetallicObject mouse={mouse} />
-        <FloatingParticles count={250} />
+        <FloatingParticles />
         <CameraController mouse={mouse} />
       </Canvas>
     </div>

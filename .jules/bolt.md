@@ -1,0 +1,3 @@
+## 2025-05-18 - High-Frequency Card Interaction Optimization
+**Learning:** Calling `getBoundingClientRect()` inside a high-frequency `mousemove` handler forces synchronous layout recalculation (layout thrashing) on every frame. Additionally, updating inline radial-gradient `background` strings with changing pixel coordinates triggers expensive CSS repaints.
+**Action:** Cache element bounding box coordinates on `onMouseEnter` (adjusting for `window.scrollX`/`scrollY`) and shift mouse glare animation to GPU hardware-accelerated `transform: translate3d()` using pre-initialized GSAP `quickTo` setters.

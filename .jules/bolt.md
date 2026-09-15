@@ -1,0 +1,3 @@
+## 2025-05-18 - Hardware-Accelerated 3D Tilt & Glare Optimization
+**Learning:** High-frequency mouse event handlers updating CSS `background` gradients or triggering `getBoundingClientRect()` calls cause main-thread layout thrashing and high repaint latency. Animating absolute-positioned overlay elements via GSAP `quickTo` hardware-accelerated transforms (`translate3d`) shifts render calculations to the GPU and eliminates layout recalculation overhead entirely.
+**Action:** Always cache bounding rects on `onMouseEnter` and utilize GSAP `quickTo` with GPU-accelerated transforms instead of inline style updates in high-frequency event handlers.

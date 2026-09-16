@@ -1,6 +1,8 @@
 import { useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 
+// BOLT OPTIMIZATION: Cache card bounds on mouse enter to eliminate layout thrashing
+// from getBoundingClientRect() during high-frequency mousemove events and use GSAP quickTo for GPU-accelerated transforms.
 const InteractiveCard = ({
   children,
   className = '',
@@ -9,60 +11,68 @@ const InteractiveCard = ({
 }) => {
   const cardRef = useRef(null);
   const glareRef = useRef(null);
+  const boundsRef = useRef(null);
+  const quickToRef = useRef(null);
 
-  const handleMouseMove = (e) => {
+  useEffect(() => {
     if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
 
-    const normalizedX = (x / rect.width - 0.5) * 2;
-    const normalizedY = (y / rect.height - 0.5) * 2;
-
-    // Smooth GSAP 3D card tilt & elevation (lift to -16px, rotate up to 12deg)
-    gsap.to(cardRef.current, {
-      rotateY: normalizedX * 12,
-      rotateX: -normalizedY * 12,
-      y: -16,
-      scale: 1.03,
-      duration: 0.35,
-      ease: 'power2.out',
-      overwrite: 'auto',
-    });
-
-    // Move spotlight glare (mixture of primary blue #4F8CFF and accent cyan #00E5FF)
-    if (glareRef.current) {
-      gsap.to(glareRef.current, {
-        opacity: 1,
-        background: `radial-gradient(350px circle at ${x}px ${y}px, rgba(0, 229, 255, 0.2) 0%, rgba(79, 140, 255, 0.1) 50%, transparent 100%)`,
-        duration: 0.25,
-        overwrite: 'auto',
-      });
-    }
-  };
+    quickToRef.current = {
+      rotateY: gsap.quickTo(cardRef.current, 'rotateY', { duration: 0.35, ease: 'power2.out' }),
+      rotateX: gsap.quickTo(cardRef.current, 'rotateX', { duration: 0.35, ease: 'power2.out' }),
+      y: gsap.quickTo(cardRef.current, 'y', { duration: 0.35, ease: 'power2.out' }),
+      scale: gsap.quickTo(cardRef.current, 'scale', { duration: 0.35, ease: 'power2.out' }),
+      glareX: glareRef.current ? gsap.quickTo(glareRef.current, 'x', { duration: 0.25, ease: 'power2.out' }) : null,
+      glareY: glareRef.current ? gsap.quickTo(glareRef.current, 'y', { duration: 0.25, ease: 'power2.out' }) : null,
+      glareOpacity: glareRef.current ? gsap.quickTo(glareRef.current, 'opacity', { duration: 0.25, ease: 'power2.out' }) : null,
+    };
+  }, []);
 
   const handleMouseEnter = (e) => {
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      boundsRef.current = {
+        left: rect.left + window.scrollX,
+        top: rect.top + window.scrollY,
+        width: rect.width || 1,
+        height: rect.height || 1,
+      };
+    }
     if (onMouseEnter) onMouseEnter(e);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!cardRef.current || !boundsRef.current) return;
+    const x = e.pageX - boundsRef.current.left;
+    const y = e.pageY - boundsRef.current.top;
+
+    const normalizedX = (x / boundsRef.current.width - 0.5) * 2;
+    const normalizedY = (y / boundsRef.current.height - 0.5) * 2;
+
+    if (quickToRef.current) {
+      quickToRef.current.rotateY(normalizedX * 12);
+      quickToRef.current.rotateX(-normalizedY * 12);
+      quickToRef.current.y(-16);
+      quickToRef.current.scale(1.03);
+
+      if (quickToRef.current.glareX) {
+        quickToRef.current.glareX(x);
+        quickToRef.current.glareY(y);
+        quickToRef.current.glareOpacity(1);
+      }
+    }
   };
 
   const handleMouseLeave = () => {
     if (!cardRef.current) return;
-    gsap.to(cardRef.current, {
-      rotateY: 0,
-      rotateX: 0,
-      y: 0,
-      scale: 1,
-      duration: 0.65,
-      ease: 'power3.out',
-      overwrite: 'auto',
-    });
-
-    if (glareRef.current) {
-      gsap.to(glareRef.current, {
-        opacity: 0,
-        duration: 0.4,
-        overwrite: 'auto',
-      });
+    if (quickToRef.current) {
+      quickToRef.current.rotateY(0);
+      quickToRef.current.rotateX(0);
+      quickToRef.current.y(0);
+      quickToRef.current.scale(1);
+      if (quickToRef.current.glareOpacity) {
+        quickToRef.current.glareOpacity(0);
+      }
     }
   };
 
@@ -76,8 +86,9 @@ const InteractiveCard = ({
       style={{
         transformStyle: 'preserve-3d',
         perspective: '1200px',
+        willChange: 'transform',
       }}
-      className={`group relative rounded-[24px] border border-white/10 transition-all duration-500 overflow-hidden cursor-pointer backdrop-blur-[24px] ${
+      className={`group relative rounded-[24px] border border-white/10 overflow-hidden cursor-pointer backdrop-blur-[24px] ${
         featured
           ? 'bg-white/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.6),0_0_30px_rgba(79,140,255,0.15)] hover:border-[#7EF9FF]/50 hover:shadow-[0_25px_60px_rgba(0,0,0,0.7),0_0_40px_rgba(0,229,255,0.3)]'
           : 'bg-white/[0.05] shadow-[0_15px_35px_rgba(0,0,0,0.5)] hover:border-[#4F8CFF]/50 hover:shadow-[0_25px_50px_rgba(0,0,0,0.65),0_0_30px_rgba(79,140,255,0.25)]'
@@ -92,7 +103,8 @@ const InteractiveCard = ({
       {/* Interactive Mouse-Tracking Spotlight Glare */}
       <div
         ref={glareRef}
-        className="pointer-events-none absolute inset-0 opacity-0 z-10 transition-opacity duration-300 mix-blend-screen"
+        className="pointer-events-none absolute top-0 left-0 w-[700px] h-[700px] -translate-x-1/2 -translate-y-1/2 opacity-0 z-10 mix-blend-screen bg-[radial-gradient(350px_circle_at_center,rgba(0,229,255,0.2)_0%,rgba(79,140,255,0.1)_50%,transparent_100%)]"
+        style={{ willChange: 'transform, opacity' }}
       />
 
       {/* Ambient static inner shadows and glass sheen */}

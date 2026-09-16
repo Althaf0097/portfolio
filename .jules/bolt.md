@@ -1,0 +1,3 @@
+## 2025-05-20 - Eliminating Layout Thrashing and GPU Texture Leaks on Interactive Cards
+**Learning:** Calling `getBoundingClientRect()` inside high-frequency `onMouseMove` event handlers causes severe layout thrashing and reflows on every frame. Furthermore, constructing new `THREE.CanvasTexture` objects without `useMemo` and `.dispose()` leads to unmanaged WebGL memory growth and GPU memory leaks.
+**Action:** Cache element bounds on `onMouseEnter` (normalizing against scroll position) and drive 3D tilt transform and glare offsets exclusively through `gsap.quickTo` setters. Always wrap Three.js canvas texture creation in `useMemo` with an explicit `.dispose()` cleanup on unmount.

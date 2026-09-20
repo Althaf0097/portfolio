@@ -1,0 +1,3 @@
+## 2025-09-20 - Eliminate Layout Thrashing in Interactive Cards
+**Learning:** Calling `getBoundingClientRect()` on every high-frequency `mousemove` event forces synchronously calculated layout reflows on every mouse frame. In addition, dynamically constructing GSAP tween instances (`gsap.to`) and string-based `radial-gradient` backgrounds during mousemove events incurs substantial main-thread style recalculation and GC overhead.
+**Action:** Cache component bounding boxes in a ref during `mouseenter` and animate card 3D tilt + glare transforms exclusively via `gsap.quickTo` setters on hardware-accelerated layers.

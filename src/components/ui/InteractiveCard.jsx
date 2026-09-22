@@ -1,6 +1,12 @@
 import { useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 
+/* BOLT OPTIMIZATION:
+   To prevent layout thrashing and repaint costs during high-frequency mouse movements on 3D tilt cards:
+   1. Bounding rect dimensions (including scroll offsets) are cached in rectRef onMouseEnter / onResize.
+   2. GSAP quickTo setters are initialized once inside useEffect to mutate transforms smoothly
+      without constructing new GSAP animation objects on every mousemove.
+*/
 const InteractiveCard = ({
   children,
   className = '',
@@ -9,61 +15,75 @@ const InteractiveCard = ({
 }) => {
   const cardRef = useRef(null);
   const glareRef = useRef(null);
+  const rectRef = useRef(null);
+
+  // QuickTo animators for high-performance transform updates
+  const quickRotateY = useRef(null);
+  const quickRotateX = useRef(null);
+  const quickY = useRef(null);
+  const quickScale = useRef(null);
+  const quickGlareOpacity = useRef(null);
+
+  useEffect(() => {
+    if (!cardRef.current) return;
+
+    quickRotateY.current = gsap.quickTo(cardRef.current, 'rotateY', { duration: 0.35, ease: 'power2.out' });
+    quickRotateX.current = gsap.quickTo(cardRef.current, 'rotateX', { duration: 0.35, ease: 'power2.out' });
+    quickY.current = gsap.quickTo(cardRef.current, 'y', { duration: 0.35, ease: 'power2.out' });
+    quickScale.current = gsap.quickTo(cardRef.current, 'scale', { duration: 0.35, ease: 'power2.out' });
+
+    if (glareRef.current) {
+      quickGlareOpacity.current = gsap.quickTo(glareRef.current, 'opacity', { duration: 0.25, ease: 'power2.out' });
+    }
+  }, []);
+
+  const updateRect = () => {
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      rectRef.current = {
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height,
+      };
+    }
+  };
 
   const handleMouseMove = (e) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
+    if (!rectRef.current) updateRect();
+    const rect = rectRef.current;
+    if (!rect || rect.width === 0 || rect.height === 0) return;
+
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
     const normalizedX = (x / rect.width - 0.5) * 2;
     const normalizedY = (y / rect.height - 0.5) * 2;
 
-    // Smooth GSAP 3D card tilt & elevation (lift to -16px, rotate up to 12deg)
-    gsap.to(cardRef.current, {
-      rotateY: normalizedX * 12,
-      rotateX: -normalizedY * 12,
-      y: -16,
-      scale: 1.03,
-      duration: 0.35,
-      ease: 'power2.out',
-      overwrite: 'auto',
-    });
+    if (quickRotateY.current) quickRotateY.current(normalizedX * 12);
+    if (quickRotateX.current) quickRotateX.current(-normalizedY * 12);
+    if (quickY.current) quickY.current(-16);
+    if (quickScale.current) quickScale.current(1.03);
 
-    // Move spotlight glare (mixture of primary blue #4F8CFF and accent cyan #00E5FF)
     if (glareRef.current) {
-      gsap.to(glareRef.current, {
-        opacity: 1,
-        background: `radial-gradient(350px circle at ${x}px ${y}px, rgba(0, 229, 255, 0.2) 0%, rgba(79, 140, 255, 0.1) 50%, transparent 100%)`,
-        duration: 0.25,
-        overwrite: 'auto',
-      });
+      if (quickGlareOpacity.current) quickGlareOpacity.current(1);
+      glareRef.current.style.background = `radial-gradient(350px circle at ${x}px ${y}px, rgba(0, 229, 255, 0.2) 0%, rgba(79, 140, 255, 0.1) 50%, transparent 100%)`;
     }
   };
 
   const handleMouseEnter = (e) => {
+    updateRect();
     if (onMouseEnter) onMouseEnter(e);
   };
 
   const handleMouseLeave = () => {
-    if (!cardRef.current) return;
-    gsap.to(cardRef.current, {
-      rotateY: 0,
-      rotateX: 0,
-      y: 0,
-      scale: 1,
-      duration: 0.65,
-      ease: 'power3.out',
-      overwrite: 'auto',
-    });
+    rectRef.current = null;
 
-    if (glareRef.current) {
-      gsap.to(glareRef.current, {
-        opacity: 0,
-        duration: 0.4,
-        overwrite: 'auto',
-      });
-    }
+    if (quickRotateY.current) quickRotateY.current(0);
+    if (quickRotateX.current) quickRotateX.current(0);
+    if (quickY.current) quickY.current(0);
+    if (quickScale.current) quickScale.current(1);
+    if (quickGlareOpacity.current) quickGlareOpacity.current(0);
   };
 
   return (
@@ -76,6 +96,7 @@ const InteractiveCard = ({
       style={{
         transformStyle: 'preserve-3d',
         perspective: '1200px',
+        willChange: 'transform',
       }}
       className={`group relative rounded-[24px] border border-white/10 transition-all duration-500 overflow-hidden cursor-pointer backdrop-blur-[24px] ${
         featured

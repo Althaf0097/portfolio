@@ -1,0 +1,3 @@
+## 2025-02-28 - GPU-Accelerated Spotlight Glare and Layout Thrashing Elimination
+**Learning:** Calling `getBoundingClientRect()` inside high-frequency `onMouseMove` event handlers forces browser layout reflows (layout thrashing) on every frame. Additionally, dynamically updating CSS gradient strings (e.g. `background: radial-gradient(...)`) on mouse movement triggers continuous repaints.
+**Action:** Cache element bounds on `onMouseEnter` (adjusting for page scroll `window.scrollX`/`scrollY`), use GSAP `quickTo` helpers initialized once in `useEffect`, and animate spotlight glare positions using GPU-accelerated `translate3d` transforms on a pre-rendered gradient overlay.

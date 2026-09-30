@@ -1,0 +1,3 @@
+## 2025-05-18 - Hardware-Accelerated Spotlight Glare and Rect Caching in InteractiveCard
+**Learning:** Updating inline CSS radial gradient strings on every `mousemove` event triggers repeated layout/repaint cycles and GSAP timeline overhead. Moving a pre-rendered gradient element via GPU-accelerated `translate3d()` with `gsap.quickTo()` and caching container rect on `onMouseEnter` eliminates layout thrashing and reduces main thread frame time.
+**Action:** Always pre-render gradient overlays and animate position using `translate3d()` with `gsap.quickTo()` rather than updating `background` gradient strings dynamically during mouse interactions.

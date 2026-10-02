@@ -1,0 +1,3 @@
+## 2025-05-18 - Hardware-Accelerated Glare and Bounds Caching in InteractiveCard
+**Learning:** High-frequency `mousemove` handlers calling `getBoundingClientRect()` cause severe main-thread layout thrashing (forced reflows) on every move frame. Updating dynamic CSS `background` gradients via GSAP string updates on every mouse move also forces continuous main-thread repaints.
+**Action:** Cache bounding rect dimensions on `mouseenter`. Translate glare spotlights using `gsap.quickTo` on an absolute-positioned layer with `transform: translate3d()` and `willChange: transform` to offload calculations entirely to the GPU. Ensure generic `transition-all` classes are replaced with targeted non-transform transitions to prevent GSAP animation fights.

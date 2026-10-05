@@ -1,0 +1,3 @@
+## 2025-05-18 - Optimize InteractiveCard 3D tilt and glare performance with GSAP quickTo and cached bounds
+**Learning:** Calling `getBoundingClientRect()` inside high-frequency `mousemove` handlers on interactive cards causes layout thrashing and forced synchronous layouts. Simultaneously, creating new GSAP tweens on every frame and animating inline string `background: radial-gradient(...)` forces main-thread repaints on every mouse movement frame.
+**Action:** Cache element bounds on `onMouseEnter` (normalized to page coordinates `scrollX`/`scrollY`), initialize GSAP `quickTo` helper instances once inside `useEffect`, and animate a hardware-accelerated overlay element using `translate3d()` via `quickTo`.

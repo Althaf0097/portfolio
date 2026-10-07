@@ -9,44 +9,89 @@ const InteractiveCard = ({
 }) => {
   const cardRef = useRef(null);
   const glareRef = useRef(null);
+  const rectRef = useRef(null);
 
-  const handleMouseMove = (e) => {
+  // QuickTo animation setter references for zero-allocation mouse interaction
+  const quickRotateX = useRef(null);
+  const quickRotateY = useRef(null);
+  const quickY = useRef(null);
+  const quickScale = useRef(null);
+  const quickGlareX = useRef(null);
+  const quickGlareY = useRef(null);
+  const quickGlareOpacity = useRef(null);
+
+  useEffect(() => {
     if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
 
-    const normalizedX = (x / rect.width - 0.5) * 2;
-    const normalizedY = (y / rect.height - 0.5) * 2;
+    // BOLT OPTIMIZATION: Initialize GSAP quickTo functions once on mount to eliminate
+    // object allocations and layout thrashing during high-frequency mousemove events.
+    quickRotateX.current = gsap.quickTo(cardRef.current, 'rotateX', { duration: 0.35, ease: 'power2.out' });
+    quickRotateY.current = gsap.quickTo(cardRef.current, 'rotateY', { duration: 0.35, ease: 'power2.out' });
+    quickY.current = gsap.quickTo(cardRef.current, 'y', { duration: 0.35, ease: 'power2.out' });
+    quickScale.current = gsap.quickTo(cardRef.current, 'scale', { duration: 0.35, ease: 'power2.out' });
 
-    // Smooth GSAP 3D card tilt & elevation (lift to -16px, rotate up to 12deg)
-    gsap.to(cardRef.current, {
-      rotateY: normalizedX * 12,
-      rotateX: -normalizedY * 12,
-      y: -16,
-      scale: 1.03,
-      duration: 0.35,
-      ease: 'power2.out',
-      overwrite: 'auto',
-    });
-
-    // Move spotlight glare (mixture of primary blue #4F8CFF and accent cyan #00E5FF)
     if (glareRef.current) {
-      gsap.to(glareRef.current, {
-        opacity: 1,
-        background: `radial-gradient(350px circle at ${x}px ${y}px, rgba(0, 229, 255, 0.2) 0%, rgba(79, 140, 255, 0.1) 50%, transparent 100%)`,
-        duration: 0.25,
-        overwrite: 'auto',
-      });
+      quickGlareX.current = gsap.quickTo(glareRef.current, 'x', { duration: 0.25, ease: 'power2.out' });
+      quickGlareY.current = gsap.quickTo(glareRef.current, 'y', { duration: 0.25, ease: 'power2.out' });
+      quickGlareOpacity.current = gsap.quickTo(glareRef.current, 'opacity', { duration: 0.25, ease: 'power2.out' });
     }
-  };
+  }, []);
 
   const handleMouseEnter = (e) => {
+    // BOLT OPTIMIZATION: Cache card dimensions and scroll offset on mouse enter to prevent
+    // calling getBoundingClientRect() on every frame during high-frequency mouse moves.
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      rectRef.current = {
+        left: rect.left + window.scrollX,
+        top: rect.top + window.scrollY,
+        width: rect.width,
+        height: rect.height,
+      };
+    }
     if (onMouseEnter) onMouseEnter(e);
   };
 
+  const handleMouseMove = (e) => {
+    if (!rectRef.current && cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      rectRef.current = {
+        left: rect.left + window.scrollX,
+        top: rect.top + window.scrollY,
+        width: rect.width,
+        height: rect.height,
+      };
+    }
+    if (!rectRef.current) return;
+
+    const { left, top, width, height } = rectRef.current;
+    const pageX = e.pageX ?? (e.clientX + window.scrollX);
+    const pageY = e.pageY ?? (e.clientY + window.scrollY);
+
+    const x = pageX - left;
+    const y = pageY - top;
+
+    const normalizedX = (x / width - 0.5) * 2;
+    const normalizedY = (y / height - 0.5) * 2;
+
+    // Smooth GSAP 3D card tilt & elevation using quickTo
+    if (quickRotateY.current) quickRotateY.current(normalizedX * 12);
+    if (quickRotateX.current) quickRotateX.current(-normalizedY * 12);
+    if (quickY.current) quickY.current(-16);
+    if (quickScale.current) quickScale.current(1.03);
+
+    // Hardware-accelerated GPU translation for glare spotlight position
+    if (quickGlareX.current && quickGlareY.current && quickGlareOpacity.current) {
+      quickGlareOpacity.current(1);
+      quickGlareX.current(x - 175); // Center 350px glare circle on cursor
+      quickGlareY.current(y - 175);
+    }
+  };
+
   const handleMouseLeave = () => {
+    rectRef.current = null;
     if (!cardRef.current) return;
+
     gsap.to(cardRef.current, {
       rotateY: 0,
       rotateX: 0,
@@ -58,11 +103,15 @@ const InteractiveCard = ({
     });
 
     if (glareRef.current) {
-      gsap.to(glareRef.current, {
-        opacity: 0,
-        duration: 0.4,
-        overwrite: 'auto',
-      });
+      if (quickGlareOpacity.current) {
+        quickGlareOpacity.current(0);
+      } else {
+        gsap.to(glareRef.current, {
+          opacity: 0,
+          duration: 0.4,
+          overwrite: 'auto',
+        });
+      }
     }
   };
 
@@ -76,6 +125,7 @@ const InteractiveCard = ({
       style={{
         transformStyle: 'preserve-3d',
         perspective: '1200px',
+        willChange: 'transform',
       }}
       className={`group relative rounded-[24px] border border-white/10 transition-all duration-500 overflow-hidden cursor-pointer backdrop-blur-[24px] ${
         featured
@@ -89,10 +139,11 @@ const InteractiveCard = ({
       {/* Cyber Edge Glow Highlight (Primary & Accent Gradient) */}
       <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-20 group-hover:opacity-100 group-hover:via-accent transition-all duration-500 z-30" />
 
-      {/* Interactive Mouse-Tracking Spotlight Glare */}
+      {/* Interactive Mouse-Tracking Spotlight Glare - GPU Accelerated Overlay */}
       <div
         ref={glareRef}
-        className="pointer-events-none absolute inset-0 opacity-0 z-10 transition-opacity duration-300 mix-blend-screen"
+        className="pointer-events-none absolute top-0 left-0 w-[350px] h-[350px] rounded-full opacity-0 z-10 mix-blend-screen bg-[radial-gradient(circle,rgba(0,229,255,0.2)_0%,rgba(79,140,255,0.1)_50%,transparent_100%)]"
+        style={{ willChange: 'transform, opacity' }}
       />
 
       {/* Ambient static inner shadows and glass sheen */}

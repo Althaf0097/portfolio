@@ -1,0 +1,3 @@
+## 2025-05-18 - High-Frequency Mouse-Tracking Optimization in InteractiveCard
+**Learning:** `getBoundingClientRect()` called inside high-frequency `onMouseMove` event handlers causes layout thrashing by forcing synchronous layout recalculations on every frame. Additionally, updating CSS `background` radial-gradient strings creates main-thread repaints.
+**Action:** Cache element bounds on `onMouseEnter` using page-relative coordinates (`rect.top + window.scrollY`), animate 3D transform properties via pre-initialized GSAP `quickTo` setters, and position glare overlays as fixed elements using `translate3d()` for hardware-accelerated rendering.

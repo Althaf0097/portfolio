@@ -1,6 +1,8 @@
 import { useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 
+// BOLT OPTIMIZATION: High-performance 3D interactive card with cached bounds,
+// GSAP quickTo setters, and GPU-accelerated translate3d glare overlays.
 const InteractiveCard = ({
   children,
   className = '',
@@ -9,40 +11,66 @@ const InteractiveCard = ({
 }) => {
   const cardRef = useRef(null);
   const glareRef = useRef(null);
+  const rectRef = useRef(null);
 
-  const handleMouseMove = (e) => {
+  // Store quickTo functions for zero-overhead animation updates on mousemove
+  const quickToRefs = useRef({});
+
+  useEffect(() => {
     if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
 
-    const normalizedX = (x / rect.width - 0.5) * 2;
-    const normalizedY = (y / rect.height - 0.5) * 2;
+    // Initialize quickTo setters once on mount to avoid instantiating GSAP tweens on every mousemove
+    quickToRefs.current = {
+      rotateY: gsap.quickTo(cardRef.current, 'rotateY', { duration: 0.35, ease: 'power2.out' }),
+      rotateX: gsap.quickTo(cardRef.current, 'rotateX', { duration: 0.35, ease: 'power2.out' }),
+      y: gsap.quickTo(cardRef.current, 'y', { duration: 0.35, ease: 'power2.out' }),
+      scale: gsap.quickTo(cardRef.current, 'scale', { duration: 0.35, ease: 'power2.out' }),
+    };
 
-    // Smooth GSAP 3D card tilt & elevation (lift to -16px, rotate up to 12deg)
-    gsap.to(cardRef.current, {
-      rotateY: normalizedX * 12,
-      rotateX: -normalizedY * 12,
-      y: -16,
-      scale: 1.03,
-      duration: 0.35,
-      ease: 'power2.out',
-      overwrite: 'auto',
-    });
-
-    // Move spotlight glare (mixture of primary blue #4F8CFF and accent cyan #00E5FF)
     if (glareRef.current) {
-      gsap.to(glareRef.current, {
-        opacity: 1,
-        background: `radial-gradient(350px circle at ${x}px ${y}px, rgba(0, 229, 255, 0.2) 0%, rgba(79, 140, 255, 0.1) 50%, transparent 100%)`,
-        duration: 0.25,
-        overwrite: 'auto',
-      });
+      quickToRefs.current.glareX = gsap.quickTo(glareRef.current, 'x', { duration: 0.25, ease: 'power2.out' });
+      quickToRefs.current.glareY = gsap.quickTo(glareRef.current, 'y', { duration: 0.25, ease: 'power2.out' });
+      quickToRefs.current.glareOpacity = gsap.quickTo(glareRef.current, 'opacity', { duration: 0.25, ease: 'power2.out' });
     }
-  };
+  }, []);
 
   const handleMouseEnter = (e) => {
+    // Cache bounding box and page scroll offset on mouse enter to eliminate layout thrashing in mousemove
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      rectRef.current = {
+        left: rect.left + window.scrollX,
+        top: rect.top + window.scrollY,
+        width: rect.width || 1,
+        height: rect.height || 1,
+      };
+    }
     if (onMouseEnter) onMouseEnter(e);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!rectRef.current) return;
+
+    // Use cached page-relative coordinates to eliminate getBoundingClientRect() layout recalculation
+    const x = e.pageX - rectRef.current.left;
+    const y = e.pageY - rectRef.current.top;
+
+    const normalizedX = (x / rectRef.current.width - 0.5) * 2;
+    const normalizedY = (y / rectRef.current.height - 0.5) * 2;
+
+    const q = quickToRefs.current;
+    if (q.rotateY) {
+      q.rotateY(normalizedX * 12);
+      q.rotateX(-normalizedY * 12);
+      q.y(-16);
+      q.scale(1.03);
+    }
+
+    if (q.glareX) {
+      q.glareX(x);
+      q.glareY(y);
+      q.glareOpacity(1);
+    }
   };
 
   const handleMouseLeave = () => {
@@ -76,6 +104,7 @@ const InteractiveCard = ({
       style={{
         transformStyle: 'preserve-3d',
         perspective: '1200px',
+        willChange: 'transform',
       }}
       className={`group relative rounded-[24px] border border-white/10 transition-all duration-500 overflow-hidden cursor-pointer backdrop-blur-[24px] ${
         featured
@@ -89,10 +118,11 @@ const InteractiveCard = ({
       {/* Cyber Edge Glow Highlight (Primary & Accent Gradient) */}
       <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-20 group-hover:opacity-100 group-hover:via-accent transition-all duration-500 z-30" />
 
-      {/* Interactive Mouse-Tracking Spotlight Glare */}
+      {/* Interactive Mouse-Tracking Spotlight Glare - Hardware Accelerated GPU Overlay */}
       <div
         ref={glareRef}
-        className="pointer-events-none absolute inset-0 opacity-0 z-10 transition-opacity duration-300 mix-blend-screen"
+        style={{ willChange: 'transform, opacity' }}
+        className="pointer-events-none absolute top-0 left-0 w-[700px] h-[700px] -ml-[350px] -mt-[350px] rounded-full bg-[radial-gradient(circle_at_center,rgba(0,229,255,0.2)_0%,rgba(79,140,255,0.1)_50%,transparent_100%)] opacity-0 z-10 mix-blend-screen"
       />
 
       {/* Ambient static inner shadows and glass sheen */}

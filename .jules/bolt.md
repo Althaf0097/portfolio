@@ -1,0 +1,3 @@
+## 2025-05-20 - Hardware-accelerated 3D tilt and cached dimensions on mouse tracking
+**Learning:** Calling `getBoundingClientRect()` on every `mousemove` frame triggers layout thrashing, and updating string `background: radial-gradient(...)` causes main-thread style recalculations. Pre-calculating card dimensions on `mouseenter` and using `gsap.quickTo()` with hardware-accelerated `translate3d` overlays eliminates layout thrashing and maintains solid 60/120fps animations.
+**Action:** Always cache element dimensions on `mouseenter` for mouse-tracking cards/containers, and animate spotlight glares using `translate3d` overlays with `gsap.quickTo()`.

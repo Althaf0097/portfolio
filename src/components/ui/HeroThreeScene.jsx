@@ -1,6 +1,17 @@
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useRef, useState, useEffect } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { useRef, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
+
+// Helper function outside render loop to satisfy purity
+const generateParticlePositions = (count) => {
+  const posArr = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    posArr[i * 3] = (Math.random() - 0.5) * 20;
+    posArr[i * 3 + 1] = (Math.random() - 0.5) * 20;
+    posArr[i * 3 + 2] = (Math.random() - 0.5) * 20;
+  }
+  return posArr;
+};
 
 // Procedural Metallic Liquid Mesh component
 const MetallicObject = ({ mouse }) => {
@@ -128,14 +139,9 @@ const FloatingParticles = ({ count = 300 }) => {
     }
   });
 
-  const positions = new Float32Array(count * 3);
-  for (let i = 0; i < count; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 20;
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
-  }
+  const positions = useMemo(() => generateParticlePositions(count), [count]);
 
-  const texture = (() => {
+  const texture = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 16;
     canvas.height = 16;
@@ -146,7 +152,13 @@ const FloatingParticles = ({ count = 300 }) => {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 16, 16);
     return new THREE.CanvasTexture(canvas);
-  })();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      texture.dispose();
+    };
+  }, [texture]);
 
   return (
     <points ref={pointsRef}>
@@ -171,8 +183,7 @@ const FloatingParticles = ({ count = 300 }) => {
 
 // Camera adjustment controller
 const CameraController = ({ mouse }) => {
-  const { camera } = useThree();
-  useFrame(() => {
+  useFrame(({ camera }) => {
     // Lerp camera position based on mouse position to create interactive depth
     camera.position.x += (mouse.current.x * 2.0 - camera.position.x) * 0.05;
     camera.position.y += (-mouse.current.y * 1.5 - camera.position.y) * 0.05;

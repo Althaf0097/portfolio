@@ -1,0 +1,3 @@
+## 2025-05-18 - Hardware-accelerated 3D tilt & spotlight glare with GSAP quickTo
+**Learning:** Updating dynamic radial gradients via background inline styles during `onMouseMove` events forces main-thread layout recalculations and heavy repaints on every frame. In contrast, positioning a static radial-gradient overlay element and animating `transform: translate3d()` using GSAP `quickTo` shifts rendering directly to the GPU and eliminates main-thread work during mouse tracking.
+**Action:** For interactive spotlight glare or mouse-following card effects, always use an absolute-positioned radial element moved with GSAP `quickTo` transform props and cached bounding rect dimensions.

@@ -1,0 +1,3 @@
+## 2025-05-18 - Eliminating Layout Thrashing & Main-Thread Repaints in Interactive Cards
+**Learning:** Invoking `getBoundingClientRect()` inside high-frequency `mousemove` handlers causes layout thrashing (forced synchronous reflows), and updating string-based CSS `background` radial-gradients on every mouse movement forces costly main-thread repaints.
+**Action:** Cache container bounding dimensions (with scroll offsets) on `onMouseEnter` using a `useRef`, initialize GSAP `quickTo` setters for high-frequency transforms, and offload glare/lighting overlays to pre-rendered elements positioned using GPU-accelerated `transform: translate3d()`.

@@ -1,0 +1,3 @@
+## 2025-05-18 - High-Frequency Mouse Tracking & Glare Hardware Acceleration
+**Learning:** Calling `getBoundingClientRect()` inside high-frequency `onMouseMove` events triggers synchronous forced layout recalculation (layout thrashing). Updating dynamic inline gradient string properties (`background: radial-gradient(...)`) on every mouse move frame forces expensive main-thread repaints.
+**Action:** Cache element bounds on `onMouseEnter` into a `useRef`, use `gsap.quickTo()` for transforms, and animate spotlight glare via hardware-accelerated 3D translations (`x`/`y` transforms) on a fixed radial element.

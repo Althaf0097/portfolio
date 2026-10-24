@@ -1,0 +1,3 @@
+## 2025-02-24 - Hardware-Accelerated Glare and GSAP quickTo in Mouse Tracking
+**Learning:** Updating radial-gradient CSS string backgrounds on every mousemove event forces the browser to recalculate background gradients and causes layout thrashing when calling `getBoundingClientRect()`. Caching card dimensions on `mouseenter` and translating an absolute-positioned glare element using GPU-accelerated `translate3d` via `gsap.quickTo()` eliminates main-thread style recalculation and keeps interaction at 60 FPS.
+**Action:** Always cache bounding boxes on hover/enter events and use `quickTo()` with transform properties for high-frequency cursor/mouse followers.

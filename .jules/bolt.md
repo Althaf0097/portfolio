@@ -1,0 +1,3 @@
+## 2025-05-18 - Hardware-Accelerated Glare and Dimension Caching in InteractiveCard
+**Learning:** Calling `getBoundingClientRect()` on every `mousemove` event causes main-thread layout thrashing across card components. Updating dynamic `background: radial-gradient(...)` pixel strings on every frame forces repaints, while conflicting CSS `transition-all` classes cause animation jitter when combined with GSAP transforms.
+**Action:** Cache element bounding box on `mouseenter`, update 3D tilt transforms via `gsap.quickTo()`, position spotlight glare with `transform: translate3d()` using `gsap.quickTo()`, and replace `transition-all` with targeted CSS transitions (`transition-[border-color,box-shadow,background-color]`).

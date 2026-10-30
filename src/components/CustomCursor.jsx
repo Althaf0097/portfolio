@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 
 const CustomCursor = () => {
@@ -9,7 +9,7 @@ const CustomCursor = () => {
   const hoveringRef = useRef(false);
 
   useEffect(() => {
-    if (window.matchMedia("(pointer: coarse)").matches) return;
+    if (window.matchMedia('(pointer: coarse)').matches) return;
     document.body.classList.add('custom-cursor-active');
 
     const cursor = cursorRef.current;

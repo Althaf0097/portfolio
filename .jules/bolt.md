@@ -1,0 +1,3 @@
+## 2025-05-18 - Eliminating Layout Thrashing & Gradient Repaint Overhead in Mouse-Tracking UI Components
+**Learning:** High-frequency mouse movements on interactive cards cause severe layout thrashing when calling `getBoundingClientRect()` inside `onMouseMove`. Furthermore, animating radial gradients directly via `background` updates triggers expensive main-thread repaints on every frame.
+**Action:** Cache element rect dimensions on `onMouseEnter`, translate absolute-positioned overlay elements via GSAP `quickTo` setters on `x` and `y` for GPU acceleration, and strip CSS `transition-all` classes to avoid animation conflicts.

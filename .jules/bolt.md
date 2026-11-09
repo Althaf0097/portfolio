@@ -1,0 +1,3 @@
+## 2025-05-18 - Eliminating Layout Thrashing & Gradient Repaints in InteractiveCard
+**Learning:** Calling `getBoundingClientRect()` on every `pointermove` across multiple interactive cards forces synchronous layout recalculation/reflow on the main thread. Additionally, animating CSS `radial-gradient` strings dynamically on every pointer movement triggers software rasterization/repainting.
+**Action:** Cache element rect dimensions on `pointerenter`, utilize `gsap.quickTo` for zero-allocation high-frequency updates, and animate an absolute spotlight glare overlay via GPU-accelerated `translate3d()` transforms with `will-change: transform`.
